@@ -1,0 +1,27 @@
+/* Chinese horizontal typography — injected by rebuild_epub.py into flow0011.css */
+/* See SKILL.md "Chinese Typography CSS" for when this is applied. */
+
+html, body {
+    writing-mode: horizontal-tb;
+    -epub-writing-mode: horizontal-tb;
+    -webkit-writing-mode: horizontal-tb;
+}
+
+p {
+    text-indent: 2em;
+    line-height: 1.8;
+    text-align: justify;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    text-indent: 0;
+}
+
+.chapter-title-cn {
+    text-align: center;
+    font-size: 1.2em;
+    margin: 1.5em 0 1em 0;
+    text-indent: 0;
+    font-weight: bold;
+}

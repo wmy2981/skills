@@ -1,0 +1,30 @@
+# Wake on LAN - Host Configuration Template
+# hosts.yaml
+#
+# Each entry defines a remote host that can be woken up via Magic Packet.
+# Replace the example values below with your own hosts.
+# Point wol.py --config at this file.
+
+hosts:
+  # ── Example Host 1 ─────────────────────────────────────────
+  - name: "my-pc"
+    mac: "00:11:22:33:44:55"
+    ip: "192.168.1.100"              # optional, used for online verification after wake
+    broadcast: "192.168.1.255"       # optional, default 255.255.255.255
+    port: 9                          # optional, default 9
+    packet_count: 3                  # optional, how many magic packets to send, default 3
+
+  # ── Example Host 2 ─────────────────────────────────────────
+  - name: "my-server"
+    mac: "AA:BB:CC:DD:EE:FF"
+    ip: "192.168.1.10"
+    broadcast: "192.168.1.255"
+    port: 9
+    packet_count: 3
+
+  # ── Example Host 3 ─────────────────────────────────────────
+  - name: "laptop"
+    mac: "11-22-33-44-55-66"        # dash-separated MAC also works
+    ip: "192.168.1.101"
+    port: 9
+    # packet_count omitted → defaults to 3
