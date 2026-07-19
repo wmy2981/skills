@@ -1,165 +1,347 @@
 #!/usr/bin/env python
 """
-chunk_source.py — Split source.md into FILE-bounded chunks for parallel translation.
+Split source.md into paragraph-safe chunks for parallel translation.
 
-FILE markers are NEVER split across chunks. If a single FILE section exceeds
-the threshold, it is split by blank-line-separated paragraphs (not word count).
-
-Usage:
-    python chunk_source.py --source <source.md> --output-dir <chunks_dir> [--max-chars 6000]
-
-Output (in output_dir):
-    chunk-01.md, chunk-02.md, ...   — Source chunk files
-    chunk_index.json                 — Mapping: chunk -> [FILE names]
+The source FILE markers are treated as immutable metadata. They are copied
+from the source exactly once and are never generated during chunk assembly.
 """
 
 import argparse
 import json
-import os
 import re
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
+FILE_MARKER_RE = re.compile(r"^\s*<!-- FILE: .*? -->\s*$")
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+H1_RE = re.compile(r"^#\s+")
+
+
+@dataclass
+class FileSection:
+    name: str
+    marker: str
+    lines: list[str]
+
+
+@dataclass
+class Block:
+    lines: list[str]
+
+    @property
+    def text(self):
+        return "\n".join(self.lines)
+
+    @property
+    def chars(self):
+        return count_text_chars(self.text)
+
+    @property
+    def is_h1(self):
+        meaningful_lines = [
+            line.strip()
+            for line in self.lines
+            if line.strip() and not re.fullmatch(r"<!--.*?-->", line.strip())
+        ]
+        return len(meaningful_lines) == 1 and bool(H1_RE.match(meaningful_lines[0]))
+
+
+@dataclass
+class Unit:
+    file_name: str
+    text: str
+    chars: int
+    is_h1: bool
+
+
+@dataclass
+class Segment:
+    units: list[Unit]
+
+    @property
+    def chars(self):
+        return sum(unit.chars for unit in self.units)
+
+    @property
+    def ends_with_h1(self):
+        return bool(self.units) and self.units[-1].is_h1
+
+
+@dataclass
+class Chunk:
+    segments: list[Segment]
+
+    @property
+    def chars(self):
+        return sum(segment.chars for segment in self.segments)
+
+    @property
+    def ends_with_h1(self):
+        return bool(self.segments) and self.segments[-1].ends_with_h1
+
 
 def parse_source_sections(source_path):
-    """Split source.md by FILE markers, return list of (file_marker, content_lines)."""
-    with open(source_path, "r", encoding="utf-8") as f:
-        content = f.read()
+    """Parse source.md into FILE sections without changing marker text."""
+    with open(source_path, "r", encoding="utf-8", newline=None) as source_file:
+        lines = source_file.read().splitlines()
 
-    sections_raw = re.split(r'(<!-- FILE: .*?\.xhtml -->)', content)
     sections = []
-    cur_file = None
-    cur_lines = []
-    for part in sections_raw:
-        m = re.match(r'<!-- FILE: (.*\.xhtml) -->', part)
-        if m:
-            if cur_file:
-                sections.append((cur_file, cur_lines))
-            cur_file = m.group(1)
-            cur_lines = []
-        elif cur_file is not None:
-            cur_lines.append(part)
-    if cur_file:
-        sections.append((cur_file, cur_lines))
+    current = None
+    preamble = []
+
+    for line in lines:
+        if FILE_MARKER_RE.match(line):
+            if current is not None:
+                sections.append(current)
+            file_name = re.match(r"^\s*<!-- FILE: (.*?) -->\s*$", line).group(1)
+            current = FileSection(name=file_name, marker=line, lines=[])
+        elif current is None:
+            if line.strip():
+                preamble.append(line)
+        else:
+            current.lines.append(line)
+
+    if current is not None:
+        sections.append(current)
+
+    if preamble:
+        raise ValueError("source.md contains non-empty content before the first FILE marker")
+    if not sections:
+        raise ValueError("source.md contains no FILE markers")
+
+    markers = [section.marker for section in sections]
+    if len(markers) != len(set(markers)):
+        raise ValueError("source.md contains duplicate FILE markers")
+
     return sections
 
 
-def split_section_by_paragraphs(lines, max_chars, file_name):
-    """
-    Split a FILE section into sub-chunks at paragraph boundaries.
-
-    Rules:
-    1. Split only at blank-line-separated paragraph boundaries (atomic blocks)
-    2. Merge tiny trailing sub-chunks (< max_chars/3) into previous
-
-    Returns list of (name, paragraph_list).
-    """
-    full_text = "".join(lines)
-    all_lines = full_text.split("\n")
-
-    # Step 1: Split into paragraph blocks by blank lines
+def split_section_into_blocks(lines):
+    """Split a FILE body at blank lines, keeping --- as its own block."""
     blocks = []
-    current_block = []
-    for line in all_lines:
-        stripped = line.strip()
-        if stripped == "":
-            if current_block:
-                blocks.append(current_block)
-                current_block = []
-        elif stripped == "---":
-            if current_block:
-                blocks.append(current_block)
-                current_block = []
-            blocks.append(["---"])
+    current = []
+
+    def flush_current():
+        nonlocal current
+        if current:
+            blocks.append(Block(current))
+            current = []
+
+    for line in lines:
+        if not line.strip():
+            flush_current()
+        elif line.strip() == "---":
+            flush_current()
+            blocks.append(Block([line]))
         else:
-            current_block.append(line)
-    if current_block:
-        blocks.append(current_block)
-
-    # Step 2: Convert blocks to paragraph text strings
-    para_texts = []
-    for block in blocks:
-        if block == ["---"]:
-            para_texts.append("---")
-        else:
-            para_texts.append("\n".join(block))
-
-    # Step 3: Group paragraphs into chunks (target: up to max_chars each)
-    sub_chunks = []  # list of list-of-paragraphs
-    current_paras = []
-    current_chars = 0
-
-    def is_h1(t):
-        return t.lstrip().startswith("# ")
-
-    def flush():
-        nonlocal current_paras, current_chars
-        if not current_paras:
-            return
-        sub_chunks.append(current_paras)
-        current_paras = []
-        current_chars = 0
-
-    for pt in para_texts:
-        pt_chars = count_text_chars(pt)
-
-        # Skip truly empty paragraphs
-        if pt_chars == 0 and not pt.strip():
-            continue
-
-        # Single paragraph larger than max_chars: keep with any accumulated prefix
-        if pt_chars > max_chars:
-            current_paras.append(pt)
-            current_chars += pt_chars
-            flush()
-            continue
-
-        if not current_paras:
-            current_paras = [pt]
-            current_chars = pt_chars
-            continue
-
-        # Check if adding this paragraph would exceed max_chars
-        if current_chars + pt_chars > max_chars:
-            # If h1 is at end, move it to next chunk
-            if is_h1(current_paras[-1]):
-                h1 = current_paras.pop()
-                current_chars -= count_text_chars(h1)
-                flush()
-                current_paras = [h1, pt]
-                current_chars = count_text_chars(h1) + pt_chars
-            else:
-                flush()
-                current_paras = [pt]
-                current_chars = pt_chars
-        else:
-            current_paras.append(pt)
-            current_chars += pt_chars
-    flush()
-
-    # Step 4: Merge tiny trailing chunks ( < max_chars/3 ) into previous
-    TINY_THRESH = max(int(max_chars / 3), 1)
-    if len(sub_chunks) > 1:
-        merged = [sub_chunks[0]]
-        for chunk in sub_chunks[1:]:
-            c_chars = sum(count_text_chars(p) for p in chunk)
-            if c_chars < TINY_THRESH:
-                merged[-1] = merged[-1] + chunk
-            else:
-                merged.append(chunk)
-        sub_chunks = merged
-
-    return [(f"{file_name} (part {i + 1})", paras) for i, paras in enumerate(sub_chunks)]
+            current.append(line)
+    flush_current()
+    return blocks
 
 
 def count_text_chars(text):
-    """Count meaningful text characters (exclude comments, headings, whitespace)."""
-    cleaned = re.sub(r'<!--.*?-->', '', text)
-    cleaned = re.sub(r'^# .*\n?', '', cleaned, flags=re.MULTILINE)
-    cleaned = re.sub(r'\s', '', cleaned)
+    """Count content characters while ignoring metadata comments and h1 lines."""
+    cleaned = HTML_COMMENT_RE.sub("", text)
+    cleaned = re.sub(r"^\s*#\s+.*$", "", cleaned, flags=re.MULTILINE)
+    cleaned = re.sub(r"\s", "", cleaned)
     return len(cleaned)
+
+
+def section_units(section):
+    """Create units with the FILE marker attached to the first body block."""
+    blocks = split_section_into_blocks(section.lines)
+    if not blocks:
+        return [Unit(section.name, section.marker, 0, False)]
+
+    units = []
+    for index, block in enumerate(blocks):
+        if index == 0:
+            text = f"{section.marker}\n\n{block.text}"
+        else:
+            text = block.text
+        units.append(Unit(section.name, text, block.chars, block.is_h1))
+    return units
+
+
+def pack_units(units, max_chars):
+    """Pack paragraph units, moving a trailing h1 to the next segment."""
+    segments = []
+    current = []
+    current_chars = 0
+
+    def flush_current():
+        nonlocal current, current_chars
+        if current:
+            segments.append(Segment(current))
+            current = []
+            current_chars = 0
+
+    for unit in units:
+        if not current:
+            current = [unit]
+            current_chars = unit.chars
+            continue
+
+        if current_chars + unit.chars <= max_chars:
+            current.append(unit)
+            current_chars += unit.chars
+            continue
+
+        if current[-1].is_h1:
+            heading = current.pop()
+            current_chars -= heading.chars
+            flush_current()
+            current = [heading, unit]
+            current_chars = heading.chars + unit.chars
+        else:
+            flush_current()
+            current = [unit]
+            current_chars = unit.chars
+
+    flush_current()
+    return segments
+
+
+def section_segments(section, max_chars):
+    """Keep normal FILE sections intact; split only oversized sections."""
+    units = section_units(section)
+    if sum(unit.chars for unit in units) <= max_chars:
+        return [Segment(units)]
+    return pack_units(units, max_chars)
+
+
+def pop_trailing_h1(segments):
+    """Remove a trailing h1 unit so it can begin the next chunk."""
+    if not segments or not segments[-1].ends_with_h1:
+        return None
+
+    last_segment = segments[-1]
+    heading = last_segment.units.pop()
+    if not last_segment.units:
+        segments.pop()
+    return heading
+
+
+def group_segments(segments, max_chars):
+    """Group FILE segments and keep chunk boundaries away from h1 headings."""
+    chunks = []
+    current = []
+    current_chars = 0
+
+    def flush_current():
+        nonlocal current, current_chars
+        if current:
+            chunks.append(Chunk(current))
+            current = []
+            current_chars = 0
+
+    for segment in segments:
+        if not current:
+            current = [segment]
+            current_chars = segment.chars
+            continue
+
+        if current_chars + segment.chars <= max_chars:
+            current.append(segment)
+            current_chars += segment.chars
+            continue
+
+        heading = pop_trailing_h1(current)
+        if heading is not None:
+            flush_current()
+            current = [Segment([heading]), segment]
+            current_chars = heading.chars + segment.chars
+        else:
+            flush_current()
+            current = [segment]
+            current_chars = segment.chars
+
+    flush_current()
+    return chunks
+
+
+def merge_chunks(left, right):
+    return Chunk(left.segments + right.segments)
+
+
+def merge_small_chunks(chunks, max_chars):
+    """Merge fragments smaller than max_chars/3 into an adjacent chunk."""
+    threshold = max_chars / 3
+    merged = []
+
+    index = 0
+    while index < len(chunks):
+        if chunks[index].chars >= threshold:
+            merged.append(chunks[index])
+            index += 1
+            continue
+
+        small_run = []
+        while index < len(chunks) and chunks[index].chars < threshold:
+            small_run.append(chunks[index])
+            index += 1
+        small_chunk = small_run[0]
+        for following_small in small_run[1:]:
+            small_chunk = merge_chunks(small_chunk, following_small)
+
+        if not merged:
+            if index < len(chunks):
+                merged.append(merge_chunks(small_chunk, chunks[index]))
+                index += 1
+            else:
+                merged.append(small_chunk)
+        elif small_chunk.ends_with_h1 and index < len(chunks):
+            # Keep a trailing h1 at the beginning of the next destination.
+            merged.append(merge_chunks(small_chunk, chunks[index]))
+            index += 1
+        else:
+            merged[-1] = merge_chunks(merged[-1], small_chunk)
+
+    return merged
+
+
+def flatten_units(chunk):
+    for segment in chunk.segments:
+        yield from segment.units
+
+
+def render_chunk(chunk):
+    return "\n\n".join(unit.text for unit in flatten_units(chunk)) + "\n"
+
+
+def extract_file_markers(text):
+    return [line for line in text.splitlines() if FILE_MARKER_RE.match(line)]
+
+
+def validate_marker_integrity(sections, chunks):
+    """Ensure the output marker sequence exactly matches the source sequence."""
+    expected = [section.marker for section in sections]
+    actual = []
+    for chunk in chunks:
+        actual.extend(extract_file_markers(render_chunk(chunk)))
+    if actual != expected:
+        raise ValueError(
+            "FILE marker integrity check failed: output markers differ from source"
+        )
+
+
+def chunk_file_labels(chunk, occurrence_counts):
+    """List source files represented by a chunk, adding part labels only to the index."""
+    labels = []
+    seen = set()
+    for unit in flatten_units(chunk):
+        if unit.file_name in seen:
+            continue
+        seen.add(unit.file_name)
+        occurrence_counts[unit.file_name] = occurrence_counts.get(unit.file_name, 0) + 1
+        occurrence = occurrence_counts[unit.file_name]
+        labels.append(
+            unit.file_name if occurrence == 1 else f"{unit.file_name} (part {occurrence})"
+        )
+    return labels
 
 
 def main():
@@ -168,140 +350,55 @@ def main():
     )
     parser.add_argument("--source", required=True, help="Path to source.md")
     parser.add_argument("--output-dir", required=True, help="Output directory for chunks")
-    parser.add_argument("--max-chars", type=int, default=6000,
-                        help="Target chars per chunk (default: 6000). All thresholds scale proportionally.")
+    parser.add_argument(
+        "--max-chars",
+        type=int,
+        default=6000,
+        help="Target chars per chunk (default: 6000)",
+    )
     args = parser.parse_args()
+
+    if args.max_chars <= 0:
+        parser.error("--max-chars must be greater than zero")
 
     source_path = Path(args.source)
     output_dir = Path(args.output_dir)
-
     if not source_path.exists():
         print(f"Error: source.md not found: {source_path}")
         sys.exit(1)
 
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     sections = parse_source_sections(source_path)
-    print(f"Found {len(sections)} FILE sections in {source_path.name}")
+    segments = []
+    for section in sections:
+        segments.extend(section_segments(section, args.max_chars))
 
-    # Derived thresholds (all proportional to max_chars)
-    MC = args.max_chars
-    MIN_FLUSH = int(MC * 0.6)      # flush accumulated only if >= this
-    MIN_CHUNK = int(MC * 0.83)     # safety net: merge chunks below this
-    MAX_MERGE = int(MC * 1.33)     # safety net: don't merge if result exceeds this
+    chunks = group_segments(segments, args.max_chars)
+    chunks = merge_small_chunks(chunks, args.max_chars)
+    validate_marker_integrity(sections, chunks)
 
-    # Group sections into chunks, splitting oversize ones
-    chunks = []
-    current_chunk = []
-    current_file_list = []
-    current_chars = 0
-
-    def flush_current_chunk():
-        nonlocal current_chunk, current_file_list, current_chars
-        if not current_chunk:
-            return
-        chunk_name = f"chunk-{len(chunks) + 1:02d}"
-        content = "".join(current_chunk)
-        chunks.append((chunk_name, current_file_list, content))
-        print(f"  chunk {chunk_name}: {', '.join(current_file_list)} ({current_chars} chars)")
-        current_chunk = []
-        current_file_list = []
-        current_chars = 0
-
-    for file_name, lines in sections:
-        section_text = "".join(lines)
-        section_chars = count_text_chars(section_text)
-        file_marker = f"<!-- FILE: {file_name} -->"
-
-        # Skip image-only empty pages — they just need the FILE marker
-        if section_chars == 0:
-            current_chunk.append(f"{file_marker}\n\n")
-            current_file_list.append(file_name)
-            continue
-
-        # Oversize section: merge small accumulated content, then split
-        if section_chars > MC:
-            prefix = ""
-            if current_chars < MIN_FLUSH and current_chunk:
-                prefix = "".join(current_chunk)
-                current_chunk = []
-                current_file_list = []
-                current_chars = 0
-            else:
-                flush_current_chunk()
-            sub_chunks = split_section_by_paragraphs(lines, MC, file_name)
-            for i, (sub_name, sub_paras) in enumerate(sub_chunks):
-                chunk_name = f"chunk-{len(chunks) + 1:02d}"
-                # Only first sub-chunk gets the file_marker (matches source — no new markers)
-                body = "\n\n".join(sub_paras) + "\n"
-                if i == 0:
-                    body = f"{file_marker}\n" + body
-                    if prefix:
-                        body = prefix + body
-                chunks.append((chunk_name, [sub_name], body))
-                sc = count_text_chars(body)
-                print(f"  chunk {chunk_name}: {sub_name} ({sc} chars, split)")
-            continue
-
-        # Normal section: flush only if accumulated enough; otherwise let overflow
-        if current_chars + section_chars > MC and current_chunk:
-            if current_chars >= MIN_FLUSH:
-                flush_current_chunk()
-
-        content_part = f"{file_marker}\n\n{''.join(lines)}\n"
-        current_chunk.append(content_part)
-        current_file_list.append(file_name)
-        current_chars += section_chars
-
-    flush_current_chunk()
-
-    # Merge final 0-char chunk (FILE markers only) into previous
-    if len(chunks) >= 2 and chunks[-1][2].strip() == "":
-        _, empty_files, _ = chunks.pop()
-        prev_name, prev_files, prev_content = chunks[-1]
-        chunks[-1] = (prev_name, prev_files + empty_files, prev_content)
-
-    # Safety net: merge chunks below MIN_CHUNK into previous (if result fits MAX_MERGE)
-    if len(chunks) >= 2:
-        merged = [chunks[0]]
-        for i in range(1, len(chunks)):
-            c_name, c_files, c_content = chunks[i]
-            c_chars = count_text_chars(c_content)
-            p_name, p_files, p_content = merged[-1]
-            p_chars = count_text_chars(p_content)
-            cap = 99999 if i == len(chunks) - 1 else MAX_MERGE
-            if c_chars < MIN_CHUNK and c_chars > 0 and (p_chars + c_chars) <= cap:
-                # Deduplicate FILE markers: strip any marker from c_content whose
-                # file already appears (including as "foo (part N)") in p_files
-                deduped = c_content
-                for p_file in p_files:
-                    p_base = re.sub(r' \(part \d+\)$', '', p_file)
-                    for c_file_str in c_files:
-                        c_base = re.sub(r' \(part \d+\)$', '', c_file_str)
-                        if p_base == c_base:
-                            marker = f"<!-- FILE: {p_base} -->"
-                            deduped = deduped.replace(marker + "\n", "", 1)
-                merged[-1] = (p_name, p_files + c_files, p_content + deduped)
-            else:
-                merged.append((c_name, c_files, c_content))
-        chunks = merged
-
-    # Write chunks
+    output_dir.mkdir(parents=True, exist_ok=True)
     chunk_index = {}
-    for chunk_name, file_list, content in chunks:
+    occurrence_counts = {}
+
+    for index, chunk in enumerate(chunks, start=1):
+        chunk_name = f"chunk-{index:02d}"
         chunk_path = output_dir / f"{chunk_name}.md"
-        with open(chunk_path, "w", encoding="utf-8") as f:
-            f.write(content)
+        content = render_chunk(chunk)
+        with open(chunk_path, "w", encoding="utf-8", newline="\n") as chunk_file:
+            chunk_file.write(content)
+
         chunk_index[chunk_name] = {
-            "files": file_list,
-            "chars": count_text_chars(content),
+            "files": chunk_file_labels(chunk, occurrence_counts),
+            "chars": chunk.chars,
         }
+        print(f"  {chunk_name}: {', '.join(chunk_index[chunk_name]['files'])} ({chunk.chars} chars)")
 
-    # Write index
     index_path = output_dir / "chunk_index.json"
-    with open(index_path, "w", encoding="utf-8") as f:
-        json.dump(chunk_index, f, ensure_ascii=False, indent=2)
+    with open(index_path, "w", encoding="utf-8", newline="\n") as index_file:
+        json.dump(chunk_index, index_file, ensure_ascii=False, indent=2)
+        index_file.write("\n")
 
+    print(f"Found {len(sections)} FILE sections in {source_path.name}")
     print(f"\nDone! {len(chunks)} chunks in {output_dir}")
     print(f"Index: {index_path}")
 
