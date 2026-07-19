@@ -63,6 +63,8 @@ def extract_text_lines(file_lines):
                 continue
             if stripped.startswith("<!--") and stripped.endswith("-->"):
                 continue
+            if stripped.startswith('<p class="chapter-title-cn">') and stripped.endswith("</p>"):
+                continue
             if stripped.startswith("# ") and not stripped.startswith("##"):
                 continue
             text_lines.append(stripped)
@@ -81,11 +83,11 @@ def parse_heading_title(file_lines):
 
 
 def remove_ruby(soup):
-    """Remove ruby tags, keep rb text only."""
+    """Remove ruby annotations while preserving the base text."""
     for ruby_tag in soup.find_all("ruby"):
-        rb_texts = [rb.get_text() for rb in ruby_tag.find_all("rb")]
-        replacement = "".join(rb_texts)
-        ruby_tag.replace_with(replacement or "")
+        for annotation in ruby_tag.find_all(["rt", "rp"]):
+            annotation.decompose()
+        ruby_tag.replace_with(ruby_tag.get_text())
     return soup
 
 
@@ -109,14 +111,19 @@ def replace_paragraphs(soup, translated_lines):
 
         if not is_empty and not is_circle and not is_image:
             # Normal paragraph — replace content
-            for child in list(p_tag.children):
-                if isinstance(child, NavigableString):
-                    child.extract()
-                elif child.name in ("ruby", "rt", "rb"):
-                    child.extract()
             # Use fallback empty string if translation has fewer lines than needed
             replacement = translated_lines[idx] if idx < len(translated_lines) else ""
-            p_tag.append(NavigableString(replacement))
+            links = p_tag.find_all("a")
+            if len(links) == 1:
+                link = links[0]
+                p_tag.clear()
+                link.clear()
+                link.append(NavigableString(replacement))
+                p_tag.append(link)
+            else:
+                # Clear nested source markup as well as direct text before inserting the translation.
+                p_tag.clear()
+                p_tag.append(NavigableString(replacement))
             idx += 1
         elif is_circle:
             # Scene break ○/● → consume the '---' line from translation
@@ -133,6 +140,16 @@ def add_chapter_title(soup, title_text):
         new_p["class"] = "chapter-title-cn"
         new_p.string = title_text
         h1.insert_after(new_p)
+
+
+def translate_fixed_headings(soup):
+    """Translate visible headings that are not represented as markdown blocks."""
+    heading_map = {"あとがき": "后记"}
+    for heading in soup.find_all(["h2", "h3"]):
+        translated = heading_map.get(heading.get_text(strip=True))
+        if translated:
+            heading.clear()
+            heading.append(NavigableString(translated))
 
 
 def load_toc_translations(toc_path):
@@ -306,12 +323,18 @@ def main():
                             if text_lines:
                                 soup = replace_paragraphs(soup, text_lines)
 
+                            translate_fixed_headings(soup)
+
                             # Update html attributes
                             html_tag = soup.find("html")
                             if html_tag:
                                 classes = html_tag.get("class", [])
                                 if "vrtl" in classes:
                                     html_tag["class"] = ["hltr" if c == "vrtl" else c for c in classes]
+                                    classes = html_tag["class"]
+                                if "hltr" not in classes:
+                                    classes.append("hltr")
+                                html_tag["class"] = classes
                                 if html_tag.get("xml:lang") == from_lang:
                                     html_tag["xml:lang"] = to_lang
 

@@ -36,11 +36,14 @@ warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
 def parse_ncx_toc(book):
-    """Extract NCX TOC entries."""
+    """Extract TOC entries from NCX or EPUB3 navigation documents."""
     toc_entries = []
-    book_title = ""
+    title_metadata = book.get_metadata("DC", "title")
+    book_title = title_metadata[0][0] if title_metadata else ""
     for item in book.get_items():
-        if item.get_type() == ebooklib.ITEM_NAVIGATION:
+        is_navigation_item = item.get_type() == ebooklib.ITEM_NAVIGATION
+        is_xhtml_item = item.get_name().lower().endswith((".xhtml", ".html"))
+        if is_navigation_item or is_xhtml_item:
             content = item.get_content().decode("utf-8")
             soup = BeautifulSoup(content, "xml")
             dt = soup.find("docTitle")
@@ -62,17 +65,29 @@ def parse_ncx_toc(book):
                         "src": src,
                         "play_order": play_order,
                     })
+            else:
+                toc_nav = soup.find("nav", attrs={"epub:type": "toc"})
+                if toc_nav is None:
+                    toc_nav = soup.find("nav", id="toc")
+                if toc_nav:
+                    for play_order, anchor in enumerate(toc_nav.find_all("a"), start=1):
+                        label = anchor.get_text(strip=True)
+                        src = anchor.get("href", "")
+                        if label or src:
+                            toc_entries.append({
+                                "label": label,
+                                "src": src,
+                                "play_order": str(play_order),
+                            })
     return book_title, toc_entries
 
 
 def remove_ruby(soup):
-    """Remove ruby tags, keep rb text only."""
+    """Remove ruby annotations while preserving the base text."""
     for ruby_tag in soup.find_all("ruby"):
-        rb_texts = []
-        for rb in ruby_tag.find_all("rb"):
-            rb_texts.append(rb.get_text())
-        replacement = "".join(rb_texts)
-        ruby_tag.replace_with(replacement or "")
+        for annotation in ruby_tag.find_all(["rt", "rp"]):
+            annotation.decompose()
+        ruby_tag.replace_with(ruby_tag.get_text())
     return soup
 
 

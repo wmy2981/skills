@@ -76,7 +76,7 @@ Book-length content must be chunked so baoyu-translate can translate in parallel
 python {baseDir}/scripts/chunk_source.py \
   --source <output_dir>/source.md \
   --output-dir <output_dir>/chunks/ \
-  --max-chars 6000
+  --max-chars 12000
 ```
 
 `--max-chars` controls target chars per chunk (default 6000). All internal thresholds (flush threshold, merge floor, merge cap) scale proportionally.
@@ -128,7 +128,12 @@ python {baseDir}/scripts/validate_epub.py \
   --translation-md <output_dir>/translation.md
 ```
 
-**Checks: 25 items** — structure, content (Chinese text, no ruby, correct lang/class), TOC translation, image preservation, metadata. Translation verification (line count comparison) is warning-only.
+**Checks** — ZIP structure, OPF metadata, all text-bearing XHTML (no ruby, correct lang/class, Chinese text), TOC translation (NCX or EPUB3 nav), image integrity. Translation verification (line count comparison per FILE section) is warning-only.
+
+**Output format:**
+- Each text-bearing XHTML file is scanned individually; issues are reported as `[WARN]` per file
+- Summary line: `XHTML files checked: N (OK: M, no Chinese: P, ruby: Q, lang: R)`
+- Overall result: `Summary: X/Y checks passed (Z%)` — exits 0 unless a critical structural error prevents verification
 
 ## Full Pipeline
 
@@ -137,7 +142,7 @@ python {baseDir}/scripts/validate_epub.py \
 python extract_epub.py --epub book.epub --output-dir book-zh/
 
 # 2. Chunk
-python chunk_source.py --source book-zh/source.md --output-dir book-zh/chunks/ --max-chars 6000
+python chunk_source.py --source book-zh/source.md --output-dir book-zh/chunks/ --max-chars 12000
 
 # 3. Translate with baoyu-translate (outside this skill's scope)
 
