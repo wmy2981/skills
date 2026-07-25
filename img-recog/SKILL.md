@@ -28,11 +28,11 @@ pip install openai pyyaml requests
 
 ## Setup
 
-Template files are provided in `references/`. Copy them to `~/.wmyskills/img_recog/` and fill in your API keys:
+Config templates are in `references/templates/`. Copy them to `~/.wmyskills/img_recog/` and fill in your API keys:
 
 ```bash
-cp references/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
-cp references/model.yaml.template ~/.wmyskills/img_recog/model.yaml
+cp references/templates/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
+cp references/templates/model.yaml.template ~/.wmyskills/img_recog/model.yaml
 ```
 
 Then edit `~/.wmyskills/img_recog/provider.yaml` to add your actual API keys:
@@ -90,8 +90,28 @@ python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img 
 # Read prompt from file
 python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
 
+# Use built-in prompt template from references/prompts/
+python scripts/img_recog_cli.py --img screenshot.png --prompt @references/prompts/extract-text.txt
+
 # Structured JSON output
 python scripts/img_recog_cli.py --img screenshot.png --json
+```
+
+## Reference Files
+
+| Location | Purpose |
+|----------|---------|
+| `references/templates/` | Config file templates (copy to `~/.wmyskills/img_recog/`) |
+| `references/prompts/` | Pre-built prompt templates for common tasks (use with `--prompt @`) |
+
+Available prompt templates in `references/prompts/`:
+
+```bash
+# Default image description
+python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
+
+# Extract all text from image
+python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text.txt
 ```
 
 ## Notes
