@@ -10,6 +10,7 @@ Agent 技能集合
 | `deepseek_balance/` | DeepSeek 开放平台余额查询 |
 | `domain-query/` | 域名 ICP 备案 + WHOIS + 微信防红查询 |
 | `enterprise-info/` | 企业工商信息查询 |
+| `epub-book-pipeline/` | EPUB 整本书翻译流水线 — 解包、分块、翻译、重建、校验 |
 | `freshrss/` | FreshRSS RSS 阅读器管理 |
 | `gaokao-english-answer-parser/` | 高考结构英语试卷答案提取 |
 | `gotify/` | Gotify 推送通知管理 |
