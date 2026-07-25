@@ -5,6 +5,8 @@ import re
 import base64
 import binascii
 import sys
+import urllib.parse
+
 import requests
 
 DATA_URI_PATTERN = re.compile(r"^data:image/[a-zA-Z]+;base64,(.+)$")
@@ -44,8 +46,35 @@ def _load_local_image(path: str) -> str:
         sys.exit(1)
 
 
+def _repair_url(url: str) -> str:
+    """Repair URLs where percent-encoded chars in hostname contain path separators.
+
+    Some services encode the entire URL path into the hostname portion, causing
+    DNS/hostname parsing failures. Decode the hostname and split at '/' to
+    reconstruct a valid (scheme, host, path) URL.
+    """
+    parsed = urllib.parse.urlparse(url)
+    if not parsed.hostname:
+        return url
+    decoded = urllib.parse.unquote(parsed.hostname)
+    if "/" not in decoded:
+        return url
+    idx = decoded.index("/")
+    real_host = decoded[:idx]
+    extra_path = decoded[idx:]
+    new_path = extra_path + parsed.path
+    new_netloc = real_host
+    if parsed.port:
+        new_netloc = f"{real_host}:{parsed.port}"
+    return urllib.parse.urlunparse((
+        parsed.scheme, new_netloc, new_path,
+        parsed.params, parsed.query, parsed.fragment
+    ))
+
+
 def _download_image(url: str) -> str:
     """Download image from URL and convert to base64 data URI as fallback."""
+    url = _repair_url(url)
     try:
         resp = requests.get(url, timeout=(10, 30))
         resp.raise_for_status()
