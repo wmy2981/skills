@@ -1,29 +1,35 @@
-#!/usr/bin/env python3
-"""DeepSeek 开放平台余额查询
-从环境变量 DEEPSEEK_APIKEY 获取 API Key，调用余额接口。
-输出原始 JSON 到 stdout。指定 --output 路径时，同时将结果追加记录到该 CSV 文件。
-"""
+#!/usr/bin/env python
+"""DeepSeek 开放平台余额查询 - 最简版本
 
+从环境变量 DEEPSEEK_APIKEY 读取 API Key，调用余额接口，输出原始 JSON 到 stdout。
+同级 .env 文件中的变量也会自动加载。
+"""
 import json
 import os
 import sys
-import argparse
-from csv import DictWriter
-from datetime import datetime, timezone, timedelta
 from pathlib import Path
-from dotenv import load_dotenv
-from urllib.request import Request, urlopen
 from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 API_URL = "https://api.deepseek.com/user/balance"
 
 
-def main():
-    parser = argparse.ArgumentParser(description="DeepSeek 开放平台余额查询")
-    parser.add_argument("--output", "-o", help="CSV 输出路径（可选），不指定则只输出 JSON 到 stdout")
-    args = parser.parse_args()
+def _load_env():
+    """加载同级 .env 文件中的环境变量（仅处理 KEY=VALUE 格式，不覆盖已有变量）。"""
+    env_path = Path(__file__).resolve().parent / ".env"
+    if not env_path.exists():
+        return
+    with open(env_path, encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            os.environ.setdefault(key.strip(), val.strip())
 
-    load_dotenv()
+
+def main():
+    _load_env()
 
     api_key = os.environ.get("DEEPSEEK_APIKEY")
     if not api_key:
@@ -43,40 +49,6 @@ def main():
         sys.exit(1)
 
     print(body)
-
-    # CSV 记录（仅 --output 时写入）
-    if args.output:
-        try:
-            data = json.loads(body)
-        except json.JSONDecodeError:
-            return  # 无法解析就不写 CSV
-
-        tz = timezone(timedelta(hours=8))
-        now = datetime.now(tz).isoformat(timespec="seconds")
-        is_available = data.get("is_available")
-        balance_infos = data.get("balance_infos", [])
-        if not balance_infos:
-            return
-        info = balance_infos[0]
-
-        output_path = Path(args.output)
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        file_exists = output_path.exists()
-        with open(output_path, "a", newline="", encoding="utf-8") as f:
-            writer = DictWriter(f, fieldnames=[
-                "datetime", "is_available", "currency",
-                "total_balance", "granted_balance", "topped_up_balance",
-            ])
-            if not file_exists:
-                writer.writeheader()
-            writer.writerow({
-                "datetime": now,
-                "is_available": is_available,
-                "currency": info.get("currency", ""),
-                "total_balance": info.get("total_balance", ""),
-                "granted_balance": info.get("granted_balance", ""),
-                "topped_up_balance": info.get("topped_up_balance", ""),
-            })
 
 
 if __name__ == "__main__":
