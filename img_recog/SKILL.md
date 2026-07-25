@@ -20,6 +20,8 @@ Two config files live at `~/.wmyskills/img_recog/`:
 
 ## Prerequisites
 
+- Python >= 3.10
+
 ```bash
 pip install openai pyyaml requests
 ```

@@ -1,12 +1,13 @@
 """Call OpenAI-compatible vision model API."""
 
 import sys
-from openai import OpenAI, APIError, APITimeoutError, APIConnectionError, AuthenticationError
+from openai import OpenAI, APIError, APITimeoutError, APIConnectionError, AuthenticationError, RateLimitError
 
 
 def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
                       prompt: str = "请详细描述这张图片的内容",
-                      timeout: tuple = (10, 30)) -> dict:
+                      timeout: tuple = (10, 30),
+                      max_tokens: int = 4096) -> dict:
     """Call the vision API and return structured response.
 
     Returns:
@@ -30,10 +31,13 @@ def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
                     ],
                 }
             ],
-            max_tokens=2048,
+            max_tokens=max_tokens,
         )
     except AuthenticationError:
         print("Error: Authentication failed. Check api_key in provider.yaml", file=sys.stderr)
+        sys.exit(1)
+    except RateLimitError:
+        print("Error: Rate limited (429). Check your API quota and retry later.", file=sys.stderr)
         sys.exit(1)
     except APITimeoutError:
         print("Error: Request timed out. Image may be too large or network slow.", file=sys.stderr)

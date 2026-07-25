@@ -3,6 +3,7 @@
 import os
 import re
 import base64
+import binascii
 import sys
 import requests
 
@@ -58,28 +59,26 @@ def _download_image(url: str) -> str:
 
 
 def normalize_image(image_str: str) -> str:
-    """Convert image input to a string the API can use (data URI or URL).
+    """Convert image input to a data URI string for API consumption.
 
     Accepts:
-    - Local file path
-    - HTTP(S) URL (passed as-is for API direct fetch, or downloaded as fallback)
-    - data:image/...;base64,... URI
+    - Local file path — read and base64-encoded
+    - HTTP(S) URL — downloaded and base64-encoded for maximum API compatibility
+    - data:image/...;base64,... URI — validated and passed through
     """
     if _is_data_uri(image_str):
         # Validate the base64 portion is decodable
         m = DATA_URI_PATTERN.match(image_str)
         try:
             base64.b64decode(m.group(1), validate=True)
-        except Exception:
+        except (ValueError, binascii.Error):
             print("Error: Invalid base64 data in image URI", file=sys.stderr)
             print("Expected format: data:image/{type};base64,{encoded_data}", file=sys.stderr)
             sys.exit(1)
         return image_str
 
     if _is_url(image_str):
-        # Return as-is; API may fetch it directly. If API fails, caller could retry with download.
-        # We also pre-download as a fallback data URI for APIs that don't support URL input.
-        # For maximum compatibility, always convert to data URI.
+        # Download and convert to data URI for maximum API compatibility.
         return _download_image(image_str)
 
     # Assume local file path
