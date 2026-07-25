@@ -16,7 +16,11 @@ def _load_yaml(path: str, label: str) -> dict:
         sys.exit(1)
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+            data = yaml.safe_load(f)
+        if data is None:
+            print(f"Error: {label} is empty or contains only comments", file=sys.stderr)
+            sys.exit(1)
+        return data
     except yaml.YAMLError as e:
         print(f"Error: Invalid YAML in {label}: {e}", file=sys.stderr)
         sys.exit(1)
