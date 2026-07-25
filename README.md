@@ -14,7 +14,7 @@ Agent 技能集合
 | `freshrss/` | FreshRSS RSS 阅读器管理 |
 | `gaokao-english-answer-parser/` | 高考结构英语试卷答案提取 |
 | `gotify/` | Gotify 推送通知管理 |
-| `img_recog/` | 图片识别 — 通过 OpenAI 兼容 API 调用视觉模型查看图片内容 |
+| `img-recog/` | 图片识别 — 通过 OpenAI 兼容 API 调用视觉模型查看图片内容 |
 | `linkgo/` | LinkGo v3 导航页管理 |
 | `mimo-tts/` | MiMo-V2.5-TTS 语音合成 |
 | `s3/` | S3 兼容对象存储操作 |
