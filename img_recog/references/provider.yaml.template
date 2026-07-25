@@ -1,0 +1,22 @@
+# =============================================================================
+# img_recog — API Provider Configuration
+# =============================================================================
+# WARNING: This file contains API keys. DO NOT show its contents to the AI.
+# Copy this file to ~/.wmyskills/img_recog/provider.yaml and fill in your keys.
+# =============================================================================
+
+providers:
+  # OpenAI
+  openai:
+    base_url: https://api.openai.com/v1
+    api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+  # DeepSeek
+  deepseek:
+    base_url: https://api.deepseek.com/v1
+    api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+
+  # SiliconFlow (example — supports many open-source vision models)
+  # siliconflow:
+  #   base_url: https://api.siliconflow.com/v1
+  #   api_key: sk-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz

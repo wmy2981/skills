@@ -26,30 +26,28 @@ pip install openai pyyaml requests
 
 ## Setup
 
-1. Create `~/.wmyskills/img_recog/provider.yaml` with your API keys:
+Template files are provided in `references/`. Copy them to `~/.wmyskills/img_recog/` and fill in your API keys:
+
+```bash
+cp references/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
+cp references/model.yaml.template ~/.wmyskills/img_recog/model.yaml
+```
+
+Then edit `~/.wmyskills/img_recog/provider.yaml` to add your actual API keys:
 
 ```yaml
 providers:
   openai:
     base_url: https://api.openai.com/v1
-    api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # ← 替换为你的 key
   deepseek:
     base_url: https://api.deepseek.com/v1
-    api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy  # ← 替换为你的 key
 ```
 
-2. Create `~/.wmyskills/img_recog/model.yaml`:
+And review `~/.wmyskills/img_recog/model.yaml` to confirm your desired models:
 
 ```yaml
-providers:
-  openai:
-    models:
-      - gpt-4o
-      - gpt-4o-mini
-  deepseek:
-    models:
-      - deepseek-chat
-
 default:
   provider: openai
   model: gpt-4o-mini
