@@ -39,6 +39,5 @@ python -m py_compile <skill>/scripts/*.py
 
 ## Git Workflow
 
-- Commit messages in Chinese
 - Push via SSH (remote is `git@github.com:wmy2981/wmy-skills.git`)
 - Working tree is on a network share (G: drive mapped to `//WMY-SERVER/...`)
