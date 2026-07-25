@@ -51,6 +51,9 @@ def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
             print(f"Error: API returned status {status}: {e}", file=sys.stderr)
         sys.exit(1)
 
+    if not resp.choices:
+        print("Error: API returned empty response (no choices)", file=sys.stderr)
+        sys.exit(1)
     choice = resp.choices[0]
     content = choice.message.content or ""
     usage = {
