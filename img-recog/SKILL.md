@@ -25,7 +25,7 @@ The AI MAY read `model.yaml` when it needs to understand which models and provid
 - Python >= 3.10
 
 ```bash
-pip install openai pyyaml requests
+pip install openai pyyaml requests python-dotenv
 ```
 
 ## Setup
@@ -83,7 +83,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 python scripts/img_recog_cli.py --img screenshot.png
 
 # Extract text from a photo with specific prompt
-python scripts/img_recog_cli.py --img photo.jpg --prompt "请提取图中所有文字"
+python scripts/img_recog_cli.py --img photo.jpg --prompt "Extract all text from this image"
 
 # Fetch and describe an online image
 python scripts/img_recog_cli.py --img https://example.com/diagram.png
@@ -107,15 +107,38 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 |----------|---------|
 | `references/templates/` | Config file templates (copy to `~/.wmyskills/img_recog/`) |
 | `references/prompts/` | Pre-built prompt templates for common tasks (use with `--prompt @`) |
+| `references/prompts/index.yaml` | **Prompt preset index — read this first** when the skill loads to learn available presets and when to use each |
 
-Available prompt templates in `references/prompts/`:
+### Prompt Presets
+
+When this skill loads, first read `references/prompts/index.yaml` to discover available prompt presets. Each entry specifies:
+- `name` — filename to use with `--prompt @references/prompts/<name>`
+- `lang` — language code (`en` / `zh`)
+- `use_when` — guidance on which scenarios to use this preset
+
+Available presets:
+
+| File | Lang | When to use |
+|------|------|-------------|
+| `describe.txt` | EN | Default image description |
+| `describe-zh.txt` | ZH | 默认中文图片描述 |
+| `extract-text.txt` | EN | Text extraction / OCR |
+| `extract-text-zh.txt` | ZH | 中文文字提取 / OCR |
+
+Examples:
 
 ```bash
-# Default image description
+# Describe an image (English)
 python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
 
-# Extract all text from image
+# Describe an image (Chinese)
+python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe-zh.txt
+
+# Extract text (English)
 python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text.txt
+
+# Extract text (Chinese)
+python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
 ```
 
 ## Notes
@@ -135,3 +158,11 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 | "Cannot connect to API" | Check base_url in provider.yaml or your network |
 | "Bad request / model may not support image input" | The selected model does not support vision |
 | "Request timed out" | Image too large or slow network |
+
+## Adding a Prompt Preset
+
+To add a new prompt preset:
+
+1. Create `{name}.txt` (English) and `{name}-zh.txt` (Chinese) in `references/prompts/`
+2. Add entries for both to `references/prompts/index.yaml` with `name`, `lang`, and `use_when` fields
+3. Add usage examples in this SKILL.md's Prompt Presets section
