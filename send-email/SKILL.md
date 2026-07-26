@@ -48,8 +48,8 @@ All templates and message HTML files **must** be stored in these directories:
 
 | Directory | Purpose |
 |-----------|---------|
-| `~/.wmy-skills/send-email/templates/` | Read-only HTML templates |
-| `~/.wmy-skills/send-email/msg/` | Edited messages to send |
+| `~/.wmyskills/send-email/templates/` | Read-only HTML templates |
+| `~/.wmyskills/send-email/msg/` | Edited messages to send |
 
 1. Copy a template from `templates/` to `msg/`
 2. Edit the copy with your content
