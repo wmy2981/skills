@@ -18,6 +18,7 @@ Agent 技能集合
 | `linkgo/` | LinkGo v3 导航页管理 |
 | `mimo-tts/` | MiMo-V2.5-TTS 语音合成 |
 | `s3/` | S3 兼容对象存储操作 |
+| `send-email/` | SMTP 邮件发送 — 支持纯文本、HTML、附件、模板工作流 |
 | `speech-recognition/` | 阿里云百炼 Fun-ASR 语音识别 |
 | `wake-on-lan/` | 远程唤醒局域网计算机 |
 | `zurl/` | Zurl 短链接服务管理 |
