@@ -66,6 +66,19 @@ def resolve_body(body_arg):
     path = pathlib.Path(body_arg)
     if path.is_file():
         return path.read_text(encoding="utf-8"), True
+    # Warn if it looks like a file path but doesn't exist
+    if (
+        path.suffix in (".html", ".htm")
+        or path.is_absolute()
+        or "/" in body_arg
+        or "\\" in body_arg
+        or body_arg.startswith(".")
+    ):
+        print(
+            f"Warning: '{body_arg}' looks like a file path but was not found. "
+            "Sending as plain text.",
+            file=sys.stderr,
+        )
     return body_arg, False
 
 
@@ -82,6 +95,9 @@ def send(to, subject, body, is_html=False, attachments=None):
     if attachments:
         for path_str in attachments:
             attach_path = pathlib.Path(path_str)
+            if not attach_path.is_file():
+                print(f"Error: attachment not found: {attach_path}", file=sys.stderr)
+                sys.exit(1)
             with open(attach_path, "rb") as f:
                 part = MIMEBase("application", "octet-stream")
                 part.set_payload(f.read())
