@@ -47,20 +47,20 @@ After the `cp` commands, add explicit instruction to delete/replace placeholder 
 - Add `python-dotenv` dependency
 - `config_loader.py` loads `.env` from:
   1. `scripts/.env` (next to the code)
-  2. `~/.wmyskills/img_recog/.env` (next to config files)
+  2. `~/.wmyskills/img-recog/.env` (next to config files)
 - New env vars:
 
 | Var | Default | Description |
 |-----|---------|-------------|
-| `IMG_RECOG_PROVIDER_FILE` | `~/.wmyskills/img_recog/provider.yaml` | Path to provider config |
-| `IMG_RECOG_MODEL_FILE` | `~/.wmyskills/img_recog/model.yaml` | Path to model config |
+| `img-recog_PROVIDER_FILE` | `~/.wmyskills/img-recog/provider.yaml` | Path to provider config |
+| `img-recog_MODEL_FILE` | `~/.wmyskills/img-recog/model.yaml` | Path to model config |
 
 - Default behavior unchanged when env vars are unset
 - Keep `scripts/.env` in `.gitignore` (already gitignored by name pattern)
 
 ### 5. Default Prompt → English
 
-**Files**: `img-recog/scripts/img_recog_cli.py`, `img-recog/scripts/api_caller.py`
+**Files**: `img-recog/scripts/img-recog_cli.py`, `img-recog/scripts/api_caller.py`
 
 Change default prompt string:
 - `"请详细描述这张图片的内容"` → `"Please describe this image in detail"`
@@ -98,7 +98,7 @@ prompts:
 |------|--------|
 | `img-recog/SKILL.md` | Edit: security table, setup section, prompt sections, add index.yaml instruction, add add-preset process |
 | `img-recog/scripts/config_loader.py` | Edit: add .env loading and env-var overrides |
-| `img-recog/scripts/img_recog_cli.py` | Edit: default prompt to English |
+| `img-recog/scripts/img-recog_cli.py` | Edit: default prompt to English |
 | `img-recog/scripts/api_caller.py` | Edit: default prompt param to English |
 | `img-recog/scripts/requirements.txt` | Edit: add `python-dotenv` |
 | `img-recog/scripts/.env` | Create: template (gitignored) |

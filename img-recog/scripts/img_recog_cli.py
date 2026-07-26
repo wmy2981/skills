@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-"""CLI entry point for img_recog skill.
+"""CLI entry point for img-recog skill.
 
 Calls OpenAI-compatible vision models to describe/extract information from images.
 
 Usage:
-    python scripts/img_recog_cli.py --img path/to/image.png
-    python scripts/img_recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
-    python scripts/img_recog_cli.py --img data:image/png;base64,... --json
+    python scripts/img-recog_cli.py --img path/to/image.png
+    python scripts/img-recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
+    python scripts/img-recog_cli.py --img data:image/png;base64,... --json
 """
 
 import argparse
@@ -49,7 +49,7 @@ def main():
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(
-        description="img_recog — Recognize image content via vision model",
+        description="img-recog — Recognize image content via vision model",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
@@ -77,7 +77,7 @@ def main():
     # 3. Verify provider has credentials
     if provider_name not in provider_config:
         print(f"Error: Provider '{provider_name}' has no credentials in provider.yaml", file=sys.stderr)
-        print("Add its api_key and base_url to ~/.wmyskills/img_recog/provider.yaml", file=sys.stderr)
+        print("Add its api_key and base_url to ~/.wmyskills/img-recog/provider.yaml", file=sys.stderr)
         sys.exit(1)
 
     # 4. Normalize image

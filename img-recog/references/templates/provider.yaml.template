@@ -1,8 +1,8 @@
 # =============================================================================
-# img_recog — API Provider Configuration
+# img-recog — API Provider Configuration
 # =============================================================================
 # WARNING: This file contains API keys. DO NOT show its contents to the AI.
-# Copy this file to ~/.wmyskills/img_recog/provider.yaml and fill in your keys.
+# Copy this file to ~/.wmyskills/img-recog/provider.yaml and fill in your keys.
 # =============================================================================
 
 providers:

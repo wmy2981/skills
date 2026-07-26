@@ -14,7 +14,7 @@
 - Windows terminal defaults to GBK encoding — scripts must force UTF-8 stdout
 - The AI must NEVER read or display `provider.yaml` contents
 - `model.yaml` IS readable by AI when needed (this is a change from current behavior)
-- Config default path: `~/.wmyskills/img_recog/`
+- Config default path: `~/.wmyskills/img-recog/`
 - `.env` files are gitignored by name
 - All prompt files are UTF-8 encoded
 - Each commit message ends with `Co-Authored-By: Claude <noreply@anthropic.com>`
@@ -156,8 +156,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - Create: `img-recog/scripts/.env`
 
 **Interfaces:**
-- Consumes: `~/.wmyskills/img_recog/` as default config dir
-- Produces: env-var overrides via `IMG_RECOG_PROVIDER_FILE`, `IMG_RECOG_MODEL_FILE`
+- Consumes: `~/.wmyskills/img-recog/` as default config dir
+- Produces: env-var overrides via `img-recog_PROVIDER_FILE`, `img-recog_MODEL_FILE`
 
 - [ ] **Step 1: Add python-dotenv to requirements.txt**
 
@@ -174,9 +174,9 @@ python-dotenv>=1.0.0
 Create `img-recog/scripts/.env`:
 ```env
 # Optional: override config file paths
-# Defaults to ~/.wmyskills/img_recog/{provider,model}.yaml
-# IMG_RECOG_PROVIDER_FILE=C:/path/to/provider.yaml
-# IMG_RECOG_MODEL_FILE=C:/path/to/model.yaml
+# Defaults to ~/.wmyskills/img-recog/{provider,model}.yaml
+# img-recog_PROVIDER_FILE=C:/path/to/provider.yaml
+# img-recog_MODEL_FILE=C:/path/to/model.yaml
 ```
 
 - [ ] **Step 3: Update config_loader.py to support .env and env vars**
@@ -202,10 +202,10 @@ load_dotenv(os.path.join(CONFIG_DIR, ".env"))
 
 Change PROVIDER_FILE and MODEL_FILE to use env-var overrides:
 ```python
-CONFIG_DIR = os.path.expanduser("~/.wmyskills/img_recog")
-PROVIDER_FILE = os.environ.get("IMG_RECOG_PROVIDER_FILE",
+CONFIG_DIR = os.path.expanduser("~/.wmyskills/img-recog")
+PROVIDER_FILE = os.environ.get("img-recog_PROVIDER_FILE",
                                os.path.join(CONFIG_DIR, "provider.yaml"))
-MODEL_FILE = os.environ.get("IMG_RECOG_MODEL_FILE",
+MODEL_FILE = os.environ.get("img-recog_MODEL_FILE",
                             os.path.join(CONFIG_DIR, "model.yaml"))
 ```
 
@@ -226,8 +226,8 @@ cd g:/Projects/agent/wmy-skills
 git add img-recog/scripts/config_loader.py img-recog/scripts/requirements.txt img-recog/scripts/.env
 git commit -m "feat(img-recog): add env-var support for config file paths
 
-Support IMG_RECOG_PROVIDER_FILE and IMG_RECOG_MODEL_FILE env vars
-via .env files. Default paths to ~/.wmyskills/img_recog/ unchanged.
+Support img-recog_PROVIDER_FILE and img-recog_MODEL_FILE env vars
+via .env files. Default paths to ~/.wmyskills/img-recog/ unchanged.
 Adds python-dotenv dependency.
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -238,16 +238,16 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 4: Default Prompt to English
 
 **Files:**
-- Modify: `img-recog/scripts/img_recog_cli.py`
+- Modify: `img-recog/scripts/img-recog_cli.py`
 - Modify: `img-recog/scripts/api_caller.py`
 
 **Interfaces:**
 - Consumes: current Chinese default prompt strings
 - Produces: English default prompt strings
 
-- [ ] **Step 1: Change default prompt in img_recog_cli.py**
+- [ ] **Step 1: Change default prompt in img-recog_cli.py**
 
-In `img-recog/scripts/img_recog_cli.py`, line 29:
+In `img-recog/scripts/img-recog_cli.py`, line 29:
 ```python
 # Change from:
 return "请详细描述这张图片的内容"
@@ -269,7 +269,7 @@ prompt: str = "Please describe this image in detail",
 
 ```bash
 cd g:/Projects/agent/wmy-skills
-python -m py_compile img-recog/scripts/img_recog_cli.py
+python -m py_compile img-recog/scripts/img-recog_cli.py
 python -m py_compile img-recog/scripts/api_caller.py
 ```
 Expected: no errors.
@@ -278,7 +278,7 @@ Expected: no errors.
 
 ```bash
 cd g:/Projects/agent/wmy-skills
-git add img-recog/scripts/img_recog_cli.py img-recog/scripts/api_caller.py
+git add img-recog/scripts/img-recog_cli.py img-recog/scripts/api_caller.py
 git commit -m "fix(img-recog): change default prompt from Chinese to English
 
 Default description prompt is now English. Users can still use
@@ -418,16 +418,16 @@ Update the examples section to use English prompts as defaults and show Chinese 
 
 ```bash
 # Default (English) description
-python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
+python scripts/img-recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
 
 # Chinese description
-python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/describe-zh.txt
+python scripts/img-recog_cli.py --img scan.png --prompt @references/prompts/describe-zh.txt
 
 # Extract text (English)
-python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text.txt
+python scripts/img-recog_cli.py --img scan.png --prompt @references/prompts/extract-text.txt
 
 # Extract text (Chinese)
-python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
+python scripts/img-recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
 ```
 
 - [ ] **Step 4: Verify**
@@ -465,7 +465,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ```bash
 cd g:/Projects/agent/wmy-skills
-python -m py_compile img-recog/scripts/img_recog_cli.py
+python -m py_compile img-recog/scripts/img-recog_cli.py
 python -m py_compile img-recog/scripts/api_caller.py
 python -m py_compile img-recog/scripts/config_loader.py
 python -m py_compile img-recog/scripts/image_handler.py
@@ -491,15 +491,15 @@ Expected: index.yaml, describe.txt, describe-zh.txt, extract-text.txt, extract-t
 
 ```bash
 cd g:/Projects/agent/wmy-skills
-grep -n "load_dotenv\|IMG_RECOG_" img-recog/scripts/config_loader.py
+grep -n "load_dotenv\|img-recog_" img-recog/scripts/config_loader.py
 ```
-Expected: shows load_dotenv calls and IMG_RECOG_PROVIDER_FILE / IMG_RECOG_MODEL_FILE usage.
+Expected: shows load_dotenv calls and img-recog_PROVIDER_FILE / img-recog_MODEL_FILE usage.
 
 - [ ] **Step 5: Verify default prompt is English**
 
 ```bash
 cd g:/Projects/agent/wmy-skills
-grep -n "Please describe this image" img-recog/scripts/img_recog_cli.py img-recog/scripts/api_caller.py
+grep -n "Please describe this image" img-recog/scripts/img-recog_cli.py img-recog/scripts/api_caller.py
 ```
 Expected: both files contain the English string.
 

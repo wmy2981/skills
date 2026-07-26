@@ -1,16 +1,16 @@
-# img_recog Skill Implementation Plan
+# img-recog Skill Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a Claude Code agent skill that calls OpenAI-compatible vision models from CLI, allowing AI to "see" images when the model lacks multimodal support.
 
-**Architecture:** 5 single-responsibility Python modules under `scripts/`, orchestrated by a CLI entry point. Config files live at `~/.wmyskills/img_recog/` (outside git). The `openai` SDK handles API communication.
+**Architecture:** 5 single-responsibility Python modules under `scripts/`, orchestrated by a CLI entry point. Config files live at `~/.wmyskills/img-recog/` (outside git). The `openai` SDK handles API communication.
 
 **Tech Stack:** Python 3, openai, pyyaml, requests
 
 ## Global Constraints
 
-- Config files at `~/.wmyskills/img_recog/provider.yaml` and `model.yaml` — never read by AI
+- Config files at `~/.wmyskills/img-recog/provider.yaml` and `model.yaml` — never read by AI
 - provider.yaml: one provider = one api_key; no multi-key per provider
 - model.yaml: empty model list = provider unavailable for vision
 - Default prompt: "请详细描述这张图片的内容"
@@ -24,9 +24,9 @@
 ### Task 1: Project Scaffolding
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/`
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/__init__.py`
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/requirements.txt`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/__init__.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/requirements.txt`
 
 **Interfaces:**
 - Consumes: nothing
@@ -35,7 +35,7 @@
 - [ ] **Step 1: Create directories**
 
 ```bash
-mkdir -p "G:/Projects/agent/wmy-skills/img_recog/scripts"
+mkdir -p "G:/Projects/agent/wmy-skills/img-recog/scripts"
 ```
 
 - [ ] **Step 2: Create scripts/__init__.py**
@@ -53,13 +53,13 @@ requests>=2.31.0
 - [ ] **Step 4: Create template config directory**
 
 ```bash
-mkdir -p ~/.wmyskills/img_recog
+mkdir -p ~/.wmyskills/img-recog
 ```
 
 - [ ] **Step 5: Write template provider.yaml** (for user reference — they fill in keys)
 
 ```yaml
-# ~/.wmyskills/img_recog/provider.yaml
+# ~/.wmyskills/img-recog/provider.yaml
 # WARNING: Contains API keys. DO NOT show this file's contents to the AI.
 providers:
   openai:
@@ -73,7 +73,7 @@ providers:
 - [ ] **Step 6: Write template model.yaml**
 
 ```yaml
-# ~/.wmyskills/img_recog/model.yaml
+# ~/.wmyskills/img-recog/model.yaml
 providers:
   openai:
     models:
@@ -91,7 +91,7 @@ default:
 - [ ] **Step 7: Verify Python can import packages**
 
 ```bash
-cd "G:/Projects/agent/wmy-skills/img_recog"
+cd "G:/Projects/agent/wmy-skills/img-recog"
 pip install -r scripts/requirements.txt
 python -c "import openai; import yaml; import requests; print('OK')"
 ```
@@ -101,7 +101,7 @@ python -c "import openai; import yaml; import requests; print('OK')"
 ### Task 2: config_loader.py
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/config_loader.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/config_loader.py`
 
 **Interfaces:**
 - Consumes: nothing
@@ -112,13 +112,13 @@ python -c "import openai; import yaml; import requests; print('OK')"
 - [ ] **Step 1: Write config_loader.py**
 
 ```python
-"""Load and resolve provider/model configuration from ~/.wmyskills/img_recog/."""
+"""Load and resolve provider/model configuration from ~/.wmyskills/img-recog/."""
 
 import os
 import sys
 import yaml
 
-CONFIG_DIR = os.path.expanduser("~/.wmyskills/img_recog")
+CONFIG_DIR = os.path.expanduser("~/.wmyskills/img-recog")
 PROVIDER_FILE = os.path.join(CONFIG_DIR, "provider.yaml")
 MODEL_FILE = os.path.join(CONFIG_DIR, "model.yaml")
 
@@ -207,7 +207,7 @@ def resolve_model(provider_name: str | None, model_name: str | None,
 - [ ] **Step 2: Quick smoke test**
 
 ```python
-# Run from G:/Projects/agent/wmy-skills/img_recog
+# Run from G:/Projects/agent/wmy-skills/img-recog
 python -c "
 import scripts.config_loader as c
 # Check file-not-found path
@@ -225,7 +225,7 @@ except SystemExit:
 ### Task 3: image_handler.py
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/image_handler.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/image_handler.py`
 
 **Interfaces:**
 - Consumes: nothing
@@ -357,7 +357,7 @@ finally:
 ### Task 4: api_caller.py
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/api_caller.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/api_caller.py`
 
 **Interfaces:**
 - Consumes: `load_provider_config() -> dict` (provider dict with base_url, api_key)
@@ -441,7 +441,7 @@ def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
 ### Task 5: output_formatter.py
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/output_formatter.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/output_formatter.py`
 
 **Interfaces:**
 - Consumes: raw response dict from `call_vision_model()`
@@ -501,27 +501,27 @@ print('OK: formatting works')
 
 ---
 
-### Task 6: img_recog_cli.py (Main Entry Point)
+### Task 6: img-recog_cli.py (Main Entry Point)
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/scripts/img_recog_cli.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/img-recog_cli.py`
 
 **Interfaces:**
 - Consumes: all four modules above
 - Produces: executable CLI
 
-- [ ] **Step 1: Write img_recog_cli.py**
+- [ ] **Step 1: Write img-recog_cli.py**
 
 ```python
 #!/usr/bin/env python
-"""CLI entry point for img_recog skill.
+"""CLI entry point for img-recog skill.
 
 Calls OpenAI-compatible vision models to describe/extract information from images.
 
 Usage:
-    python scripts/img_recog_cli.py --img path/to/image.png
-    python scripts/img_recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
-    python scripts/img_recog_cli.py --img data:image/png;base64,... --json
+    python scripts/img-recog_cli.py --img path/to/image.png
+    python scripts/img-recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
+    python scripts/img-recog_cli.py --img data:image/png;base64,... --json
 """
 
 import argparse
@@ -564,7 +564,7 @@ def main():
         sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
     parser = argparse.ArgumentParser(
-        description="img_recog — Recognize image content via vision model",
+        description="img-recog — Recognize image content via vision model",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
@@ -592,7 +592,7 @@ def main():
     # 3. Verify provider has credentials
     if provider_name not in provider_config:
         print(f"Error: Provider '{provider_name}' has no credentials in provider.yaml", file=sys.stderr)
-        print("Add its api_key and base_url to ~/.wmyskills/img_recog/provider.yaml", file=sys.stderr)
+        print("Add its api_key and base_url to ~/.wmyskills/img-recog/provider.yaml", file=sys.stderr)
         sys.exit(1)
 
     # 4. Normalize image
@@ -616,8 +616,8 @@ if __name__ == "__main__":
 - [ ] **Step 2: Test CLI — help output**
 
 ```bash
-cd "G:/Projects/agent/wmy-skills/img_recog"
-python scripts/img_recog_cli.py --help
+cd "G:/Projects/agent/wmy-skills/img-recog"
+python scripts/img-recog_cli.py --help
 ```
 
 Expected: usage text with all arguments.
@@ -625,7 +625,7 @@ Expected: usage text with all arguments.
 - [ ] **Step 3: Test CLI — missing --img**
 
 ```bash
-python scripts/img_recog_cli.py
+python scripts/img-recog_cli.py
 ```
 
 Expected: error about required --img argument.
@@ -633,7 +633,7 @@ Expected: error about required --img argument.
 - [ ] **Step 4: Test CLI — invalid image path**
 
 ```bash
-python scripts/img_recog_cli.py --img nonexistent.png
+python scripts/img-recog_cli.py --img nonexistent.png
 ```
 
 Expected: "Error: Image file not found"
@@ -643,7 +643,7 @@ Expected: "Error: Image file not found"
 ### Task 7: SKILL.md + README Update
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img_recog/SKILL.md`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/SKILL.md`
 - Modify: `G:/Projects/agent/wmy-skills/README.md` (add to skill table)
 
 **Interfaces:**
@@ -654,17 +654,17 @@ Expected: "Error: Image file not found"
 
 ```markdown
 ---
-name: img_recog
+name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 ---
 
-# img_recog — Image Recognition Skill
+# img-recog — Image Recognition Skill
 
 Use this skill when you need to inspect an image (screenshot, photo, diagram, scan) but your current model lacks multimodal (vision) capability or the built-in `read` tool cannot handle the image format.
 
 ## ⚠️ SECURITY: Configuration Files
 
-Two config files live at `~/.wmyskills/img_recog/`:
+Two config files live at `~/.wmyskills/img-recog/`:
 
 | File | Purpose | AI-readable? |
 |------|---------|-------------|
@@ -681,7 +681,7 @@ pip install openai pyyaml requests
 
 ## Setup
 
-1. Create `~/.wmyskills/img_recog/provider.yaml` with your API keys:
+1. Create `~/.wmyskills/img-recog/provider.yaml` with your API keys:
 
 ```yaml
 providers:
@@ -693,7 +693,7 @@ providers:
     api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 ```
 
-2. Create `~/.wmyskills/img_recog/model.yaml`:
+2. Create `~/.wmyskills/img-recog/model.yaml`:
 
 ```yaml
 providers:
@@ -714,7 +714,7 @@ default:
 
 ```bash
 cd <skill-dir>
-python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
+python scripts/img-recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
 ```
 
 ### Arguments
@@ -731,22 +731,22 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 
 ```bash
 # Describe a local screenshot
-python scripts/img_recog_cli.py --img screenshot.png
+python scripts/img-recog_cli.py --img screenshot.png
 
 # Extract text from a photo with specific prompt
-python scripts/img_recog_cli.py --img photo.jpg --prompt "请提取图中所有文字"
+python scripts/img-recog_cli.py --img photo.jpg --prompt "请提取图中所有文字"
 
 # Fetch and describe an online image
-python scripts/img_recog_cli.py --img https://example.com/diagram.png
+python scripts/img-recog_cli.py --img https://example.com/diagram.png
 
 # Use DeepSeek model
-python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
+python scripts/img-recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
 
 # Read prompt from file
-python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
+python scripts/img-recog_cli.py --img graph.png --prompt @prompt.txt
 
 # Structured JSON output
-python scripts/img_recog_cli.py --img screenshot.png --json
+python scripts/img-recog_cli.py --img screenshot.png --json
 ```
 
 ## Notes
@@ -770,10 +770,10 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 
 - [ ] **Step 2: Update README.md**
 
-Add `img_recog` entry to the skill table in `G:/Projects/agent/wmy-skills/README.md`:
+Add `img-recog` entry to the skill table in `G:/Projects/agent/wmy-skills/README.md`:
 
 ```markdown
-| `img_recog/` | 图片识别 — 通过 OpenAI 兼容 API 调用视觉模型查看图片内容 |
+| `img-recog/` | 图片识别 — 通过 OpenAI 兼容 API 调用视觉模型查看图片内容 |
 ```
 
 - [ ] **Step 3: Verify no AI reads config files**
@@ -787,7 +787,7 @@ Check `.gitignore` doesn't accidentally include `~/.wmyskills/` — it shouldn't
 1. **Spec coverage:**
    - ✅ provider.yaml with multi-provider, custom base_url/api_key → Task 1 (template) + Task 2 (loader)
    - ✅ model.yaml with per-provider models + defaults → Task 1 (template) + Task 2 (loader)
-   - ✅ Config at `~/.wmyskills/img_recog/`, AI not reading → Task 7 (SKILL.md warning)
+   - ✅ Config at `~/.wmyskills/img-recog/`, AI not reading → Task 7 (SKILL.md warning)
    - ✅ CLI args: --provider, --model, --img, --prompt, --json → Task 6
    - ✅ Prompt from text or @filepath → Task 6 (parse_prompt)
    - ✅ Image: local path, URL, base64 → Task 3

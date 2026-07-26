@@ -1,7 +1,7 @@
 # model.yaml — Model-to-provider mapping
 # After copying, review and adjust the default provider and model below.
 #
-# Copy to ~/.wmyskills/img_recog/model.yaml and customize.
+# Copy to ~/.wmyskills/img-recog/model.yaml and customize.
 # Empty model list = this provider has no vision-capable models available.
 # =============================================================================
 

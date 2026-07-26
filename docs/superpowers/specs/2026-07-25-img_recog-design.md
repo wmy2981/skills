@@ -1,4 +1,4 @@
-# img_recog Skill — Design Document
+# img-recog Skill — Design Document
 
 ## Overview
 
@@ -6,19 +6,19 @@ A Claude Code agent skill for image recognition using OpenAI-compatible vision m
 
 ## Project Path
 
-`G:/Projects/agent/wmy-skills/img_recog/`
+`G:/Projects/agent/wmy-skills/img-recog/`
 
 ## Directory Structure
 
 ```
-img_recog/
+img-recog/
 ├── SKILL.md                    # Skill definition, usage, trigger keywords
 └── scripts/
     ├── config_loader.py        # Read provider.yaml / model.yaml
     ├── image_handler.py        # Handle local/URL/base64 image → API payload
     ├── api_caller.py           # Call vision model via openai SDK
     ├── output_formatter.py     # Format output (plain text / JSON)
-    ├── img_recog_cli.py        # CLI entry point, argparse
+    ├── img-recog_cli.py        # CLI entry point, argparse
     └── requirements.txt        # openai, pyyaml, requests
 ```
 
@@ -26,8 +26,8 @@ img_recog/
 
 ### Location
 
-`~/.wmyskills/img_recog/provider.yaml` — API provider credentials
-`~/.wmyskills/img_recog/model.yaml` — Model mapping and defaults
+`~/.wmyskills/img-recog/provider.yaml` — API provider credentials
+`~/.wmyskills/img-recog/model.yaml` — Model mapping and defaults
 
 These files are outside the git repo and must NOT be read by AI (enforced via SKILL.md instruction only).
 
@@ -71,7 +71,7 @@ default:
 ## CLI Interface
 
 ```
-usage: img_recog_cli.py [-h] [--provider PROVIDER] [--model MODEL]
+usage: img-recog_cli.py [-h] [--provider PROVIDER] [--model MODEL]
                         --img IMG [--prompt PROMPT] [--json]
 ```
 
@@ -95,10 +95,10 @@ usage: img_recog_cli.py [-h] [--provider PROVIDER] [--model MODEL]
 ### Examples
 
 ```bash
-python scripts/img_recog_cli.py --img screenshot.png
-python scripts/img_recog_cli.py --provider deepseek --img photo.jpg --prompt "提取文字"
-python scripts/img_recog_cli.py --img https://example.com/pic.jpg --prompt @prompt.txt
-python scripts/img_recog_cli.py --img data:image/png;base64,iVBOR... --json
+python scripts/img-recog_cli.py --img screenshot.png
+python scripts/img-recog_cli.py --provider deepseek --img photo.jpg --prompt "提取文字"
+python scripts/img-recog_cli.py --img https://example.com/pic.jpg --prompt @prompt.txt
+python scripts/img-recog_cli.py --img data:image/png;base64,iVBOR... --json
 ```
 
 ## Data Flow
@@ -140,7 +140,7 @@ output_formatter.py → plain text or JSON → stdout
 | API 401 (auth failure) | Hint to check provider.yaml api_key |
 | Model doesn't support vision | Error: model not suitable |
 | Request timeout (30s read) | Hint: network or image too large |
-| provider.yaml missing | Hint to create at ~/.wmyskills/img_recog/ |
+| provider.yaml missing | Hint to create at ~/.wmyskills/img-recog/ |
 | model.yaml missing | Same as above |
 | Unknown --provider | List available providers |
 | Unknown --model | List available models for that provider |

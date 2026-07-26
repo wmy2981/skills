@@ -3,13 +3,13 @@ name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 ---
 
-# img_recog — Image Recognition Skill
+# img-recog — Image Recognition Skill
 
 Use this skill when you need to inspect an image (screenshot, photo, diagram, scan) but your current model lacks multimodal (vision) capability or the built-in `read` tool cannot handle the image format.
 
 ## ⚠️ SECURITY: Configuration Files
 
-Two config files live at `~/.wmyskills/img_recog/`:
+Two config files live at `~/.wmyskills/img-recog/`:
 
 | File | Purpose | AI-readable? |
 |------|---------|-------------|
@@ -22,14 +22,14 @@ The AI MAY read `model.yaml` when it needs to understand which models and provid
 
 ## Setup
 
-Config files are loaded from paths defined by `IMG_RECOG_PROVIDER_FILE` and `IMG_RECOG_MODEL_FILE` env vars (defaults: `~/.wmyskills/img_recog/{provider,model}.yaml`). If unset, copy templates to the default directory:
+Config files are loaded from paths defined by `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` env vars (defaults: `~/.wmyskills/img-recog/{provider,model}.yaml`). If unset, copy templates to the default directory:
 
 ```bash
-cp references/templates/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
-cp references/templates/model.yaml.template ~/.wmyskills/img_recog/model.yaml
+cp references/templates/provider.yaml.template ~/.wmyskills/img-recog/provider.yaml
+cp references/templates/model.yaml.template ~/.wmyskills/img-recog/model.yaml
 ```
 
-To customize paths, edit `scripts/.env` and set `IMG_RECOG_PROVIDER_FILE` / `IMG_RECOG_MODEL_FILE` to your desired locations.
+To customize paths, edit `scripts/.env` and set `img-recog_PROVIDER_FILE` / `img-recog_MODEL_FILE` to your desired locations.
 
 **After copying, replace placeholder values (marked with `TODO` / `REPLACE_WITH_YOUR_API_KEY`) with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
 
@@ -37,7 +37,7 @@ To customize paths, edit `scripts/.env` and set `IMG_RECOG_PROVIDER_FILE` / `IMG
 
 ```bash
 cd <skill-dir>
-python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
+python scripts/img-recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
 ```
 
 ### Arguments
@@ -54,29 +54,29 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 
 ```bash
 # Describe a local screenshot
-python scripts/img_recog_cli.py --img screenshot.png
+python scripts/img-recog_cli.py --img screenshot.png
 
 # Extract text from a photo with specific prompt
-python scripts/img_recog_cli.py --img photo.jpg --prompt "Extract all text from this image"
+python scripts/img-recog_cli.py --img photo.jpg --prompt "Extract all text from this image"
 
 # Fetch and describe an online image
-python scripts/img_recog_cli.py --img https://example.com/diagram.png
+python scripts/img-recog_cli.py --img https://example.com/diagram.png
 
 # Use DeepSeek model
-python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
+python scripts/img-recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
 
 # Read prompt from file
-python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
+python scripts/img-recog_cli.py --img graph.png --prompt @prompt.txt
 
 # Structured JSON output
-python scripts/img_recog_cli.py --img screenshot.png --json
+python scripts/img-recog_cli.py --img screenshot.png --json
 ```
 
 ## Reference Files
 
 | Location | Purpose |
 |----------|---------|
-| `references/templates/` | Config file templates (copy to `~/.wmyskills/img_recog/`) |
+| `references/templates/` | Config file templates (copy to `~/.wmyskills/img-recog/`) |
 | `references/prompts/` | Pre-built prompt templates for common tasks (use with `--prompt @`) |
 | `references/prompts/index.yaml` | **Prompt preset index — read this first** when the skill loads to learn available presets and when to use each |
 
@@ -88,10 +88,10 @@ When this skill loads, first read `references/prompts/index.yaml` to discover av
 
 ```bash
 # Example: describe in English
-python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
+python scripts/img-recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
 
 # Example: extract text in Chinese
-python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
+python scripts/img-recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
 ```
 
 ## Notes
@@ -100,7 +100,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - Timeout: connection 10s, read 30s
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
-- Config file paths can be overridden via `IMG_RECOG_PROVIDER_FILE` and `IMG_RECOG_MODEL_FILE` environment variables (set in `scripts/.env` or `~/.wmyskills/img_recog/.env`); defaults remain `~/.wmyskills/img_recog/`
+- Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `scripts/.env` or `~/.wmyskills/img-recog/.env`); defaults remain `~/.wmyskills/img-recog/`
 
 ## Troubleshooting
 
