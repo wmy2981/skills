@@ -62,20 +62,16 @@ python scripts/send.py user@example.com "Files" --text "See attached" report.pdf
 - Do NOT create a different directory structure — send.py discovers files relative to this path
 - The repo stores code, not runtime data. Runtime data goes in `~/.wmyskills/<skill-name>/`
 
+## Security
+
+**Never read, display, or share the contents of `scripts/.env`.** It contains SMTP credentials. Debug credential issues by checking which env var is missing/unset (see On Error), not by reading the file.
+
 ## On Error
 
-If sending fails, check the following:
-
-**Missing or wrong credentials** — verify `~/.claude/skills/send-email/scripts/.env` has the correct SMTP settings:
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `EMAIL_HOST` | — | SMTP server hostname |
-| `EMAIL_PORT` | `465` | SMTP server port |
-| `EMAIL_USER` | — | Sender email address |
-| `EMAIL_AUTH` | — | SMTP password / app token |
-| `EMAIL_NAME` | `ClaudeCode` | Sender display name |
+If sending fails:
 
 **Connection refused / timeout** — `EMAIL_HOST` or `EMAIL_PORT` may be wrong; check with your provider.
 
 **Authentication failed** — `EMAIL_USER`/`EMAIL_AUTH` may be wrong; some providers require an app-specific password.
+
+**Script says "Missing ..."** — one of the env vars is empty or unset. Check which one is reported, then update `.env` accordingly. Do NOT read or display the `.env` file.
