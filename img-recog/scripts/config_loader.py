@@ -3,10 +3,23 @@
 import os
 import sys
 import yaml
+from dotenv import load_dotenv
 
 CONFIG_DIR = os.path.expanduser("~/.wmyskills/img_recog")
-PROVIDER_FILE = os.path.join(CONFIG_DIR, "provider.yaml")
-MODEL_FILE = os.path.join(CONFIG_DIR, "model.yaml")
+_script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Load .env files — lowest priority first, so config-dir .env wins over scripts/
+load_dotenv(os.path.join(_script_dir, ".env"))
+load_dotenv(os.path.join(CONFIG_DIR, ".env"))
+
+PROVIDER_FILE = os.environ.get(
+    "IMG_RECOG_PROVIDER_FILE",
+    os.path.join(CONFIG_DIR, "provider.yaml"),
+)
+MODEL_FILE = os.environ.get(
+    "IMG_RECOG_MODEL_FILE",
+    os.path.join(CONFIG_DIR, "model.yaml"),
+)
 
 
 def _load_yaml(path: str, label: str) -> dict:
