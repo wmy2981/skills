@@ -15,8 +15,8 @@ Run the script directly — **do not** check configuration beforehand. The scrip
 cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <body> [--html] [attachment...]
 ```
 
-- `<body>`: plain text, HTML string, or path to an `.html` file (auto-detected)
-- `--html`: force HTML mode if body isn't a file path
+- `<body>`: plain text, short HTML string (`--html`), or path to an `.html` file (auto-detected). **Long/complex HTML must be saved as a file in `msg/` first** — CLI quoting breaks on multi-line HTML.
+- `--html`: force HTML mode if body isn't a file path. Only use for short inline HTML (one line).
 - `[attachment...]`: one or more file paths to attach
 
 ### Examples
@@ -26,9 +26,15 @@ cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <body> [
 python scripts/send.py user@example.com "Hello" "Just saying hi"
 ```
 
-**From template file:**
+**HTML from file (long/complex HTML — recommended):**
 ```bash
+# Write the HTML to msg/ first, then send:
 python scripts/send.py user@example.com "Newsletter" ../msg/my_newsletter.html
+```
+
+**Short inline HTML (one line only):**
+```bash
+python scripts/send.py user@example.com "Alert" "<b>Server is down</b>" --html
 ```
 
 **With attachment:**
