@@ -64,7 +64,15 @@ python scripts/send.py user@example.com "Files" --text "See attached" report.pdf
 
 ## Security
 
-**Never read, display, or share the contents of `scripts/.env`.** It contains SMTP credentials. Debug credential issues by checking which env var is missing/unset (see On Error), not by reading the file.
+**Never read, display, or share the contents of `scripts/.env`.** It contains SMTP credentials. Use the table below only as a reference for which variables exist — do not read the actual `.env` file.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMAIL_HOST` | — | SMTP server hostname |
+| `EMAIL_PORT` | `465` | SMTP server port |
+| `EMAIL_USER` | — | Sender email address |
+| `EMAIL_AUTH` | — | SMTP password / app token |
+| `EMAIL_NAME` | `ClaudeCode` | Sender display name |
 
 ## On Error
 
