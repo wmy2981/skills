@@ -23,6 +23,7 @@ Each `SKILL.md` contains frontmatter (`name`, `description`) used for skill disc
 - No explicit env var means the skill expects config through the agent conversation or system env vars.
 - Dependencies: listed inline in `SKILL.md` under a "Requirements" section — install via `pip install`.
 - Python scripts target Windows (`python` not `python3`).
+- **Runtime data** (configs, templates, output files) produced by a skill must be stored in `~/.wmyskills/<skill-name>/`. Scripts resolve the path via `pathlib.Path.home() / ".wmyskills" / "<skill-name>"`. Do not hardcode absolute paths or store runtime data inside the repo.
 
 ## Common Commands
 
