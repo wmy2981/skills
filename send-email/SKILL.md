@@ -21,7 +21,7 @@ cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <mode> <
 |------|---------|-------------|
 | `--text` | Plain text email | `"Just saying hi"` |
 | `--html` | Inline HTML string | `"<b>Alert</b>"` |
-| `--file` | HTML from file | `../msg/my_newsletter.html` |
+| `--file` | HTML from file | `~/.wmyskills/send-email/msg/my.html` |
 
 Long/complex HTML **must** use `--file` with a file inside `~/.wmyskills/send-email/msg/`.
 
@@ -39,7 +39,7 @@ python scripts/send.py user@example.com "Alert" --html "<b>Server is down</b>"
 
 **HTML from file (long/complex HTML):**
 ```bash
-python scripts/send.py user@example.com "Newsletter" --file ../msg/my_newsletter.html
+python scripts/send.py user@example.com "Newsletter" --file ~/.wmyskills/send-email/msg/my_newsletter.html
 ```
 
 **With attachment (any mode):**

@@ -115,7 +115,7 @@ if __name__ == "__main__":
         body = body_arg
         is_html = True
     elif mode == "--file":
-        file_path = pathlib.Path(body_arg)
+        file_path = pathlib.Path(body_arg).expanduser()
         if not file_path.is_file():
             print(f"Error: file not found: {file_path}", file=sys.stderr)
             sys.exit(1)
