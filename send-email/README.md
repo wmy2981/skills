@@ -18,7 +18,7 @@ send-email/
 **Data (your home directory):**
 
 ```
-~/wmy-skills/send-email/
+~/.wmy-skills/send-email/
 ├── templates/        # HTML email templates (copy from here)
 └── msg/             # Edited messages to send (edit here)
 ```
@@ -75,7 +75,7 @@ python scripts/send.py user@example.com "Report" "<h1>Report</h1><p>Content</p>"
 
 ```bash
 # 1. Copy template
-cp ~/wmy-skills/send-email/templates/default.html ~/wmy-skills/send-email/msg/my_email.html
+cp ~/.wmy-skills/send-email/templates/default.html ~/.wmy-skills/send-email/msg/my_email.html
 # 2. Edit the file with your content
 # 3. Send it — script detects file path and sends as HTML
 python scripts/send.py user@example.com "Subject" ../msg/my_email.html
@@ -99,7 +99,7 @@ python scripts/send.py user@example.com "Files" "See attached" file1.pdf file2.d
 
 ## Template Workflow
 
-1. Copy a `.html` template from `~/wmy-skills/send-email/templates/` to `~/wmy-skills/send-email/msg/`
+1. Copy a `.html` template from `~/.wmy-skills/send-email/templates/` to `~/.wmy-skills/send-email/msg/`
 2. Edit the copy to fill in your content
 3. Call `send.py` with the file path as the `<body>` argument
 4. The script detects the file path, reads it, and sends as HTML

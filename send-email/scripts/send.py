@@ -34,7 +34,7 @@ try:
 except ImportError:
     pass
 
-DATA_DIR = pathlib.Path.home() / "wmy-skills" / "send-email"
+DATA_DIR = pathlib.Path.home() / ".wmy-skills" / "send-email"
 
 
 def ensure_data_dirs():
