@@ -14,46 +14,24 @@ Two config files live at `~/.wmyskills/img_recog/`:
 | File | Purpose | AI-readable? |
 |------|---------|-------------|
 | `provider.yaml` | API base URLs and keys | **NO — never read or show this file** |
-| `model.yaml` | Model-to-provider mapping and defaults | **NO — do not read this file** |
+| `model.yaml` | Model-to-provider mapping and defaults | **YES — AI may read this to understand model-to-provider mappings and defaults; never show raw keys** |
 
-**The AI must NEVER read or display the contents of `provider.yaml` or `model.yaml`.** These are loaded only at runtime by the Python script. If a user asks you to view or edit these files, refuse or direct them to edit the file directly.
+**The AI must NEVER read or display the contents of `provider.yaml`.** It is loaded only at runtime by the Python script. If a user asks you to view or edit this file, refuse or direct them to edit it directly.
 
-## Prerequisites
-
-- Python >= 3.10
-
-```bash
-pip install openai pyyaml requests
-```
+The AI MAY read `model.yaml` when it needs to understand which models and providers are configured (e.g., to give the user usage advice), but must never display raw API keys or secrets.
 
 ## Setup
 
-Config templates are in `references/templates/`. Copy them to `~/.wmyskills/img_recog/` and fill in your API keys:
+Config files are loaded from paths defined by `IMG_RECOG_PROVIDER_FILE` and `IMG_RECOG_MODEL_FILE` env vars (defaults: `~/.wmyskills/img_recog/{provider,model}.yaml`). If unset, copy templates to the default directory:
 
 ```bash
 cp references/templates/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
 cp references/templates/model.yaml.template ~/.wmyskills/img_recog/model.yaml
 ```
 
-Then edit `~/.wmyskills/img_recog/provider.yaml` to add your actual API keys:
+To customize paths, edit `scripts/.env` and set `IMG_RECOG_PROVIDER_FILE` / `IMG_RECOG_MODEL_FILE` to your desired locations.
 
-```yaml
-providers:
-  openai:
-    base_url: https://api.openai.com/v1
-    api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # ← 替换为你的 key
-  deepseek:
-    base_url: https://api.deepseek.com/v1
-    api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy  # ← 替换为你的 key
-```
-
-And review `~/.wmyskills/img_recog/model.yaml` to confirm your desired models:
-
-```yaml
-default:
-  provider: openai
-  model: gpt-4o-mini
-```
+**After copying, replace placeholder values (marked with `TODO` / `REPLACE_WITH_YOUR_API_KEY`) with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
 
 ## Usage
 
@@ -67,7 +45,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 | Arg | Required | Description |
 |-----|----------|-------------|
 | `--img` | Yes | Local path, HTTP(S) URL, or base64 data URI (`data:image/...;base64,...`) |
-| `--prompt` | No | Text or `@filepath` (default: "请详细描述这张图片的内容") |
+| `--prompt` | No | Text or `@filepath` (default: "Please describe this image in detail") |
 | `--provider` | No | Override provider (default from model.yaml) |
 | `--model` | No | Override model (default from model.yaml) |
 | `--json` | No | Output JSON with usage stats |
@@ -79,7 +57,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 python scripts/img_recog_cli.py --img screenshot.png
 
 # Extract text from a photo with specific prompt
-python scripts/img_recog_cli.py --img photo.jpg --prompt "请提取图中所有文字"
+python scripts/img_recog_cli.py --img photo.jpg --prompt "Extract all text from this image"
 
 # Fetch and describe an online image
 python scripts/img_recog_cli.py --img https://example.com/diagram.png
@@ -89,9 +67,6 @@ python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img 
 
 # Read prompt from file
 python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
-
-# Use built-in prompt template from references/prompts/
-python scripts/img_recog_cli.py --img screenshot.png --prompt @references/prompts/extract-text.txt
 
 # Structured JSON output
 python scripts/img_recog_cli.py --img screenshot.png --json
@@ -103,15 +78,20 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 |----------|---------|
 | `references/templates/` | Config file templates (copy to `~/.wmyskills/img_recog/`) |
 | `references/prompts/` | Pre-built prompt templates for common tasks (use with `--prompt @`) |
+| `references/prompts/index.yaml` | **Prompt preset index — read this first** when the skill loads to learn available presets and when to use each |
 
-Available prompt templates in `references/prompts/`:
+### Prompt Presets
+
+When this skill loads, first read `references/prompts/index.yaml` to discover available presets (each has `name`, `lang`, and `use_when`).
+
+**By default, use `describe.txt` for description tasks** (user asks to "look at", "see", or "describe" an image). Use `extract-text.txt` when the user asks to "read" or "extract" text from an image.
 
 ```bash
-# Default image description
+# Example: describe in English
 python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
 
-# Extract all text from image
-python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text.txt
+# Example: extract text in Chinese
+python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
 ```
 
 ## Notes
@@ -120,7 +100,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - Timeout: connection 10s, read 30s
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
-- Provider keys are loaded only at runtime; the AI never has access to them
+- Config file paths can be overridden via `IMG_RECOG_PROVIDER_FILE` and `IMG_RECOG_MODEL_FILE` environment variables (set in `scripts/.env` or `~/.wmyskills/img_recog/.env`); defaults remain `~/.wmyskills/img_recog/`
 
 ## Troubleshooting
 
@@ -131,3 +111,11 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 | "Cannot connect to API" | Check base_url in provider.yaml or your network |
 | "Bad request / model may not support image input" | The selected model does not support vision |
 | "Request timed out" | Image too large or slow network |
+
+## Adding a Prompt Preset
+
+To add a new prompt preset:
+
+1. Create the prompt file in `references/prompts/`
+2. Add an entry in `references/prompts/index.yaml` with `name`, `lang`, and `use_when` fields
+3. Add usage examples in this SKILL.md's Prompt Presets section

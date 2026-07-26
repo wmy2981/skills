@@ -5,7 +5,7 @@ from openai import OpenAI, APIError, APITimeoutError, APIConnectionError, Authen
 
 
 def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
-                      prompt: str = "请详细描述这张图片的内容",
+                      prompt: str = "Please describe this image in detail",
                       timeout: tuple = (10, 30),
                       max_tokens: int = 4096) -> dict:
     """Call the vision API and return structured response.

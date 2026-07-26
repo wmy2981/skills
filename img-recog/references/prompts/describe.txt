@@ -1,9 +1,9 @@
-请详细描述这张图片的内容，包括：
+Please describe this image in detail, including:
 
-1. 整体构图与布局——图片类型（截图/照片/图表/扫描件等）、主体元素的位置关系
-2. 所有可见文字——标题、标签、数值、按钮文本等，按原文输出
-3. 颜色与视觉风格——主色调、高亮色、UI风格（如有）
-4. 各区域的详细内容——从上到下、从左到右依次描述
-5. 数据关系或上下文——如果包含表格、图表或列表，说明结构和含义
+1. Overall composition and layout — image type (screenshot/photo/diagram/scan, etc.), spatial arrangement of elements
+2. All visible text — titles, labels, values, button text, etc., output verbatim
+3. Colors and visual style — dominant colors, highlights, UI style (if any)
+4. Detailed content per region — describe from top to bottom, left to right
+5. Data relationships or context — if tables, charts, or lists are present, explain their structure and meaning
 
-全面、客观，不要遗漏文字信息。
+Be thorough and objective. Do not omit text information.
