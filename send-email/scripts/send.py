@@ -130,8 +130,11 @@ if __name__ == "__main__":
     body_arg = args[2]
     attachments = args[3:] if len(args) > 3 else None
 
-    body, detected_html = resolve_body(body_arg)
-    is_html = is_html or detected_html
+    if is_html:
+        body = body_arg
+    else:
+        body, detected_html = resolve_body(body_arg)
+        is_html = detected_html
 
     send(to, subject, body, is_html, attachments)
     print("OK")
