@@ -16,6 +16,7 @@ Usage:
 import sys
 import os
 import smtplib
+import codecs
 import pathlib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -53,6 +54,11 @@ def get_config():
         "password": os.environ.get("EMAIL_AUTH", ""),
         "sender_name": os.environ.get("EMAIL_NAME") or "ClaudeCode",
     }
+
+
+def decode_escapes(text):
+    """Decode escape sequences like \\n, \\t from CLI args into real characters."""
+    return codecs.decode(text, "unicode_escape")
 
 
 def send(to, subject, body, is_html=False, attachments=None):
@@ -109,10 +115,10 @@ if __name__ == "__main__":
     attachments = args[4:] if len(args) > 4 else None
 
     if mode == "--text":
-        body = body_arg
+        body = decode_escapes(body_arg)
         is_html = False
     elif mode == "--html":
-        body = body_arg
+        body = decode_escapes(body_arg)
         is_html = True
     elif mode == "--file":
         file_path = pathlib.Path(body_arg).expanduser()
