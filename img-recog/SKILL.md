@@ -84,6 +84,8 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 
 When this skill loads, first read `references/prompts/index.yaml` to discover available presets (each has `name`, `lang`, and `use_when`).
 
+**By default, use `describe.txt` for description tasks** (user asks to "look at", "see", or "describe" an image). Use `extract-text.txt` when the user asks to "read" or "extract" text from an image.
+
 ```bash
 # Example: describe in English
 python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
