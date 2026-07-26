@@ -22,7 +22,7 @@ The AI MAY read `model.yaml` when it needs to understand which models and provid
 
 ## Setup
 
-Config templates are in `references/templates/`. Copy them to `~/.wmyskills/img_recog/`:
+Config templates are in `references/templates/`. Copy them to `~/.wmyskills/img_recog/` (or set `IMG_RECOG_PROVIDER_FILE` / `IMG_RECOG_MODEL_FILE` env vars for custom paths, see Notes):
 
 ```bash
 cp references/templates/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
@@ -112,6 +112,6 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 
 To add a new prompt preset:
 
-1. Create `{name}.txt` (English) and `{name}-zh.txt` (Chinese) in `references/prompts/`
-2. Add entries for both to `references/prompts/index.yaml` with `name`, `lang`, and `use_when` fields
+1. Create the prompt file(s) in `references/prompts/` (e.g. `{name}.txt` for one language, or `{name}-en.txt` / `{name}-zh.txt` for multi-language)
+2. Add an entry per file to `references/prompts/index.yaml` with `name`, `lang`, and `use_when` fields
 3. Add usage examples in this SKILL.md's Prompt Presets section
