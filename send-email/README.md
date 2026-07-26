@@ -54,58 +54,52 @@ send-email/
 ## Usage
 
 ```bash
-python scripts/send.py <to> <subject> <body> [--html] [attachment...]
+python scripts/send.py <to> <subject> <mode> <body> [attachment...]
 ```
+
+### Modes
+
+| Mode | Purpose |
+|------|---------|
+| `--text` | Plain text email |
+| `--html` | Inline HTML string |
+| `--file` | HTML from file |
 
 ### Examples
 
-**Basic text email:**
-
+**Plain text:**
 ```bash
-python scripts/send.py user@example.com "Hello" "Just saying hi"
+python scripts/send.py user@example.com "Hello" --text "Just saying hi"
 ```
 
-**HTML email:**
-
+**Inline HTML:**
 ```bash
-python scripts/send.py user@example.com "Report" "<h1>Report</h1><p>Content</p>" --html
+python scripts/send.py user@example.com "Report" --html "<b>Summary</b><p>Content</p>"
 ```
 
-**From a template file:**
-
+**HTML from file:**
 ```bash
-# 1. Copy template
+# 1. Copy template, 2. Edit, 3. Send with --file:
 cp ~/.wmyskills/send-email/templates/default.html ~/.wmyskills/send-email/msg/my_email.html
-# 2. Edit the file with your content
-# 3. Send it — script detects file path and sends as HTML
-python scripts/send.py user@example.com "Subject" ../msg/my_email.html
+python scripts/send.py user@example.com "Subject" --file ../msg/my_email.html
 ```
 
-**With attachments:**
-
+**With attachments (any mode):**
 ```bash
-python scripts/send.py user@example.com "Files" "See attached" file1.pdf file2.docx
+python scripts/send.py user@example.com "Files" --text "See attached" file1.pdf file2.docx
 ```
 
 ## Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `EMAIL_HOST` | Yes | — | SMTP server hostname |
-| `EMAIL_PORT` | No | `465` | SMTP server port |
-| `EMAIL_USER` | Yes | — | Sender email address |
-| `EMAIL_AUTH` | Yes | — | SMTP password / app token |
-| `EMAIL_NAME` | No | `ClaudeCode` | Sender display name |
-
-## Template Workflow
-
-1. Copy a `.html` template from `~/.wmyskills/send-email/templates/` to `~/.wmyskills/send-email/msg/`
-2. Edit the copy to fill in your content
-3. Call `send.py` with the file path as the `<body>` argument
-4. The script detects the file path, reads it, and sends as HTML
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMAIL_HOST` | — | SMTP server hostname |
+| `EMAIL_PORT` | `465` | SMTP server port |
+| `EMAIL_USER` | — | Sender email address |
+| `EMAIL_AUTH` | — | SMTP password / app token |
+| `EMAIL_NAME` | `ClaudeCode` | Sender display name |
 
 ## Troubleshooting
 
-- **"Missing environment variables"**: Ensure `EMAIL_HOST`, `EMAIL_USER`, `EMAIL_AUTH` are set
-- **SSL errors**: Verify `EMAIL_PORT` matches your SMTP provider (465 for SSL, 587 for TLS)
-- **Authentication failed**: Check your credentials; some providers require an app-specific password
+- **"Connection refused / timeout"** — `EMAIL_HOST` or `EMAIL_PORT` may be wrong
+- **"Authentication failed"** — `EMAIL_USER`/`EMAIL_AUTH` may be wrong; some providers require an app-specific password

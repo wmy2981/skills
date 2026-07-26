@@ -7,9 +7,11 @@ Environment:
   EMAIL_AUTH - SMTP password
   EMAIL_NAME - Sender display name (default "ClaudeCode")
 
-Usage: send.py <to> <subject> <body> [--html] [attachment...]
-  --html: send body as HTML (default is plain text)
-  If <body> is a path to an existing .html file, it is read and sent as HTML.
+Usage:
+  send.py <to> <subject> --text <body>
+  send.py <to> <subject> --html <html_string>
+  send.py <to> <subject> --file <file.html>
+  [attachment...] can be appended to any form.
 """
 import sys
 import os
@@ -53,29 +55,6 @@ def get_config():
     }
 
 
-def resolve_body(body_arg):
-    """If body_arg is a path to an existing file, read it as HTML content.
-    Returns (body_text, is_html) tuple.
-    """
-    path = pathlib.Path(body_arg)
-    if path.is_file():
-        return path.read_text(encoding="utf-8"), True
-    # Warn if it looks like a file path but doesn't exist
-    if (
-        path.suffix in (".html", ".htm")
-        or path.is_absolute()
-        or "/" in body_arg
-        or "\\" in body_arg
-        or body_arg.startswith(".")
-    ):
-        print(
-            f"Warning: '{body_arg}' looks like a file path but was not found. "
-            "Sending as plain text.",
-            file=sys.stderr,
-        )
-    return body_arg, False
-
-
 def send(to, subject, body, is_html=False, attachments=None):
     cfg = get_config()
     msg = MIMEMultipart("alternative")
@@ -112,29 +91,39 @@ if __name__ == "__main__":
     ensure_data_dirs()
 
     args = sys.argv[1:]
-    is_html = False
 
-    if "--html" in args:
-        is_html = True
-        args.remove("--html")
-
-    if len(args) < 3:
+    if len(args) < 4:
         print(
-            "Usage: send.py <to> <subject> <body> [--html] [attachment...]\n"
-            "  If <body> is a file path, it is read and sent as HTML."
+            "Usage:\n"
+            "  send.py <to> <subject> --text <body>\n"
+            "  send.py <to> <subject> --html <html_string>\n"
+            "  send.py <to> <subject> --file <file.html>\n"
+            "  [attachment...] can be appended to any form."
         )
         sys.exit(1)
 
     to = args[0]
     subject = args[1]
-    body_arg = args[2]
-    attachments = args[3:] if len(args) > 3 else None
+    mode = args[2]
+    body_arg = args[3]
+    attachments = args[4:] if len(args) > 4 else None
 
-    if is_html:
+    if mode == "--text":
         body = body_arg
+        is_html = False
+    elif mode == "--html":
+        body = body_arg
+        is_html = True
+    elif mode == "--file":
+        file_path = pathlib.Path(body_arg)
+        if not file_path.is_file():
+            print(f"Error: file not found: {file_path}", file=sys.stderr)
+            sys.exit(1)
+        body = file_path.read_text(encoding="utf-8")
+        is_html = True
     else:
-        body, detected_html = resolve_body(body_arg)
-        is_html = detected_html
+        print(f"Error: unknown mode '{mode}'. Use --text, --html, or --file.", file=sys.stderr)
+        sys.exit(1)
 
     send(to, subject, body, is_html, attachments)
     print("OK")
