@@ -26,7 +26,7 @@ def parse_prompt(prompt_arg: str | None) -> str:
     Otherwise -> literal string.
     """
     if prompt_arg is None:
-        return "请详细描述这张图片的内容"
+        return "Please describe this image in detail"
     if prompt_arg.startswith("@") and len(prompt_arg) > 1:
         filepath = prompt_arg[1:]
         if not os.path.exists(filepath):

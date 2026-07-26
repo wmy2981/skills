@@ -71,7 +71,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 | Arg | Required | Description |
 |-----|----------|-------------|
 | `--img` | Yes | Local path, HTTP(S) URL, or base64 data URI (`data:image/...;base64,...`) |
-| `--prompt` | No | Text or `@filepath` (default: "请详细描述这张图片的内容") |
+| `--prompt` | No | Text or `@filepath` (default: "Please describe this image in detail") |
 | `--provider` | No | Override provider (default from model.yaml) |
 | `--model` | No | Override model (default from model.yaml) |
 | `--json` | No | Output JSON with usage stats |
