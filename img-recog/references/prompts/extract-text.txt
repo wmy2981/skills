@@ -1,9 +1,9 @@
-请提取图中所有文字信息，遵循以下规则：
+Extract all text from this image, following these rules:
 
-1. 完整提取——不遗漏任何可见文字，包括标题、正文、标注、按钮、页脚等
-2. 保持原格式——表格保持行列结构，列表保持缩进和序号
-3. 按阅读顺序输出——从上到下、从左到右
-4. 不要概括或转述——原文是什么就输出什么
-5. 对于印刷体文字，注意识别准确的标点和大小写
+1. Extract completely — do not miss any visible text, including titles, body text, labels, buttons, footers, etc.
+2. Preserve original formatting — tables keep row/column structure, lists keep indentation and numbering
+3. Output in reading order — top to bottom, left to right
+4. Do not summarize or paraphrase — output exactly what you see
+5. For printed text, pay attention to accurate punctuation and capitalization
 
-如果图片中有表格，请用 Markdown 表格形式还原。
+If the image contains a table, reproduce it in Markdown table format.

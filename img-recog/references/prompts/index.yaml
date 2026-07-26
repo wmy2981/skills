@@ -1,0 +1,19 @@
+# Prompt presets index — AI should read this first when the skill loads
+# to learn what prompt presets are available and when to use each.
+
+prompts:
+  - name: describe.txt
+    lang: en
+    use_when: "User asks to look at, see, describe, or analyze an image (default)"
+
+  - name: describe-zh.txt
+    lang: zh
+    use_when: "用户要求描述、查看、分析图片内容时（默认中文提示词）"
+
+  - name: extract-text.txt
+    lang: en
+    use_when: "User asks to read text, extract text, or OCR from an image"
+
+  - name: extract-text-zh.txt
+    lang: zh
+    use_when: "用户要求提取文字、读取文字、OCR图片时"
