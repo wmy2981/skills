@@ -148,6 +148,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
 - Provider keys are loaded only at runtime; the AI never has access to them
+- Config file paths can be overridden via `IMG_RECOG_PROVIDER_FILE` and `IMG_RECOG_MODEL_FILE` environment variables (set in `scripts/.env` or `~/.wmyskills/img_recog/.env`); defaults remain `~/.wmyskills/img_recog/`
 
 ## Troubleshooting
 
