@@ -7,65 +7,12 @@ description: "Use when the user wants to send an email, email a file or document
 
 Send emails via SMTP from Claude Code. Supports plain text, HTML, attachments, and template-based workflow.
 
-## Setup
+## Action
 
-### 1. Install Dependencies
-
-```bash
-pip install python-dotenv
-```
-
-`python-dotenv` is optional — without it, set environment variables through the system (e.g., export in shell profile, IDE config, CI secrets).
-
-### 2. Configure Credentials
-
-Choose one of the following:
-
-**Option A — `.env` file (recommended):**
-
-Copy `scripts/.env.example` to `scripts/.env` and fill in your SMTP credentials:
+Run the script directly — **do not** check configuration beforehand. If it fails, use the error to diagnose and fix.
 
 ```bash
-cp scripts/.env.example scripts/.env
-# Edit .env with your SMTP credentials
-```
-
-**Option B — System environment variables:**
-
-```bash
-export EMAIL_HOST=smtp.example.com
-export EMAIL_PORT=465
-export EMAIL_USER=you@example.com
-export EMAIL_AUTH=your_password
-export EMAIL_NAME="Your Name"
-```
-
-Variable loading order: system env vars take precedence over `.env` file.
-
-### 3. Data Directories
-
-The script automatically creates these in your home folder on first run:
-
-```
-~/wmy-skills/send-email/
-├── templates/     # HTML email templates (AI reads from here)
-└── msg/           # Edited messages ready to send (AI writes here)
-```
-
-## Configuration
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `EMAIL_HOST` | — | SMTP server hostname |
-| `EMAIL_PORT` | `465` | SMTP server port |
-| `EMAIL_USER` | — | Sender email address |
-| `EMAIL_AUTH` | — | SMTP password / app token |
-| `EMAIL_NAME` | `ClaudeCode` | Sender display name |
-
-## Usage
-
-```bash
-cd send-email && python scripts/send.py <to> <subject> <body> [--html] [attachment...]
+cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <body> [--html] [attachment...]
 ```
 
 - `<body>`: plain text, HTML string, or path to an `.html` file (auto-detected)
@@ -74,14 +21,13 @@ cd send-email && python scripts/send.py <to> <subject> <body> [--html] [attachme
 
 ### Examples
 
-**Send plain text:**
+**Plain text:**
 ```bash
 python scripts/send.py user@example.com "Hello" "Just saying hi"
 ```
 
-**Send from template file:**
+**From template file:**
 ```bash
-# AI copies template → edits → runs:
 python scripts/send.py user@example.com "Newsletter" ../msg/my_newsletter.html
 ```
 
@@ -92,23 +38,31 @@ python scripts/send.py user@example.com "Files" "See attached" report.pdf
 
 ## Template Workflow
 
-All templates and message HTML files **must** be stored in the following directories:
+All templates and message HTML files **must** be stored in these directories:
 
 | Directory | Purpose |
 |-----------|---------|
-| `~/wmy-skills/send-email/templates/` | Read-only HTML templates (copy from here) |
-| `~/wmy-skills/send-email/msg/` | Edited messages ready to send (save/overwrite here) |
-
-Workflow:
+| `~/wmy-skills/send-email/templates/` | Read-only HTML templates |
+| `~/wmy-skills/send-email/msg/` | Edited messages to send |
 
 1. Copy a template from `templates/` to `msg/`
 2. Edit the copy with your content
-3. Run `send.py` with the `msg/` file path as `<body>` — script reads it and sends as HTML
+3. Run `send.py` with the `msg/` file path as `<body>`
 
-**Do not** reference `.html` files outside these directories — they will not be found.
+## On Error
 
-## Notes
+If sending fails, check the following:
 
-- Uses SMTP over SSL (port 465)
-- Attachments sent as binary
-- Body file path → auto HTML (no `--html` needed)
+**Missing or wrong credentials** — verify `~/.claude/skills/send-email/scripts/.env` has the correct SMTP settings:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMAIL_HOST` | — | SMTP server hostname |
+| `EMAIL_PORT` | `465` | SMTP server port |
+| `EMAIL_USER` | — | Sender email address |
+| `EMAIL_AUTH` | — | SMTP password / app token |
+| `EMAIL_NAME` | `ClaudeCode` | Sender display name |
+
+**Connection refused / timeout** — `EMAIL_HOST` or `EMAIL_PORT` may be wrong; check with your provider.
+
+**Authentication failed** — `EMAIL_USER`/`EMAIL_AUTH` may be wrong; some providers require an app-specific password.
