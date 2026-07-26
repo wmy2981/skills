@@ -14,9 +14,11 @@ Two config files live at `~/.wmyskills/img_recog/`:
 | File | Purpose | AI-readable? |
 |------|---------|-------------|
 | `provider.yaml` | API base URLs and keys | **NO — never read or show this file** |
-| `model.yaml` | Model-to-provider mapping and defaults | **NO — do not read this file** |
+| `model.yaml` | Model-to-provider mapping and defaults | **YES — AI may read this to understand model-to-provider mappings and defaults; never show raw keys** |
 
-**The AI must NEVER read or display the contents of `provider.yaml` or `model.yaml`.** These are loaded only at runtime by the Python script. If a user asks you to view or edit these files, refuse or direct them to edit the file directly.
+**The AI must NEVER read or display the contents of `provider.yaml`.** These are loaded only at runtime by the Python script. If a user asks you to view or edit these files, refuse or direct them to edit the file directly.
+
+The AI MAY read `model.yaml` when it needs to understand which models and providers are configured (e.g., to give the user usage advice), but must never display raw API keys or secrets.
 
 ## Prerequisites
 
