@@ -15,9 +15,11 @@ Run the script directly — **do not** check configuration beforehand. The scrip
 cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <body> [--html] [attachment...]
 ```
 
-- `<body>`: plain text, short HTML string (`--html`), or path to an `.html` file (auto-detected). **Long/complex HTML must be saved as a file in `msg/` first** — CLI quoting breaks on multi-line HTML.
-- `--html`: force HTML mode if body isn't a file path. Only use for short inline HTML (one line).
+- `<body>`: plain text, short HTML string (`--html`), or path to an `.html` file (auto-detected)
+- `--html`: force HTML mode if body isn't a file path. Only for short one-line HTML.
 - `[attachment...]`: one or more file paths to attach
+
+**HTML content rule:** Long/complex HTML must be saved as a file first. Use `~/.wmyskills/send-email/msg/` — the only directory allowed for sending HTML files. Do NOT save HTML files in the repo, /tmp, downloads folder, or anywhere else. Reason: the file path is passed as `<body>` to send.py, which reads it by path and only resolves correctly from this directory.
 
 ### Examples
 
@@ -26,9 +28,9 @@ cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <body> [
 python scripts/send.py user@example.com "Hello" "Just saying hi"
 ```
 
-**HTML from file (long/complex HTML — recommended):**
+**HTML from file (required for long/complex HTML):**
 ```bash
-# Write the HTML to msg/ first, then send:
+# Write the HTML to ~/.wmyskills/send-email/msg/, then send:
 python scripts/send.py user@example.com "Newsletter" ../msg/my_newsletter.html
 ```
 
@@ -42,18 +44,20 @@ python scripts/send.py user@example.com "Alert" "<b>Server is down</b>" --html
 python scripts/send.py user@example.com "Files" "See attached" report.pdf
 ```
 
-## Template Workflow
+## File Storage Rules
 
-All templates and message HTML files **must** be stored in these directories:
+**Violating these rules is a bug.** Every email HTML file must go through the designated directories:
 
 | Directory | Purpose |
 |-----------|---------|
-| `~/.wmyskills/send-email/templates/` | Read-only HTML templates |
-| `~/.wmyskills/send-email/msg/` | Edited messages to send |
+| `~/.wmyskills/send-email/templates/` | Read-only HTML templates. Copy from here, do not edit in place. |
+| `~/.wmyskills/send-email/msg/` | The ONLY directory for sending HTML files. Save edited HTML here, pass the path as `<body>`. |
 
-1. Copy a template from `templates/` to `msg/`
-2. Edit the copy with your content
-3. Run `send.py` with the `msg/` file path as `<body>`
+**Rules:**
+- All email HTML files **must** be saved in `~/.wmyskills/send-email/msg/` before sending
+- Do NOT save HTML in the repo directory, /tmp, Downloads, Desktop, or any other location
+- Do NOT create a different directory structure — send.py discovers files relative to this path
+- The repo stores code, not runtime data. Runtime data goes in `~/.wmyskills/<skill-name>/`
 
 ## On Error
 
