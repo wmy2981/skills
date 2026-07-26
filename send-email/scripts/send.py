@@ -49,7 +49,7 @@ def get_config():
         "port": int(os.environ.get("EMAIL_PORT", "465")),
         "user": os.environ.get("EMAIL_USER", ""),
         "password": os.environ.get("EMAIL_AUTH", ""),
-        "sender_name": os.environ.get("EMAIL_NAME", "ClaudeCode"),
+        "sender_name": os.environ.get("EMAIL_NAME") or "ClaudeCode",
     }
 
 
