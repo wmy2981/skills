@@ -20,10 +20,10 @@ Use this skill when the user asks to:
 
 ### 1. Configuration File
 
-Copy `scripts/.env` from the skill directory and populate it:
+Copy `scripts/.env.example` to `scripts/.env` and populate it:
 
 ```bash
-cp send-email/scripts/.env send-email/scripts/.env
+cp scripts/.env.example scripts/.env
 # Then edit .env with your SMTP credentials
 ```
 
