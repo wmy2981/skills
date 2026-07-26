@@ -501,16 +501,16 @@ print('OK: formatting works')
 
 ---
 
-### Task 6: img-recog_cli.py (Main Entry Point)
+### Task 6: img_recog_cli.py (Main Entry Point)
 
 **Files:**
-- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/img-recog_cli.py`
+- Create: `G:/Projects/agent/wmy-skills/img-recog/scripts/img_recog_cli.py`
 
 **Interfaces:**
 - Consumes: all four modules above
 - Produces: executable CLI
 
-- [ ] **Step 1: Write img-recog_cli.py**
+- [ ] **Step 1: Write img_recog_cli.py**
 
 ```python
 #!/usr/bin/env python
@@ -519,9 +519,9 @@ print('OK: formatting works')
 Calls OpenAI-compatible vision models to describe/extract information from images.
 
 Usage:
-    python scripts/img-recog_cli.py --img path/to/image.png
-    python scripts/img-recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
-    python scripts/img-recog_cli.py --img data:image/png;base64,... --json
+    python scripts/img_recog_cli.py --img path/to/image.png
+    python scripts/img_recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
+    python scripts/img_recog_cli.py --img data:image/png;base64,... --json
 """
 
 import argparse
@@ -617,7 +617,7 @@ if __name__ == "__main__":
 
 ```bash
 cd "G:/Projects/agent/wmy-skills/img-recog"
-python scripts/img-recog_cli.py --help
+python scripts/img_recog_cli.py --help
 ```
 
 Expected: usage text with all arguments.
@@ -625,7 +625,7 @@ Expected: usage text with all arguments.
 - [ ] **Step 3: Test CLI — missing --img**
 
 ```bash
-python scripts/img-recog_cli.py
+python scripts/img_recog_cli.py
 ```
 
 Expected: error about required --img argument.
@@ -633,7 +633,7 @@ Expected: error about required --img argument.
 - [ ] **Step 4: Test CLI — invalid image path**
 
 ```bash
-python scripts/img-recog_cli.py --img nonexistent.png
+python scripts/img_recog_cli.py --img nonexistent.png
 ```
 
 Expected: "Error: Image file not found"
@@ -714,7 +714,7 @@ default:
 
 ```bash
 cd <skill-dir>
-python scripts/img-recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
+python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
 ```
 
 ### Arguments
@@ -731,22 +731,22 @@ python scripts/img-recog_cli.py --img <image-source> [--prompt <text>] [--provid
 
 ```bash
 # Describe a local screenshot
-python scripts/img-recog_cli.py --img screenshot.png
+python scripts/img_recog_cli.py --img screenshot.png
 
 # Extract text from a photo with specific prompt
-python scripts/img-recog_cli.py --img photo.jpg --prompt "请提取图中所有文字"
+python scripts/img_recog_cli.py --img photo.jpg --prompt "请提取图中所有文字"
 
 # Fetch and describe an online image
-python scripts/img-recog_cli.py --img https://example.com/diagram.png
+python scripts/img_recog_cli.py --img https://example.com/diagram.png
 
 # Use DeepSeek model
-python scripts/img-recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
+python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
 
 # Read prompt from file
-python scripts/img-recog_cli.py --img graph.png --prompt @prompt.txt
+python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
 
 # Structured JSON output
-python scripts/img-recog_cli.py --img screenshot.png --json
+python scripts/img_recog_cli.py --img screenshot.png --json
 ```
 
 ## Notes

@@ -4,9 +4,9 @@
 Calls OpenAI-compatible vision models to describe/extract information from images.
 
 Usage:
-    python scripts/img-recog_cli.py --img path/to/image.png
-    python scripts/img-recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
-    python scripts/img-recog_cli.py --img data:image/png;base64,... --json
+    python scripts/img_recog_cli.py --img path/to/image.png
+    python scripts/img_recog_cli.py --img https://example.com/photo.jpg --prompt "提取文字"
+    python scripts/img_recog_cli.py --img data:image/png;base64,... --json
 """
 
 import argparse

@@ -37,7 +37,7 @@ To customize paths, edit `scripts/.env` and set `img-recog_PROVIDER_FILE` / `img
 
 ```bash
 cd <skill-dir>
-python scripts/img-recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
+python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
 ```
 
 ### Arguments
@@ -54,22 +54,22 @@ python scripts/img-recog_cli.py --img <image-source> [--prompt <text>] [--provid
 
 ```bash
 # Describe a local screenshot
-python scripts/img-recog_cli.py --img screenshot.png
+python scripts/img_recog_cli.py --img screenshot.png
 
 # Extract text from a photo with specific prompt
-python scripts/img-recog_cli.py --img photo.jpg --prompt "Extract all text from this image"
+python scripts/img_recog_cli.py --img photo.jpg --prompt "Extract all text from this image"
 
 # Fetch and describe an online image
-python scripts/img-recog_cli.py --img https://example.com/diagram.png
+python scripts/img_recog_cli.py --img https://example.com/diagram.png
 
 # Use DeepSeek model
-python scripts/img-recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
+python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
 
 # Read prompt from file
-python scripts/img-recog_cli.py --img graph.png --prompt @prompt.txt
+python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
 
 # Structured JSON output
-python scripts/img-recog_cli.py --img screenshot.png --json
+python scripts/img_recog_cli.py --img screenshot.png --json
 ```
 
 ## Reference Files
@@ -88,10 +88,10 @@ When this skill loads, first read `references/prompts/index.yaml` to discover av
 
 ```bash
 # Example: describe in English
-python scripts/img-recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
+python scripts/img_recog_cli.py --img photo.jpg --prompt @references/prompts/describe.txt
 
 # Example: extract text in Chinese
-python scripts/img-recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
+python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extract-text-zh.txt
 ```
 
 ## Notes

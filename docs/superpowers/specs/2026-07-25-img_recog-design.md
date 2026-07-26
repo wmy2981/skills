@@ -18,7 +18,7 @@ img-recog/
     ├── image_handler.py        # Handle local/URL/base64 image → API payload
     ├── api_caller.py           # Call vision model via openai SDK
     ├── output_formatter.py     # Format output (plain text / JSON)
-    ├── img-recog_cli.py        # CLI entry point, argparse
+    ├── img_recog_cli.py        # CLI entry point, argparse
     └── requirements.txt        # openai, pyyaml, requests
 ```
 
@@ -71,7 +71,7 @@ default:
 ## CLI Interface
 
 ```
-usage: img-recog_cli.py [-h] [--provider PROVIDER] [--model MODEL]
+usage: img_recog_cli.py [-h] [--provider PROVIDER] [--model MODEL]
                         --img IMG [--prompt PROMPT] [--json]
 ```
 
@@ -95,10 +95,10 @@ usage: img-recog_cli.py [-h] [--provider PROVIDER] [--model MODEL]
 ### Examples
 
 ```bash
-python scripts/img-recog_cli.py --img screenshot.png
-python scripts/img-recog_cli.py --provider deepseek --img photo.jpg --prompt "提取文字"
-python scripts/img-recog_cli.py --img https://example.com/pic.jpg --prompt @prompt.txt
-python scripts/img-recog_cli.py --img data:image/png;base64,iVBOR... --json
+python scripts/img_recog_cli.py --img screenshot.png
+python scripts/img_recog_cli.py --provider deepseek --img photo.jpg --prompt "提取文字"
+python scripts/img_recog_cli.py --img https://example.com/pic.jpg --prompt @prompt.txt
+python scripts/img_recog_cli.py --img data:image/png;base64,iVBOR... --json
 ```
 
 ## Data Flow

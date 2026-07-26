@@ -60,7 +60,7 @@ After the `cp` commands, add explicit instruction to delete/replace placeholder 
 
 ### 5. Default Prompt → English
 
-**Files**: `img-recog/scripts/img-recog_cli.py`, `img-recog/scripts/api_caller.py`
+**Files**: `img-recog/scripts/img_recog_cli.py`, `img-recog/scripts/api_caller.py`
 
 Change default prompt string:
 - `"请详细描述这张图片的内容"` → `"Please describe this image in detail"`
@@ -98,7 +98,7 @@ prompts:
 |------|--------|
 | `img-recog/SKILL.md` | Edit: security table, setup section, prompt sections, add index.yaml instruction, add add-preset process |
 | `img-recog/scripts/config_loader.py` | Edit: add .env loading and env-var overrides |
-| `img-recog/scripts/img-recog_cli.py` | Edit: default prompt to English |
+| `img-recog/scripts/img_recog_cli.py` | Edit: default prompt to English |
 | `img-recog/scripts/api_caller.py` | Edit: default prompt param to English |
 | `img-recog/scripts/requirements.txt` | Edit: add `python-dotenv` |
 | `img-recog/scripts/.env` | Create: template (gitignored) |
