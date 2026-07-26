@@ -9,14 +9,13 @@ providers:
   # OpenAI
   openai:
     base_url: https://api.openai.com/v1
-    api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    api_key: "sk-xxx...REPLACE_WITH_YOUR_API_KEY"  # TODO: 替换为你的 API key
 
   # DeepSeek
   deepseek:
     base_url: https://api.deepseek.com/v1
-    api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
+    api_key: "sk-xxx...REPLACE_WITH_YOUR_API_KEY"  # TODO: 替换为你的 API key
 
-  # SiliconFlow (example — supports many open-source vision models)
   # siliconflow:
-  #   base_url: https://api.siliconflow.com/v1
-  #   api_key: sk-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  #   base_url: https://api.siliconflow.cn/v1
+  #   api_key: "sk-xxx...REPLACE_WITH_YOUR_API_KEY"  # TODO: 替换为你的 API key

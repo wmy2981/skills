@@ -1,7 +1,7 @@
-# =============================================================================
-# img_recog — Model Mapping Configuration
-# =============================================================================
-# Copy this file to ~/.wmyskills/img_recog/model.yaml and customize.
+# model.yaml — Model-to-provider mapping
+# After copying, review and adjust the default provider and model below.
+#
+# Copy to ~/.wmyskills/img_recog/model.yaml and customize.
 # Empty model list = this provider has no vision-capable models available.
 # =============================================================================
 
@@ -19,5 +19,5 @@ providers:
   #   models: []    # <-- no vision model configured
 
 default:
-  provider: openai
-  model: gpt-4o-mini
+  provider: openai           # TODO: change to your preferred provider
+  model: gpt-4o-mini         # TODO: change to your preferred vision model

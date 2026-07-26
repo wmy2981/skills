@@ -30,26 +30,28 @@ pip install openai pyyaml requests
 
 ## Setup
 
-Config templates are in `references/templates/`. Copy them to `~/.wmyskills/img_recog/` and fill in your API keys:
+Config templates are in `references/templates/`. Copy them to `~/.wmyskills/img_recog/`:
 
 ```bash
 cp references/templates/provider.yaml.template ~/.wmyskills/img_recog/provider.yaml
 cp references/templates/model.yaml.template ~/.wmyskills/img_recog/model.yaml
 ```
 
-Then edit `~/.wmyskills/img_recog/provider.yaml` to add your actual API keys:
+**Important: After copying, edit each file to replace placeholder values (marked with `TODO` comments) with your actual API keys and remove those `TODO` comment lines. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
+
+Edit `~/.wmyskills/img_recog/provider.yaml` to add your actual API keys, replacing all `REPLACE_WITH_YOUR_API_KEY` placeholders:
 
 ```yaml
 providers:
   openai:
     base_url: https://api.openai.com/v1
-    api_key: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # ← 替换为你的 key
+    api_key: "sk-your-actual-key-here"  # ← 替换为你的 key
   deepseek:
     base_url: https://api.deepseek.com/v1
-    api_key: sk-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy  # ← 替换为你的 key
+    api_key: "sk-your-actual-key-here"  # ← 替换为你的 key
 ```
 
-And review `~/.wmyskills/img_recog/model.yaml` to confirm your desired models:
+And review `~/.wmyskills/img_recog/model.yaml` to confirm your desired models; remove the `TODO` comment markers after adjusting:
 
 ```yaml
 default:
