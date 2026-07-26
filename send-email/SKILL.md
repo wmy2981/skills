@@ -92,9 +92,20 @@ python scripts/send.py user@example.com "Files" "See attached" report.pdf
 
 ## Template Workflow
 
-1. Copy a `.html` from `~/wmy-skills/send-email/templates/` to `~/wmy-skills/send-email/msg/`
+All templates and message HTML files **must** be stored in the following directories:
+
+| Directory | Purpose |
+|-----------|---------|
+| `~/wmy-skills/send-email/templates/` | Read-only HTML templates (copy from here) |
+| `~/wmy-skills/send-email/msg/` | Edited messages ready to send (save/overwrite here) |
+
+Workflow:
+
+1. Copy a template from `templates/` to `msg/`
 2. Edit the copy with your content
-3. Run `send.py` with the file path as `<body>` — script reads it and sends as HTML
+3. Run `send.py` with the `msg/` file path as `<body>` — script reads it and sends as HTML
+
+**Do not** reference `.html` files outside these directories — they will not be found.
 
 ## Notes
 

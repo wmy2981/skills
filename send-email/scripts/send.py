@@ -20,6 +20,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
+# Force UTF-8 on Windows terminals (default GBK)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
+
 # Optional dotenv support
 try:
     from dotenv import load_dotenv
@@ -39,23 +44,12 @@ def ensure_data_dirs():
 
 
 def get_config():
-    host = os.environ.get("EMAIL_HOST", "")
-    user = os.environ.get("EMAIL_USER", "")
-    password = os.environ.get("EMAIL_AUTH", "")
-    port_str = os.environ.get("EMAIL_PORT", "465")
-    sender_name = os.environ.get("EMAIL_NAME", "ClaudeCode")
-
-    if not all([host, user, password]):
-        raise RuntimeError(
-            "Missing environment variables: "
-            "EMAIL_HOST, EMAIL_USER, EMAIL_AUTH are required"
-        )
     return {
-        "host": host,
-        "port": int(port_str),
-        "user": user,
-        "password": password,
-        "sender_name": sender_name,
+        "host": os.environ.get("EMAIL_HOST", ""),
+        "port": int(os.environ.get("EMAIL_PORT", "465")),
+        "user": os.environ.get("EMAIL_USER", ""),
+        "password": os.environ.get("EMAIL_AUTH", ""),
+        "sender_name": os.environ.get("EMAIL_NAME", "ClaudeCode"),
     }
 
 
