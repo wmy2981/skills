@@ -1,6 +1,6 @@
 ---
 name: send-email
-description: "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates."
+description: "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates. Trigger on any email-related request — including 'email this to...', 'forward this to...', 'send the report to...', 'attach this file and send'. Do NOT use for non-email communication like Slack or SMS."
 ---
 
 # Send Email Skill
@@ -9,7 +9,7 @@ Send emails via SMTP from Claude Code. Supports plain text, HTML, attachments, a
 
 ## Action
 
-Run the script directly — **do not** check configuration beforehand. If it fails, use the error to diagnose and fix.
+Run the script directly — **do not** check configuration beforehand. The script already handles missing credentials and connection errors with clear messages, so pre-checking wastes time without adding value. Send first; if it fails, the error tells you exactly what to fix.
 
 ```bash
 cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <body> [--html] [attachment...]
