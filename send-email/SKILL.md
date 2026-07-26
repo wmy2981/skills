@@ -54,13 +54,13 @@ The script automatically creates these in your home folder on first run:
 
 ## Configuration
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `EMAIL_HOST` | Yes | — | SMTP server hostname |
-| `EMAIL_PORT` | No | `465` | SMTP server port |
-| `EMAIL_USER` | Yes | — | Sender email address |
-| `EMAIL_AUTH` | Yes | — | SMTP password / app token |
-| `EMAIL_NAME` | No | `ClaudeCode` | Sender display name |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMAIL_HOST` | — | SMTP server hostname |
+| `EMAIL_PORT` | `465` | SMTP server port |
+| `EMAIL_USER` | — | Sender email address |
+| `EMAIL_AUTH` | — | SMTP password / app token |
+| `EMAIL_NAME` | `ClaudeCode` | Sender display name |
 
 ## Usage
 
