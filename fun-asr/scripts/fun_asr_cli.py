@@ -276,22 +276,33 @@ def delete_from_s3(key: str):
 
 def probe_audio(file_path: str) -> tuple[float, int]:
     """Return (duration_seconds, num_channels) using ffprobe; (0.0, 0) on failure."""
+    duration = 0.0
+    channels = 0
+
     try:
         result = subprocess.run(
-            [
-                "ffprobe", "-v", "error",
-                "-show_entries", "format=duration:stream=channels",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                file_path,
-            ],
+            ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+             "-of", "default=noprint_wrappers=1:nokey=1", file_path],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.stdout.strip():
+            duration = float(result.stdout.strip())
+    except Exception:
+        pass
+
+    try:
+        result = subprocess.run(
+            ["ffprobe", "-v", "error", "-show_entries", "stream=channels",
+             "-of", "default=noprint_wrappers=1:nokey=1", file_path],
             capture_output=True, text=True, timeout=10,
         )
         lines = result.stdout.strip().split("\n")
-        duration = float(lines[0]) if lines else 0.0
-        channels = int(lines[1]) if len(lines) > 1 else 0
-        return duration, channels
+        if lines[0]:
+            channels = int(lines[0])
     except Exception:
-        return 0.0, 0
+        pass
+
+    return duration, channels
 
 
 # Track temporary files for cleanup
@@ -701,8 +712,8 @@ def main():
         with open(out_path, "w", encoding="utf-8") as fh:
             fh.write(output)
 
-        # 9. Report completion — print only the output file path for agent consumption
-        print(Path(out_path).resolve())
+        # 9. Report completion — print output file path for agent consumption
+        print(f"Output file: {Path(out_path).resolve()}")
 
         # 10. Cleanup S3 (unless --keep-s3)
         if not args.keep_s3:

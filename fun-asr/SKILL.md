@@ -118,11 +118,11 @@ Standard SRT subtitle format: `NN \n HH:MM:SS,mmm --> HH:MM:SS,mmm \n [SN] text`
 
 Output is always saved to a file — never printed to terminal. The default output directory is `~/.wmyskills/fun-asr/outputs/`.
 
-When transcription succeeds, stdout contains **only** the output file path. Failures print full error logs to stderr.
+When transcription succeeds, stdout contains: `Output file: <path>`. Failures print full error logs to stderr.
 
 On success you **must** deliver the result to the user:
 
-1. Capture the output file path (the only stdout line)
+1. Parse the `Output file:` path from stdout
 2. Read and present the file content to the user
 3. Provide a brief summary: audio duration, number of speakers detected (if diarization was enabled), and a concise overview of the content
 
