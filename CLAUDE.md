@@ -1,16 +1,14 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Repository Structure
 
-This is a collection of **Claude Code agent skills**. Each skill is a self-contained directory following this pattern:
+This is a collection of **agent skills**. Each skill is a self-contained directory following this pattern:
 
 ```
 skill-name/
 ├── SKILL.md       # Skill definition — trigger keywords, usage, docs
 ├── scripts/       # Python/shell scripts that power the skill
-│   ├── .env       # Environment variable template (gitignored by name)
+│   ├── .env.example    # Environment variable template
 │   └── *.py
 └── references/    # Reference docs, config templates
 ```
