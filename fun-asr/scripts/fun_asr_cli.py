@@ -22,6 +22,7 @@ Exit codes (for agent consumption):
 """
 
 import argparse
+import io
 import json
 import os
 import subprocess
@@ -79,6 +80,22 @@ def _log(level: str, message: str, **extra):
 
 def info(message: str, **extra):
     _log("info", message, **extra)
+
+
+def ensure_utf8_console():
+    """Force stdout/stderr to UTF-8 encoding on Windows (terminal defaults to GBK)."""
+    if sys.platform == "win32":
+        # Reconfigure stdout/stderr to UTF-8 so Chinese/emoji output is not garbled
+        for stream_name in ("stdout", "stderr"):
+            stream = getattr(sys, stream_name)
+            if stream and hasattr(stream, "buffer"):
+                setattr(sys, stream_name,
+                        io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace"))
+        # Also switch the terminal code page to UTF-8
+        try:
+            subprocess.run(["chcp", "65001"], capture_output=True, check=True)
+        except Exception:
+            pass
 
 
 def warn(message: str, **extra):
@@ -648,6 +665,7 @@ Version: {VERSION}
 
 def main():
     load_env()
+    ensure_utf8_console()
     parser = build_parser()
     args = parser.parse_args()
 
