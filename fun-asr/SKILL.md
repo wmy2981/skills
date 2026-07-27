@@ -1,107 +1,170 @@
 ---
-name: speech-recognition
-description: 使用阿里云百炼 Fun-ASR 非实时语音识别模型将音频文件转写为文本。支持说话人分离、多语言识别、时间戳输出。触发场景：用户发送音频文件要求转文字、提到"语音识别""音频转文字""会议转写""ASR""录音转文本""说话人分离"。需要 BAILIAN_APIKEY 环境变量，以及 S3 配置（S3_ENDPOINT、S3_BUCKET 和 AWS 凭证）。
+name: fun-asr
+description: Use when the user shares an audio file (mp3, wav, m4a, flac) and asks to transcribe it to text — includes queries containing "speech recognition", "audio to text", "transcribe", "transcription", "ASR", "meeting notes", "convert audio", "subtitle", "SRT", "speaker diarization", "who said what". Also triggers on audio meeting recordings, interviews, phone calls, lectures, voice memos, podcasts. Requires BAILIAN_APIKEY (Alibaba Cloud Bailian / DashScope) and S3-compatible storage credentials.
 metadata:
-  skill_version: "0.1.0"
+  skill_version: "0.2.0"
 ---
 
-# Speech Recognition
+# Fun-ASR: Audio Transcription
 
-使用阿里云百炼 Fun-ASR 非实时语音识别模型，将音频文件转写为文本。支持说话人分离、多语言识别、时间戳输出。
+Transcribe audio files using Alibaba Cloud Bailian's Fun-ASR non-real-time speech recognition model. Supports speaker diarization, multi-language recognition, and multiple output formats (plain text, JSON, SRT subtitles).
 
-## 使用场景
-
-- 用户发送音频文件要求转文字
-- 用户提到"语音识别""音频转文字""会议转写""ASR""录音转文本"
-- 用户需要对会议录音、采访、通话录音进行文字转写
-
-## 核心流程
-
-本地音频 → S3（获取公网 URL）→ Fun-ASR 异步转写 → 轮询 → 下载结果 → 格式化输出 → **将输出产物交付给用户**
-
-## 调用方式
-
-所有操作通过 `scripts/asr.py` 完成：
+## Workflow
 
 ```
-python3 scripts/asr.py <音频文件路径> [选项]
+Local audio file → S3 (presigned URL) → Fun-ASR async transcription → Poll → Download → Format → Deliver to user
 ```
 
-### 参数
+## Requirements
 
-| 参数 | 说明 | 默认值 |
-|------|------|--------|
-| `file`（位置参数） | 本地音频文件路径 | 必填 |
-| `--model` | 模型选择：`fun-asr` / `paraformer-v2` | `fun-asr` |
-| `--diarization` | 启用说话人分离 | 默认启用 |
-| `--no-diarization` | 禁用说话人分离 | |
-| `--language` | 语言代码，如 `zh` `en` `ja` | `zh` |
-| `--output` | 输出文件路径（覆盖默认路径） | `{源文件名}_{时间戳}.{ext}（当前目录）` |
-| `--format` | 输出格式：`json` `text` `srt` | `text` |
-| `--channel-id` | 声道编号（单声道为 `0`） | `0` |
+### Environment Variables
 
-### 注意事项
+Set these in `scripts/.env` (copy from the `.env` template):
 
-- **说话人分离**：默认开启，要求音频为单声道且 ≤ 2 小时。如果音频是多声道或超过 2 小时，程序会自动报错提示。
-- **声道转换**：如果音频非单声道，程序会调用 `ffmpeg` 自动转为单声道。优先用 ffmpeg skill。
-- **文件格式**：支持 aac、wav、mp3、m4a、flac、ogg 等主流格式。
-- **文件大小**：≤ 2GB。
-- **API Key**：从环境变量 `BAILIAN_APIKEY` 获取（同时也是 DashScope API Key）。
-- **S3 存储**：音频通过 S3 兼容存储中转。配置环境变量 `S3_ENDPOINT`、`S3_BUCKET`、`S3_PREFIX`（默认 `asr-uploads`），AWS 凭证由 boto3 从默认凭证链自动获取。使用 presigned URL 方式（PUT 上传 + GET 下载）。
-- **上传路径**：`{S3_PREFIX}/{timestamp}_{filename}`
-- **转写完成后**：自动清理 S3 上的临时文件。
-- **输出目录**：结果统一保存在当前工作目录。
-- **环境变量**：可配置 `scripts/.env` 模板文件。脚本会自动加载。
-- **⚠️ 无效语音片段检测**：如果 API 返回 `ASR_RESPONSE_HAVE_NO_WORDS` 或 `SUCCESS_WITH_NO_VALID_FRAGMENT`，说明音频中未检测到有效人声（可能是静音、音量过低或噪音过大）。**必须立即停止，直接向用户报告失败原因，禁止自动重试、替换模型重试或修改音频参数重试。** 只有用户明确要求重试时才可以再次尝试。
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `BAILIAN_APIKEY` | Yes | Alibaba Cloud Bailian (DashScope) API key |
+| `S3_ENDPOINT` | Yes | S3-compatible storage endpoint URL |
+| `S3_BUCKET` | Yes | S3 bucket name for audio uploads |
+| `S3_REGION` | No | S3 region (default: `us-east-1`) |
+| `S3_PREFIX` | No | Key prefix for uploads (default: `asr-uploads`) |
+| `AWS_ACCESS_KEY_ID` | No* | AWS access key (needed if not using IAM/default chain) |
+| `AWS_SECRET_ACCESS_KEY` | No* | AWS secret key (needed if not using IAM/default chain) |
 
-### 💰 计价
+The script finds `.env` automatically — it searches the script directory (`scripts/`), the skill root (`fun-asr/`), and the current working directory.
 
-Fun-ASR 语音识别：0.00022 元/每秒。脚本会在运行时自动检测音频时长并输出预估费用和最终费用。
+### Python Dependencies
 
-## Agent 使用示例
-
-```
-# 基本用法：转写音频，输出纯文本
-python3 scripts/asr.py meeting.mp3
-# → 转写完成后将产物文件交付给用户
-
-# 输出 JSON（含时间戳、说话人信息）
-python3 scripts/asr.py meeting.mp3 --format json
-
-# 输出 SRT 字幕
-python3 scripts/asr.py interview.wav --format srt
-
-# 禁用说话人分离
-python3 scripts/asr.py lecture.mp3 --no-diarization
-
-# 指定语言和模型
-python3 scripts/asr.py japanese.mp3 --language ja --model paraformer-v2
+```bash
+pip install boto3 requests python-dotenv
 ```
 
-## 输出交付
+### Optional: ffmpeg
 
-**转写完成后，必须执行以下步骤：**
+ffmpeg/ffprobe is needed for:
+- Detecting audio channel count
+- Converting multi-channel audio to mono (required for speaker diarization)
 
-1. 读取输出产物文件路径（脚本运行后会提示保存位置）
-2. 将产物文件交付给用户
-3. 同时在 chat 中简要概括转写结果（时长、说话人数量、核心内容摘要）
+Without ffmpeg, the script skips mono conversion and uses the original file.
 
-> ⚠️ 输出产物只在终端打印不够——用户看不到。必须将文件送达用户。
+## Usage
 
-## 输出格式
-
-### text 格式（默认）
-纯文本，按说话人和时间顺序排列：
-```
-[说话人 0] 00:00:01 - 00:00:05
-你好，我们今天讨论项目进度。
-
-[说话人 1] 00:00:05 - 00:00:10
-好的，我先汇报一下。
+```bash
+python fun_asr_cli.py <audio-file> [options]
 ```
 
-### json 格式
-完整 JSON 结果，包含所有元数据（时间戳、说话人 ID、置信度等）。
+Run from the `scripts/` directory or provide the full path to `fun_asr_cli.py`.
 
-### srt 格式
-标准 SRT 字幕文件格式，可直接导入视频编辑软件。
+### Positional Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `file` | Path to the audio file (aac, wav, mp3, m4a, flac, ogg, etc.) |
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--model` | `fun-asr` | ASR model: `fun-asr`, `paraformer-v2`, `paraformer-v1`, `fun-asr-mtl`, `paraformer-mtl-v1` |
+| `--no-diarization` | (enabled) | Disable speaker diarization |
+| `--language` | `zh` | Language hint: `zh`, `en`, `ja`, `ko`, `yue`, etc. |
+| `--channel-id` | `0` | Audio channel to transcribe (0 = first/mono) |
+| `--output` | auto-generated | Custom output file path |
+| `--format` | `text` | Output format: `text`, `json`, `srt` |
+| `--keep-s3` | (off) | Keep the uploaded file on S3 after transcription |
+| `--quiet` | (off) | Suppress progress messages; show only errors and the final result |
+| `--version` | — | Show script version and exit |
+
+### Examples
+
+```bash
+# Basic transcription (text format, Chinese)
+python fun_asr_cli.py meeting.mp3
+
+# JSON output with full metadata (timestamps, speaker IDs, confidence)
+python fun_asr_cli.py interview.wav --format json
+
+# SRT subtitle output
+python fun_asr_cli.py lecture.mp3 --format srt
+
+# Disable speaker diarization
+python fun_asr_cli.py meeting.mp3 --no-diarization
+
+# Specify language and model
+python fun_asr_cli.py japanese_audio.mp3 --language ja --model paraformer-v2
+
+# Quiet mode (machine-readable progress on stderr)
+python fun_asr_cli.py audio.wav --quiet
+```
+
+## Output Formats
+
+### text (default)
+
+Plain text with speaker labels and timestamps:
+
+```
+[Speaker 0] 00:00:01 - 00:00:05
+Hello, let's discuss the project progress today.
+
+[Speaker 1] 00:00:05 - 00:00:10
+Sure, let me report first.
+```
+
+### json
+
+Full JSON structure with all metadata — timestamps, speaker IDs, confidence scores, and the raw API response.
+
+### srt
+
+Standard SRT subtitle format, compatible with video editing software:
+
+```
+1
+00:00:01,000 --> 00:00:05,000
+[S0] Hello, let's discuss the project progress today.
+
+2
+00:00:05,000 --> 00:00:10,000
+[S1] Sure, let me report first.
+```
+
+## Agent Instructions
+
+### After Transcription Completes
+
+When transcription succeeds, you **must** deliver the result to the user:
+
+1. Read the output file path from the script's result JSON (printed to stdout on success)
+2. Send the file to the user
+3. Provide a brief summary: audio duration, number of speakers detected (if diarization was enabled), and a concise overview of the content
+
+> ⚠️ The result is only printed in the terminal — the user cannot see it there. You must deliver the file to them.
+
+### Error Scenarios
+
+The script exits with specific codes for programmatic handling:
+
+- **Code 2** — Configuration error: missing env vars. Check `.env` and system environment.
+- **Code 3** — File error: file not found, too large, or exceeds limits.
+- **Code 4** — API/network error: submission or polling failed.
+- **Code 5** — Audio processing error.
+- **Code 6** — Task failure: ASR API returned an error. Check the error message.
+- **Code 7** — Timeout: transcription took longer than 30 minutes.
+- **Code 8** — Invalid arguments.
+
+### Important Rules
+
+- **No valid speech detected**: If the API returns `ASR_RESPONSE_HAVE_NO_WORDS` or `SUCCESS_WITH_NO_VALID_FRAGMENT`, the audio contains no detectable human speech (silence, too quiet, or pure noise). **Stop immediately and report this to the user. Do NOT retry automatically, switch models, or modify audio parameters.** Only retry if the user explicitly asks.
+- **Speaker diarization** requires mono audio ≤ 2 hours. The script auto-converts multi-channel audio via ffmpeg. If the file exceeds 2 hours, diarization is disabled automatically.
+- **Diarization cost**: The script charges per audio second regardless of diarization; there is no extra fee for enabling it.
+- **S3 cleanup**: Temporary files on S3 are deleted automatically after transcription unless `--keep-s3` is passed.
+
+## Pricing
+
+Fun-ASR voice recognition costs **CNY 0.00022 / second** of audio. The script estimates the cost before starting and reports the actual cost on completion.
+
+## Skill Version History
+
+- **0.2.0** — Refactored: English output, structured JSON logging, error classification with exit codes, `--quiet` and `--version` flags, improved `.env` loading, temp file cleanup.
+- **0.1.0** — Initial version.
