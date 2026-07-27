@@ -762,7 +762,10 @@ class TestMainIntegration:
             "S3_BUCKET": "bucket",
         }, clear=True):
             with (
-                patch.object(sys, "argv", ["fun_asr_cli.py", str(audio), "--quiet"]),
+                patch.object(sys, "argv", [
+                    "fun_asr_cli.py", str(audio), "--quiet",
+                    "--output", str(tmp_path / "transcript.txt"),
+                ]),
                 patch("fun_asr_cli.boto3.client") as mock_boto,
                 patch("fun_asr_cli.requests.put") as mock_put,
                 patch("fun_asr_cli.requests.post") as mock_post,

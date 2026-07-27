@@ -5,6 +5,10 @@ __pycache__/
 # Environment
 .env
 
+# Test artifacts
+fun-asr/scripts/meeting_*.txt
+fun-asr/scripts/meeting_*.json
+
 # IDE
 .vscode/
 .idea/
