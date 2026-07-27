@@ -131,6 +131,10 @@ Standard SRT subtitle format, compatible with video editing software:
 
 ## Agent Instructions
 
+### Execution Strategy
+
+> **Don't check dependencies, environment variables, or configuration before running the script.** Just execute the transcription command directly. If it fails due to missing dependencies or env vars, the script will exit with a clear error code and message — fix whatever is broken and retry. This avoids wasting time on pre-flight checks when everything is already set up.
+
 ### After Transcription Completes
 
 When transcription succeeds, you **must** deliver the result to the user:
