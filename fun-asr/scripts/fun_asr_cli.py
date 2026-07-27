@@ -41,7 +41,7 @@ from dotenv import load_dotenv
 # Constants
 # ---------------------------------------------------------------------------
 
-VERSION = "0.2.0"
+VERSION = "0.3.0"
 TZ = timezone(timedelta(hours=8))  # Asia/Shanghai
 
 DASHSCOPE_URL = "https://dashscope.aliyuncs.com/api/v1"
@@ -52,6 +52,7 @@ POLL_INTERVAL = 2        # polling interval (seconds)
 MAX_WAIT = 1800          # max wait time (30 minutes)
 PRESIGNED_EXPIRE = 7200  # presigned URL validity (2 hours)
 PRICE_PER_SECOND = 0.00022  # Fun-ASR price: CNY/second
+OUTPUT_DIR = Path.home() / ".wmyskills" / "fun-asr" / "outputs"
 
 # Exit codes
 EXIT_SUCCESS = 0
@@ -64,22 +65,12 @@ EXIT_TIMEOUT = 7
 EXIT_ARG_ERROR = 8
 
 # ---------------------------------------------------------------------------
-# Output helpers — all diagnostic output goes to stderr as JSON lines.
+# Output helpers — plain text to stderr.
 # ---------------------------------------------------------------------------
 
-_QUIET = False
-
-
-def _log(level: str, message: str, **extra):
-    """Emit a structured JSON log line to stderr."""
-    if level == "info" and _QUIET:
-        return
-    entry = {"level": level, "message": message, **extra}
-    print(json.dumps(entry, ensure_ascii=False), file=sys.stderr)
-
-
-def info(message: str, **extra):
-    _log("info", message, **extra)
+def info(message: str):
+    """Print an info message to stderr."""
+    print(f"[info] {message}", file=sys.stderr)
 
 
 def ensure_utf8_console():
@@ -98,12 +89,14 @@ def ensure_utf8_console():
             pass
 
 
-def warn(message: str, **extra):
-    _log("warn", message, **extra)
+def warn(message: str):
+    """Print a warning message to stderr."""
+    print(f"[warn] {message}", file=sys.stderr)
 
 
-def error(message: str, **extra):
-    _log("error", message, **extra)
+def error(message: str):
+    """Print an error message to stderr."""
+    print(f"[error] {message}", file=sys.stderr)
 
 
 # ---------------------------------------------------------------------------
@@ -127,10 +120,6 @@ class FileError(FunAsrError):
     exit_code = EXIT_FILE_ERROR
 
 
-class AudioError(FunAsrError):
-    exit_code = EXIT_AUDIO_ERROR
-
-
 class TaskFailedError(FunAsrError):
     exit_code = EXIT_TASK_FAILED
 
@@ -139,9 +128,11 @@ class TimeoutError(FunAsrError):
     exit_code = EXIT_TIMEOUT
 
 
-def fatal(exc: FunAsrError, msg: str, detail: str = ""):
-    """Print a structured error to stderr and exit with the appropriate code."""
-    error(msg, code=exc.exit_code, detail=detail)
+def fatal(exc: FunAsrError):
+    """Print error to stderr and exit with the appropriate code."""
+    error(str(exc))
+    if exc.detail:
+        print(f"[error] detail: {exc.detail}", file=sys.stderr)
     sys.exit(exc.exit_code)
 
 
@@ -150,11 +141,9 @@ def fatal(exc: FunAsrError, msg: str, detail: str = ""):
 # ---------------------------------------------------------------------------
 
 def load_env():
-    """Load .env from the script directory, its parent, and CWD."""
-    load_dotenv(str(Path.cwd() / ".env"), override=False)                     # CWD (lowest priority)
+    """Load .env from the script directory."""
     script_dir = Path(__file__).resolve().parent
-    load_dotenv(script_dir / ".env", override=False)       # scripts/.env
-    load_dotenv(script_dir.parent / ".env", override=False) # skill-root/.env
+    load_dotenv(script_dir / ".env")
 
 
 # ---------------------------------------------------------------------------
@@ -278,28 +267,31 @@ def delete_from_s3(key: str):
         s3.delete_object(Bucket=cfg["bucket"], Key=key)
         info(f"S3 temporary file cleaned up: {key}")
     except Exception as exc:
-        warn(f"Failed to clean up S3 file: {key}", detail=str(exc))
+        warn(f"Failed to clean up S3 file: {key}: {exc}")
 
 
 # ---------------------------------------------------------------------------
 # Audio pre-processing
 # ---------------------------------------------------------------------------
 
-def get_audio_duration(file_path: str) -> float:
-    """Return audio duration in seconds using ffprobe; 0 on failure."""
+def probe_audio(file_path: str) -> tuple[float, int]:
+    """Return (duration_seconds, num_channels) using ffprobe; (0.0, 0) on failure."""
     try:
         result = subprocess.run(
             [
                 "ffprobe", "-v", "error",
-                "-show_entries", "format=duration",
+                "-show_entries", "format=duration:stream=channels",
                 "-of", "default=noprint_wrappers=1:nokey=1",
                 file_path,
             ],
             capture_output=True, text=True, timeout=10,
         )
-        return float(result.stdout.strip())
+        lines = result.stdout.strip().split("\n")
+        duration = float(lines[0]) if lines else 0.0
+        channels = int(lines[1]) if len(lines) > 1 else 0
+        return duration, channels
     except Exception:
-        return 0.0
+        return 0.0, 0
 
 
 # Track temporary files for cleanup
@@ -320,35 +312,17 @@ def cleanup_temp_files():
         _cleanup_temp(_temp_files.pop())
 
 
-def ensure_mono(file_path: str) -> str:
+def ensure_mono(file_path: str, channels: int = 0) -> str:
     """
     If the audio is not mono, convert it with ffmpeg.
+    Accepts pre-probed channel count to avoid redundant ffprobe.
     Returns the (possibly new) mono file path.
     Tracks converted files for later cleanup.
     """
     path = Path(file_path)
 
-    try:
-        result = subprocess.run(
-            [
-                "ffprobe", "-v", "error",
-                "-show_entries", "stream=channels",
-                "-of", "default=noprint_wrappers=1:nokey=1",
-                str(path),
-            ],
-            capture_output=True, text=True, timeout=10,
-        )
-        ch_str = result.stdout.strip()
-        if not ch_str:
-            warn("Could not detect channel count; skipping mono check")
-            return file_path
-
-        channels = int(ch_str.split("\n")[0])
-    except FileNotFoundError:
-        warn("ffprobe not found; install ffmpeg for automatic mono conversion")
-        return file_path
-    except (ValueError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
-        warn("Failed to detect audio channels", detail=str(exc))
+    if channels == 0:
+        warn("Channel count unknown; skipping mono conversion")
         return file_path
 
     if channels == 1:
@@ -371,7 +345,7 @@ def ensure_mono(file_path: str) -> str:
         info(f"Converted to mono: {output_path}")
         return output_path
     except subprocess.CalledProcessError as exc:
-        warn("Mono conversion failed; using original file", detail=exc.stderr[:300])
+        warn(f"Mono conversion failed; using original file: {exc.stderr[:300]}")
         _cleanup_temp(output_path)
         return file_path
     except FileNotFoundError:
@@ -403,10 +377,7 @@ def submit_task(file_url: str, model: str, diarization: bool,
     if diarization:
         payload["parameters"]["diarization_enabled"] = True
 
-    info(
-        "Submitting transcription task",
-        model=model, diarization=str(diarization), lang=language,
-    )
+    info(f"Submitting transcription task: model={model}, diarization={diarization}, lang={language}")
 
     try:
         resp = requests.post(SUBMIT_URL, headers=headers, json=payload, timeout=30)
@@ -427,7 +398,7 @@ def submit_task(file_url: str, model: str, diarization: bool,
             detail=json.dumps(data, ensure_ascii=False)[:500],
         )
 
-    info("Task submitted", task_id=task_id)
+    info(f"Task submitted: {task_id}")
     return task_id
 
 
@@ -452,7 +423,7 @@ def poll_task(task_id: str) -> dict:
         try:
             resp = requests.get(f"{QUERY_URL}/{task_id}", headers=headers, timeout=30)
         except requests.RequestException as exc:
-            warn("Poll request failed, retrying", detail=str(exc))
+            warn(f"Poll request failed, retrying: {exc}")
             time.sleep(POLL_INTERVAL)
             continue
 
@@ -466,11 +437,11 @@ def poll_task(task_id: str) -> dict:
         status = output.get("task_status", "")
 
         if status != last_status:
-            info(f"Task status: {status}", elapsed_s=f"{elapsed:.0f}")
+            info(f"Task status: {status} (elapsed: {elapsed:.0f}s)")
             last_status = status
 
         if status == "SUCCEEDED":
-            info("Transcription completed", elapsed_s=f"{elapsed:.0f}")
+            info(f"Transcription completed (elapsed: {elapsed:.0f}s)")
             return data
         elif status == "FAILED":
             msg = output.get("message", "Unknown error")
@@ -513,7 +484,7 @@ def download_result(task_response: dict) -> dict:
             data["_file_url"] = r.get("file_url", "")
             all_data.append(data)
         except Exception as exc:
-            warn(f"Failed to download result {i}", detail=str(exc))
+            warn(f"Failed to download result {i}: {exc}")
 
     if not all_data:
         raise FunAsrError("No transcription results could be downloaded")
@@ -641,7 +612,7 @@ Version: {VERSION}
     )
     parser.add_argument(
         "--output", default=None,
-        help="Output file path (default: auto-generated in CWD)",
+        help="Output file path (default: ~/.wmyskills/fun-asr/outputs/&lt;file&gt;_&lt;timestamp&gt;.&lt;ext&gt;)",
     )
     parser.add_argument(
         "--format", default="text", choices=["text", "json", "srt"],
@@ -650,10 +621,6 @@ Version: {VERSION}
     parser.add_argument(
         "--keep-s3", action="store_true",
         help="Keep the temporary file on S3 after transcription",
-    )
-    parser.add_argument(
-        "--quiet", action="store_true",
-        help="Suppress progress messages; show only errors and the final result",
     )
     parser.add_argument(
         "--version", action="store_true",
@@ -673,10 +640,6 @@ def main():
         print(f"fun-asr v{VERSION}")
         sys.exit(EXIT_SUCCESS)
 
-    # Apply quiet flag globally
-    global _QUIET
-    _QUIET = args.quiet
-
     if not args.file:
         parser.error("the following arguments are required: file")
 
@@ -687,8 +650,8 @@ def main():
         if not os.path.isfile(file_path):
             raise FileError(f"File not found: {file_path}")
 
-        # 1. Duration and cost estimate
-        dur = get_audio_duration(file_path)
+        # 1. Probe audio (duration + channel count)
+        dur, channels = probe_audio(file_path)
         est_cost = dur * PRICE_PER_SECOND
         info(f"Audio duration: {dur:.1f}s ({dur / 60:.1f} min)")
         info(f"Estimated cost: CNY {est_cost:.4f} (CNY {PRICE_PER_SECOND}/s)")
@@ -701,7 +664,7 @@ def main():
 
         # 2. Mono conversion (required for diarization)
         if args.diarization:
-            file_path = ensure_mono(file_path)
+            file_path = ensure_mono(file_path, channels)
 
         # 3. Upload to S3
         s3_url, s3_key = upload_to_s3(file_path)
@@ -724,41 +687,29 @@ def main():
         # 7. Format output
         output = format_as(result, args.format)
 
-        # 8. Save to file
+        # 8. Save to output directory
         if args.output:
             out_path = args.output
+            Path(out_path).parent.mkdir(parents=True, exist_ok=True)
         else:
+            OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
             base = Path(args.file).stem
             ext_map = {"text": "txt", "json": "json", "srt": "srt"}
             ts = datetime.now(TZ).strftime("%Y%m%d_%H%M%S")
-            out_path = f"{base}_{ts}.{ext_map[args.format]}"
+            out_path = str(OUTPUT_DIR / f"{base}_{ts}.{ext_map[args.format]}")
 
-        Path(out_path).parent.mkdir(parents=True, exist_ok=True)
         with open(out_path, "w", encoding="utf-8") as fh:
             fh.write(output)
 
-        # 9. Report completion (JSON to stdout for agent consumption)
-        final_cost = dur * PRICE_PER_SECOND
-        print(json.dumps({
-            "level": "result",
-            "status": "success",
-            "output_file": str(Path(out_path).resolve()),
-            "format": args.format,
-            "duration_seconds": dur,
-            "cost_cny": round(final_cost, 4),
-        }, ensure_ascii=False))
+        # 9. Report completion — print only the output file path for agent consumption
+        print(Path(out_path).resolve())
 
-        # 10. Print transcript content to stdout
-        if args.format in ("text", "srt"):
-            print()
-            print(output)
-
-        # 11. Cleanup S3 (unless --keep-s3)
+        # 10. Cleanup S3 (unless --keep-s3)
         if not args.keep_s3:
             delete_from_s3(s3_key)
 
     except FunAsrError as exc:
-        fatal(exc, str(exc), getattr(exc, "detail", ""))
+        fatal(exc)
     except KeyboardInterrupt:
         warn("Interrupted by user")
         sys.exit(130)

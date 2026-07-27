@@ -1,8 +1,6 @@
 ---
 name: fun-asr
 description: Use when the user shares an audio file (mp3, wav, m4a, flac) and asks to transcribe it to text — includes queries containing "speech recognition", "audio to text", "transcribe", "transcription", "ASR", "meeting notes", "convert audio", "subtitle", "SRT", "speaker diarization", "who said what". Also triggers on audio meeting recordings, interviews, phone calls, lectures, voice memos, podcasts. Requires BAILIAN_APIKEY (Alibaba Cloud Bailian / DashScope) and S3-compatible storage credentials.
-metadata:
-  skill_version: "0.2.0"
 ---
 
 # Fun-ASR: Audio Transcription
@@ -12,7 +10,7 @@ Transcribe audio files using Alibaba Cloud Bailian's Fun-ASR non-real-time speec
 ## Workflow
 
 ```
-Local audio file → S3 (presigned URL) → Fun-ASR async transcription → Poll → Download → Format → Deliver to user
+Audio → S3 → Fun-ASR async → Poll → Save file → Agent reads
 ```
 
 ## Requirements
@@ -69,10 +67,9 @@ Run from the `scripts/` directory or provide the full path to `fun_asr_cli.py`.
 | `--no-diarization` | (enabled) | Disable speaker diarization |
 | `--language` | `zh` | Language hint: `zh`, `en`, `ja`, `ko`, `yue`, etc. |
 | `--channel-id` | `0` | Audio channel to transcribe (0 = first/mono) |
-| `--output` | auto-generated | Custom output file path |
+| `--output` | auto-generated | Custom output file path (default: `~/.wmyskills/fun-asr/outputs/`) |
 | `--format` | `text` | Output format: `text`, `json`, `srt` |
 | `--keep-s3` | (off) | Keep the uploaded file on S3 after transcription |
-| `--quiet` | (off) | Suppress progress messages; show only errors and the final result |
 | `--version` | — | Show script version and exit |
 
 ### Examples
@@ -93,41 +90,23 @@ python fun_asr_cli.py meeting.mp3 --no-diarization
 # Specify language and model
 python fun_asr_cli.py japanese_audio.mp3 --language ja --model paraformer-v2
 
-# Quiet mode (machine-readable progress on stderr)
-python fun_asr_cli.py audio.wav --quiet
+# Custom output path
+python fun_asr_cli.py audio.wav --output ~/Desktop/transcript.txt
 ```
 
 ## Output Formats
 
 ### text (default)
 
-Plain text with speaker labels and timestamps:
-
-```
-[Speaker 0] 00:00:01 - 00:00:05
-Hello, let's discuss the project progress today.
-
-[Speaker 1] 00:00:05 - 00:00:10
-Sure, let me report first.
-```
+Plain text with speaker labels and timestamps: `[Speaker N] HH:MM:SS - HH:MM:SS`, followed by the text.
 
 ### json
 
-Full JSON structure with all metadata — timestamps, speaker IDs, confidence scores, and the raw API response.
+Full JSON with all metadata — timestamps, speaker IDs, confidence scores, and the raw API response.
 
 ### srt
 
-Standard SRT subtitle format, compatible with video editing software:
-
-```
-1
-00:00:01,000 --> 00:00:05,000
-[S0] Hello, let's discuss the project progress today.
-
-2
-00:00:05,000 --> 00:00:10,000
-[S1] Sure, let me report first.
-```
+Standard SRT subtitle format: `NN \n HH:MM:SS,mmm --> HH:MM:SS,mmm \n [SN] text`.
 
 ## Agent Instructions
 
@@ -137,13 +116,15 @@ Standard SRT subtitle format, compatible with video editing software:
 
 ### After Transcription Completes
 
-When transcription succeeds, you **must** deliver the result to the user:
+Output is always saved to a file — never printed to terminal. The default output directory is `~/.wmyskills/fun-asr/outputs/`.
 
-1. Read the output file path from the script's result JSON (printed to stdout on success)
-2. Send the file to the user
+When transcription succeeds, stdout contains **only** the output file path. Failures print full error logs to stderr.
+
+On success you **must** deliver the result to the user:
+
+1. Capture the output file path (the only stdout line)
+2. Read and present the file content to the user
 3. Provide a brief summary: audio duration, number of speakers detected (if diarization was enabled), and a concise overview of the content
-
-> ⚠️ The result is only printed in the terminal — the user cannot see it there. You must deliver the file to them.
 
 ### Error Scenarios
 
@@ -163,12 +144,5 @@ The script exits with specific codes for programmatic handling:
 - **Speaker diarization** requires mono audio ≤ 2 hours. The script auto-converts multi-channel audio via ffmpeg. If the file exceeds 2 hours, diarization is disabled automatically.
 - **Diarization cost**: The script charges per audio second regardless of diarization; there is no extra fee for enabling it.
 - **S3 cleanup**: Temporary files on S3 are deleted automatically after transcription unless `--keep-s3` is passed.
+- **Pricing**: Fun-ASR costs **CNY 0.00022 / second** of audio. The script estimates cost before starting and reports actual cost on completion.
 
-## Pricing
-
-Fun-ASR voice recognition costs **CNY 0.00022 / second** of audio. The script estimates the cost before starting and reports the actual cost on completion.
-
-## Skill Version History
-
-- **0.2.0** — Refactored: English output, structured JSON logging, error classification with exit codes, `--quiet` and `--version` flags, improved `.env` loading, temp file cleanup.
-- **0.1.0** — Initial version.
