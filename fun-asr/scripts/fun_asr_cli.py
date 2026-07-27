@@ -97,6 +97,10 @@ class FunAsrError(Exception):
     """Base exception for Fun-ASR errors."""
     exit_code = EXIT_API_ERROR
 
+    def __init__(self, message: str, detail: str = ""):
+        super().__init__(message)
+        self.detail = detail
+
 
 class ConfigError(FunAsrError):
     exit_code = EXIT_CONFIG_ERROR
@@ -593,7 +597,7 @@ Version: {VERSION}
 """,
     )
 
-    parser.add_argument("file", help="Path to the audio file")
+    parser.add_argument("file", nargs="?", help="Path to the audio file")
     parser.add_argument(
         "--model", default="fun-asr",
         choices=[
@@ -654,6 +658,9 @@ def main():
     # Apply quiet flag globally
     global _QUIET
     _QUIET = args.quiet
+
+    if not args.file:
+        parser.error("the following arguments are required: file")
 
     try:
         validate_config()
