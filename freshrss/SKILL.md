@@ -1,14 +1,12 @@
 ---
 name: freshrss
-description: "Access and interact with my FreshRSS instance via Python scripts. Use for any RSS-related question, including reading articles, searching past content, finding feeds, getting recommendations, managing subscriptions, checking unread counts, marking read/star, or exploring what I follow. Triggers on keywords: RSS, FreshRSS, feed, unread, headlines, articles, subscriptions, starred."
-metadata:
-  skill_version: "1.0.0"
+description: "Access and interact with my FreshRSS instance via python3 scripts. Use for any RSS-related question, including reading articles, searching past content, finding feeds, getting recommendations, managing subscriptions, checking unread counts, marking read/star, or exploring what I follow. Triggers on keywords: RSS, FreshRSS, feed, unread, headlines, articles, subscriptions, starred."
 ---
 
 # FreshRSS
 
 Self-hosted RSS reader accessed via Google Reader compatible API (GReader).
-All operations go through a single Python script.
+All operations go through a single python3 script.
 
 ## Environment Variables
 
@@ -18,7 +16,7 @@ All operations go through a single Python script.
 | `FRESHRSS_API_USER` | API username |
 | `FRESHRSS_API_PASSWORD` | API password |
 
-> 💡 环境变量可配置 `scripts/.env` 模板文件。脚本会自动加载。
+> 💡 Environment variables can be configured in `scripts/.env`. The script loads them automatically.
 
 ## Usage
 

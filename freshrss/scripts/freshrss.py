@@ -8,9 +8,11 @@
 """
 
 import argparse
+import io
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from html import unescape
@@ -35,6 +37,21 @@ def _get_env(key: str) -> str:
     if not val:
         sys.exit(f"错误: 环境变量 {key} 未设置")
     return val
+
+
+def ensure_utf8_console():
+    """Force stdout/stderr to UTF-8 encoding on Windows (terminal defaults to GBK)."""
+    if sys.platform == "win32":
+        for stream_name in ("stdout", "stderr"):
+            stream = getattr(sys, stream_name)
+            if stream and hasattr(stream, "buffer"):
+                setattr(sys, stream_name,
+                        io.TextIOWrapper(stream.buffer, encoding="utf-8", errors="replace"))
+        try:
+            subprocess.run(["chcp", "65001"], capture_output=True, check=True)
+        except Exception:
+            pass
+
 
 BASE_URL = os.environ.get("FRESHRSS_URL", "").rstrip("/")
 API_USER = os.environ.get("FRESHRSS_API_USER", "")
@@ -410,6 +427,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main():
+    ensure_utf8_console()
+
     # 启动前检查环境变量
     _get_env("FRESHRSS_URL")
     _get_env("FRESHRSS_API_USER")
