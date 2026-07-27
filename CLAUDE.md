@@ -19,7 +19,7 @@ Each `SKILL.md` contains frontmatter (`name`, `description`) used for skill disc
 
 ## Skill Conventions
 
-- A **skill with scripts** uses `scripts/.env` as an env-var template (copy to populate). Scripts load it at startup.
+- A **skill with scripts** uses `scripts/.env` for environment variables (gitignored). Scripts load it at startup via `python-dotenv`. The tracked template is `scripts/.env.example` — every skill that needs env vars **must commit a `.env.example`** so contributors know what to configure.
 - No explicit env var means the skill expects config through the agent conversation or system env vars.
 - Dependencies: listed inline in `SKILL.md` under a "Requirements" section — install via `pip install`.
 - Python scripts target Windows (`python` not `python3`).
