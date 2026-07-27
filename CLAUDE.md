@@ -28,15 +28,27 @@ Each `SKILL.md` contains frontmatter (`name`, `description`) used for skill disc
 ## Common Commands
 
 ```bash
-# Install dependencies for a specific skill
-pip install -r <skill>/requirements.txt   # if requirements.txt exists
-pip install ebooklib beautifulsoup4 lxml   # epub-book-pipeline
-pip install boto3                          # s3
-pip install requests                       # many skills
+# Install dependencies for a skill (read from requirements.txt or SKILL.md Requirements)
+pip install -r <skill>/requirements.txt          # if requirements.txt exists
 
 # Check skill script syntax
 python -m py_compile <skill>/scripts/*.py
+
+# Validate SKILL.md frontmatter
+python -c "import yaml; yaml.safe_load(open('fun-asr/SKILL.md').read().split('---')[1])"
 ```
+
+Dependencies are declared in each skill's `SKILL.md` under **Requirements** or in a `requirements.txt`. When a new skill is added, update nothing — the convention is self-documenting.
+
+## Windows UTF-8 Support
+
+Python scripts that output user-facing Chinese/emoji text must add UTF-8 console support (force stdout/stderr to UTF-8 and run `chcp 65001`). Scripts producing only ASCII or JSON for machine consumption may skip it.
+
+## Skill Development
+
+When developing or modifying a skill in this repo:
+- **Focus on the current repo only.** Ignore any skill with the same name that may already be installed in Claude Code's local skill registry — work against the files in this repository.
+- Treat the repo's version as canonical; don't assume the installed skill's behavior or configuration matches this repo's code.
 
 ## Git Workflow
 
