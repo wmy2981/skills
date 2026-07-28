@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""企业工商信息查询 - 通过接口盒子API查询企业工商登记信息"""
+"""Enterprise info query — lookup Chinese company registration via 接口盒子 API"""
 
 import os
 import sys
 import json
 import urllib.request
 import urllib.parse
+from pathlib import Path
 from dotenv import load_dotenv
 
 API_URL = "https://cn.apihz.cn/api/shiming/qyinfo.php"
@@ -17,7 +18,7 @@ def query_company(words: str) -> dict:
     api_key = os.environ.get("JKHZ_KEY")
 
     if not api_id or not api_key:
-        return {"code": 400, "msg": "环境变量 JKHZ_ID 或 JKHZ_KEY 未设置"}
+        return {"code": 400, "msg": "Environment variables JKHZ_ID or JKHZ_KEY not set"}
 
     params = {
         "id": api_id,
@@ -33,13 +34,13 @@ def query_company(words: str) -> dict:
             data = resp.read().decode("utf-8")
             return json.loads(data)
     except urllib.error.HTTPError as e:
-        return {"code": 400, "msg": f"HTTP错误: {e.code} {e.reason}"}
+        return {"code": 400, "msg": f"HTTP error: {e.code} {e.reason}"}
     except urllib.error.URLError as e:
-        return {"code": 400, "msg": f"网络错误: {e.reason}"}
+        return {"code": 400, "msg": f"Network error: {e.reason}"}
     except json.JSONDecodeError:
-        return {"code": 400, "msg": "API返回非JSON格式数据"}
+        return {"code": 400, "msg": "API returned non-JSON data"}
     except Exception as e:
-        return {"code": 400, "msg": f"请求异常: {str(e)}"}
+        return {"code": 400, "msg": f"Request failed: {str(e)}"}
 
 
 def safe_val(d: dict, *keys, default="-"):
@@ -52,7 +53,7 @@ def safe_val(d: dict, *keys, default="-"):
 
 
 def format_contacts(contacts: dict) -> list:
-    """格式化联系方式"""
+    """Format contact information."""
     lines = []
     if not contacts or not isinstance(contacts, dict):
         return lines
@@ -64,7 +65,7 @@ def format_contacts(contacts: dict) -> list:
             v = p.get("value", "")
             if v and v not in vals:
                 vals.add(v)
-                lines.append(f"  📞 联系电话：{v}")
+                lines.append(f"  📞 Phone: {v}")
 
     emails = contacts.get("email", [])
     if emails and isinstance(emails, list):
@@ -73,7 +74,7 @@ def format_contacts(contacts: dict) -> list:
             v = e.get("value", "")
             if v and v not in vals:
                 vals.add(v)
-                lines.append(f"  📧 邮箱：{v}")
+                lines.append(f"  📧 Email: {v}")
 
     websites = contacts.get("website", [])
     if websites and isinstance(websites, list):
@@ -82,131 +83,124 @@ def format_contacts(contacts: dict) -> list:
             v = w.get("value", "")
             if v and v not in vals:
                 vals.add(v)
-                lines.append(f"  🌐 网站：{v}")
+                lines.append(f"  🌐 Website: {v}")
 
     return lines
 
 
 def format_array_field(items: list, name_key: str, val_key: str,
                        item_label: str, max_show: int = 5, suffix: str = "") -> list:
-    """格式化数组型字段（如股东、人员等）"""
+    """Format array-type fields (shareholders, personnel, etc.)."""
     lines = []
     if not items or not isinstance(items, list) or len(items) == 0:
         return lines
     lines.append("")
-    lines.append(f"  {item_label}：")
+    lines.append(f"  {item_label}:")
     for i, item in enumerate(items[:max_show], 1):
         name = item.get(name_key, "")
         val = item.get(val_key, "")
         if name:
             txt = f"    {i}. {name}"
             if val and suffix:
-                txt += f"　{val}{suffix}"
+                txt += f"  {val}{suffix}"
             elif val:
-                txt += f"　{val}"
+                txt += f"  {val}"
             lines.append(txt)
     if len(items) > max_show:
-        lines.append(f"    ... 共 {len(items)} 项")
+        lines.append(f"    ... {len(items)} total")
     return lines
 
 
 def format_result(data: dict) -> str:
-    """将API返回的数据格式化为易读文本"""
+    """Format API response into readable text."""
     if data.get("code") != 200:
-        msg = data.get("msg", "未知错误")
-        return f"❌ 查询失败：{msg}"
+        msg = data.get("msg", "Unknown error")
+        return f"❌ Query failed: {msg}"
 
     info = data.get("data", data)
-    name = safe_val(info, "companyName", "entName", "企业名称")
+    name = safe_val(info, "companyName", "entName")
 
     lines = []
     lines.append("=" * 50)
     lines.append(f"  🏢 {name}")
     lines.append("=" * 50)
 
-    # 核心字段
-    credit = safe_val(info, "creditNo", "creditCode", "creditcode", "统一社会信用代码")
+    credit = safe_val(info, "creditNo", "creditCode", "creditcode")
     if credit != "-":
-        lines.append(f"  📌 统一社会信用代码：{credit}")
+        lines.append(f"  📌 Credit Code: {credit}")
 
-    lines.append(f"  📌 法定代表人：{safe_val(info, 'legalPerson', 'frName', '法定代表人')}")
-    lines.append(f"  📌 注册资本：{safe_val(info, 'capital', 'regCapital', 'regcap', '注册资本')}")
-    lines.append(f"  📌 经营状态：{safe_val(info, 'companyStatus', 'regStatus', 'regstatus', '经营状态')}")
-    lines.append(f"  📌 成立日期：{safe_val(info, 'establishDate', 'esDate', 'esdate', '成立日期')}")
-    lines.append(f"  📌 企业类型：{safe_val(info, 'companyType', 'entType', 'enttype', '企业类型')}")
-    lines.append(f"  📌 登记机关：{safe_val(info, 'authority', 'regOrg', 'regorg', '登记机关')}")
-    lines.append(f"  📌 注册地址：{safe_val(info, 'companyAddress', 'regAddr', 'regaddr', 'address', '注册地址')}")
-    lines.append(f"  📌 行业：{safe_val(info, 'industry', 'industryPhy', '行业')}")
+    lines.append(f"  📌 Legal Rep: {safe_val(info, 'legalPerson', 'frName')}")
+    lines.append(f"  📌 Registered Capital: {safe_val(info, 'capital', 'regCapital', 'regcap')}")
+    lines.append(f"  📌 Status: {safe_val(info, 'companyStatus', 'regStatus', 'regstatus')}")
+    lines.append(f"  📌 Established: {safe_val(info, 'establishDate', 'esDate', 'esdate')}")
+    lines.append(f"  📌 Type: {safe_val(info, 'companyType', 'entType', 'enttype')}")
+    lines.append(f"  📌 Authority: {safe_val(info, 'authority', 'regOrg', 'regorg')}")
+    lines.append(f"  📌 Address: {safe_val(info, 'companyAddress', 'regAddr', 'regaddr', 'address')}")
+    lines.append(f"  📌 Industry: {safe_val(info, 'industry', 'industryPhy')}")
 
-    real_cap = safe_val(info, 'realCapital', '实收资本', '实缴资本')
+    real_cap = safe_val(info, 'realCapital')
     if real_cap != "-":
-        lines.append(f"  📌 实缴资本：{real_cap}")
+        lines.append(f"  📌 Paid-in Capital: {real_cap}")
 
-    taxpayer = safe_val(info, 'taxpayerQual', 'taxpayerqual', '纳税人资质')
+    taxpayer = safe_val(info, 'taxpayerQual', 'taxpayerqual')
     if taxpayer != "-":
-        lines.append(f"  📌 纳税人资质：{taxpayer}")
+        lines.append(f"  📌 Taxpayer Type: {taxpayer}")
 
-    emp = safe_val(info, 'empCount', 'empcount', '人员规模')
+    emp = safe_val(info, 'empCount', 'empcount')
     if emp != "-":
-        lines.append(f"  📌 人员规模：{emp}")
+        lines.append(f"  📌 Employees: {emp}")
 
-    issue = safe_val(info, 'issueDate', '核准日期', '批准日期')
+    issue = safe_val(info, 'issueDate')
     if issue != "-":
-        lines.append(f"  📌 核准日期：{issue}")
+        lines.append(f"  📌 Approval Date: {issue}")
 
-    op_start = safe_val(info, 'operationStartdate', '营业起始日期')
-    op_end = safe_val(info, 'operationEnddate', '营业截止日期')
+    op_start = safe_val(info, 'operationStartdate')
+    op_end = safe_val(info, 'operationEnddate')
     if op_start != "-" and op_end != "-":
-        lines.append(f"  📌 营业期限：{op_start} 至 {op_end}")
+        lines.append(f"  📌 Operating Period: {op_start} to {op_end}")
     elif op_start != "-":
-        lines.append(f"  📌 营业起始：{op_start}")
+        lines.append(f"  📌 Operating Start: {op_start}")
 
-    # 经营范围
-    scope = safe_val(info, 'businessScope', 'opScope', 'opscope', '经营范围')
+    scope = safe_val(info, 'businessScope', 'opScope', 'opscope')
     if scope != "-":
-        lines.append(f"  📌 经营范围：{scope}")
+        lines.append(f"  📌 Business Scope: {scope}")
 
-    # 联系信息
+    # Contact info
     contacts = info.get("contacts")
     if contacts:
         contact_lines = format_contacts(contacts)
         lines.extend(contact_lines)
 
-    # 历史名称
-    hist = safe_val(info, 'historyNames', '历史名称')
+    # Historical names
+    hist = safe_val(info, 'historyNames')
     if hist != "-":
-        lines.append(f"  📌 曾用名：{hist}")
+        lines.append(f"  📌 Former Names: {hist}")
 
-    # 股东信息
-    shareholders = info.get(
-        "股东信息",
-        info.get("shareholders",
-                 info.get("holders", []))
-    )
+    # Shareholders
+    shareholders = info.get("shareholders", info.get("holders", info.get("股东信息", [])))
     if shareholders and isinstance(shareholders, list):
         sh_lines = format_array_field(
-            shareholders, "股东名称", "出资比例",
-            "👥 股东信息", max_show=5, suffix=""
+            shareholders, "name", "amount",
+            "👥 Shareholders", max_show=5
         )
-        # 如果没有"股东名称"字段，试试其他字段名
         if not sh_lines:
             sh_lines = format_array_field(
-                shareholders, "name", "amount",
-                "👥 股东信息", max_show=5
+                shareholders, "股东名称", "出资比例",
+                "👥 Shareholders", max_show=5
             )
         lines.extend(sh_lines)
 
-    # 主要人员
-    persons = info.get("主要人员", info.get("persons", info.get("keyPersons", [])))
+    # Key personnel
+    persons = info.get("keyPersons", info.get("persons", info.get("主要人员", [])))
     if persons and isinstance(persons, list):
         p_lines = format_array_field(
-            persons, "姓名", "职务",
-            "👤 主要人员", max_show=10
+            persons, "name", "position",
+            "👤 Key Personnel", max_show=10
         )
         if not p_lines:
             p_lines = format_array_field(
-                persons, "name", "position",
-                "👤 主要人员", max_show=10
+                persons, "姓名", "职务",
+                "👤 Key Personnel", max_show=10
             )
         lines.extend(p_lines)
 
@@ -215,15 +209,15 @@ def format_result(data: dict) -> str:
 
 
 def main():
-    load_dotenv()
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
     if len(sys.argv) < 2:
-        print("❌ 请提供企业名称或统一社会信用代码")
-        print(f"用法: python3 {sys.argv[0]} \"企业名称或信用代码\"")
+        print("❌ Please provide a company name or Unified Social Credit Code")
+        print(f"Usage: python {sys.argv[0]} \"company name or credit code\"")
         sys.exit(1)
 
     words = sys.argv[1].strip()
     if not words:
-        print("❌ 查询内容不能为空")
+        print("❌ Query content cannot be empty")
         sys.exit(1)
 
     result = query_company(words)
