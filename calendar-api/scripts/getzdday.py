@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""万年历 - 取指定日期信息（接口盒子 API）"""
+"""Chinese calendar query — get traditional calendar info via 接口盒子 API"""
 
 import sys
 import os
@@ -12,6 +12,9 @@ from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 API_URL = "https://cn.apihz.cn/api/time/getzdday.php"
 TZ = ZoneInfo("Asia/Shanghai")

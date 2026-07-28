@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""域名全查询 - ICP备案 + WHOIS + 微信防红检测"""
+"""Domain query — ICP filing + WHOIS + WeChat block check via 接口盒子 API"""
 
 import sys
 import os
@@ -10,6 +10,9 @@ import urllib.parse
 import urllib.error
 from pathlib import Path
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 BASE = "https://cn.apihz.cn/api/wangzhan"
 
