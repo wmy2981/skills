@@ -120,9 +120,6 @@ def extract_xhtml_to_md(filepath, content, is_heading_page=False, chapter_title=
         lines.append("")
         return "\n".join(lines)
 
-    # Title page, caution, toc, colophon - extract visible text
-    is_metadata = any(cls in body_str for cls in ["p-titlepage", "p-toc", "p-caution", "p-colophon"])
-
     # Chapter heading with image
     if is_heading_page:
         lines.append(f"<!-- CHAPTER-HEADING-IMAGE: {chapter_title} -->")

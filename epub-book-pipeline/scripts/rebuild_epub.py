@@ -104,7 +104,6 @@ def replace_paragraphs(soup, translated_lines):
     - Image <p>: skip content, DON'T advance idx (preserved as-is)
     """
     idx = 0
-    total_lines = len(translated_lines)
     for p_tag in soup.find_all("p"):
         p_text = p_tag.get_text(strip=True)
         is_empty = not p_text
@@ -170,13 +169,6 @@ def load_toc_translations(toc_path):
 
         # Parse TOC entries with label_cn
         toc_map = {}
-        pattern = re.compile(
-            r'^\s+-\s+play_order:\s*(\d+)\s*\n'
-            r'(?:\s+label:\s*"([^"]*)"\s*\n)?'
-            r'(?:\s+label_cn:\s*"([^"]*)"\s*\n)?'
-            r'(?:\s+src:\s*"([^"]*)"\s*\n)?',
-            re.MULTILINE
-        )
         # Simpler line-by-line approach
         lines = text.split('\n')
         current_order = None

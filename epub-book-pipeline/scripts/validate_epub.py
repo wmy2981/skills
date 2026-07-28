@@ -72,10 +72,12 @@ def verify_translation(source_md_path, translation_md_path):
         t_lines = tgt_idx.get(fname, [])
 
         # Count text lines and separators
-        s_text = [l for l in s_lines if l.strip() and not l.strip().startswith("<!--") and not l.strip().startswith("# ") and l.strip() != "---"]
-        t_text = [l for l in t_lines if l.strip() and not l.strip().startswith("<!--") and not l.strip().startswith("# ") and l.strip() != "---"]
-        s_sep = sum(1 for l in s_lines if l.strip() == "---")
-        t_sep = sum(1 for l in t_lines if l.strip() == "---")
+        def _is_text(line):
+            return line.strip() and not line.strip().startswith("<!--") and not line.strip().startswith("# ") and line.strip() != "---"
+        s_text = [line for line in s_lines if _is_text(line)]
+        t_text = [line for line in t_lines if _is_text(line)]
+        s_sep = sum(1 for line in s_lines if line.strip() == "---")
+        t_sep = sum(1 for line in t_lines if line.strip() == "---")
 
         issues = []
         if len(s_text) != len(t_text):
@@ -146,16 +148,19 @@ def main():
     print("[1] ZIP Structure")
     ok = file_list[0] == "mimetype"
     check(ok, "mimetype is first entry", args.verbose)
-    total += 1; passed += ok
+    total += 1
+    passed += ok
 
     mt = zf.read("mimetype").decode("utf-8").strip()
     ok = mt == "application/epub+zip"
     check(ok, f"mimetype content: {repr(mt)}", args.verbose)
-    total += 1; passed += ok
+    total += 1
+    passed += ok
 
     ok = "META-INF/container.xml" in file_list
     check(ok, "container.xml present", args.verbose)
-    total += 1; passed += ok
+    total += 1
+    passed += ok
 
     # Count file types
     xhtml_count = sum(1 for f in file_list if f.endswith((".xhtml", ".html")))
@@ -170,19 +175,23 @@ def main():
         opf = zf.read(opf_paths[0]).decode("utf-8")
         ok = f"<dc:language>{'zh-CN' if 'zh-CN' in opf else ''}" in opf
         check(ok, "dc:language set", args.verbose)
-        total += 1; passed += ok
+        total += 1
+        passed += ok
 
         ok = "primary-writing-mode" not in opf
         check(ok, "primary-writing-mode removed", args.verbose)
-        total += 1; passed += ok
+        total += 1
+        passed += ok
 
         ok = 'page-progression-direction="ltr"' in opf or 'page-progression-direction="default"' in opf
         check(ok, "page-progression-direction is ltr", args.verbose)
-        total += 1; passed += ok
+        total += 1
+        passed += ok
 
         ok = "spine" in opf
         check(ok, "spine present", args.verbose)
-        total += 1; passed += ok
+        total += 1
+        passed += ok
     else:
         print("  ❌ No OPF file found!")
     print()
@@ -221,7 +230,8 @@ def main():
             stats["ok"] += 1
     print(f"  XHTML files checked: {stats['total']} "
           f"(OK: {stats['ok']}, no Chinese: {stats['no_cn']}, ruby: {stats['has_ruby']}, lang: {stats['wrong_lang']})")
-    total += 2; passed += 2  # composite passes
+    total += 2
+    passed += 2  # composite passes
     print()
 
     # ── 4. NCX TOC ──
@@ -235,7 +245,8 @@ def main():
         for label in nav_labels:
             has_cn = any(ord(c) > 0x4E00 for c in label if '一' <= c <= '鿿')
             check(has_cn, f"  \"{label}\" translated", args.verbose)
-            total += 1; passed += has_cn
+            total += 1
+            passed += has_cn
     elif nav_paths:
         nav = zf.read(nav_paths[0]).decode("utf-8")
         nav_labels = re.findall(r'>([^<]+)</a>', nav)
@@ -243,7 +254,8 @@ def main():
         for label in nav_labels:
             has_cn = any(ord(c) > 0x4E00 for c in label if '一' <= c <= '鿿')
             check(has_cn, f"  \"{label}\" translated" if has_cn else f"  \"{label}\" → needs translation", args.verbose)
-            total += 1; passed += has_cn
+            total += 1
+            passed += has_cn
     else:
         print("  ⚠️  No NCX or nav file found")
     print()
@@ -254,7 +266,8 @@ def main():
     images = [f for f in file_list if f.lower().endswith(image_exts)]
     ok = len(images) > 0
     check(ok, f"{len(images)} images preserved", args.verbose)
-    total += 1; passed += ok
+    total += 1
+    passed += ok
 
     # Check images are readable
     bad_images = 0
@@ -263,11 +276,12 @@ def main():
             data = zf.read(img_path)
             if len(data) == 0:
                 bad_images += 1
-        except:
+        except Exception:
             bad_images += 1
     ok = bad_images == 0
     check(ok, f"All images readable ({bad_images} bad)", args.verbose)
-    total += 1; passed += ok
+    total += 1
+    passed += ok
 
     zf.close()
 

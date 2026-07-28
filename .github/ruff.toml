@@ -1,20 +1,11 @@
-# Ruff configuration for wmy-skills CI
-# See https://docs.astral.sh/ruff/settings/
-
 target-version = "py310"
 
-# Rules:
-#   F - pyflakes (logic errors, unused imports, undefined names)
-#   E - pycodestyle errors
-#   W - pycodestyle warnings
-#   I - isort (import ordering)
-#   N - pep8-naming
-#   UP - pyupgrade (modernize syntax)
-
+[lint]
 select = ["F", "E", "W", "I", "N", "UP"]
-
-# Allow long lines (project convention for descriptive strings)
 ignore = ["E501"]
 
-# Allow unused imports in __init__.py
-per-file-ignores = {}
+[lint.per-file-ignores]
+# E402: module-import-not-at-top-of-file
+# fun-asr and freshrss have reconfigure between stdlib and third-party imports
+"fun-asr/scripts/fun_asr_cli.py" = ["E402"]
+"freshrss/scripts/freshrss.py" = ["E402"]
