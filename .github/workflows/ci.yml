@@ -7,21 +7,16 @@ on:
     branches: [master]
 
 jobs:
-  python-syntax:
-    name: Check Python syntax
+  syntax:
+    name: Syntax check (py_compile)
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Find all Python files and check syntax
+      - name: Check Python syntax
         run: |
-          echo "Checking Python syntax for all .py files..."
           errors=0
           while IFS= read -r -d '' f; do
             if python -m py_compile "$f" 2>/dev/null; then
@@ -31,10 +26,65 @@ jobs:
               errors=$((errors + 1))
             fi
           done < <(find . -name '*.py' -not -path './.github/*' -print0)
-          echo ""
-          if [ "$errors" -eq 0 ]; then
-            echo "All Python files passed syntax check."
-          else
-            echo "$errors file(s) have syntax errors."
-            exit 1
-          fi
+          [ "$errors" -eq 0 ] || { echo "$errors file(s) have syntax errors."; exit 1; }
+
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Run ruff
+        run: ruff check --config .github/ruff.toml --output-format=github .
+
+  conventions:
+    name: Repo conventions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check Python script conventions
+        run: |
+          errors=0
+          while IFS= read -r -d '' f; do
+            name="${f#./}"
+            issues=""
+
+            # 1) Must use 'python' not 'python3' in usage messages
+            #    (windows target)
+            if grep -q 'python3 ' "$f" 2>/dev/null; then
+              issues="$issues[pýthon3]"
+            fi
+
+            # 2) Must have UTF-8 stdout reconfigure if output is user-facing
+            #    (heuristic: check for emoji or non-ASCII in the file)
+            if grep -qP '[^\x00-\x7F]' "$f" 2>/dev/null; then
+              if ! grep -q 'sys.stdout.reconfigure' "$f" 2>/dev/null; then
+                issues="$issues[missing UTF-8 reconfigure]"
+              fi
+            fi
+
+            if [ -n "$issues" ]; then
+              echo "  ❌ $name$issues"
+              errors=$((errors + 1))
+            fi
+          done < <(find . -name '*.py' -not -path './.github/*' -print0)
+
+          # 3) Every scripts/ dir should have .env.example if it has a requirements section
+          while IFS= read -r -d '' sk; do
+            dir="$(dirname "$sk")"
+            if grep -q 'pip install' "$sk" 2>/dev/null && [ -d "$dir/scripts" ]; then
+              if [ ! -f "$dir/scripts/.env.example" ]; then
+                echo "  ❌ $dir/SKILL.md has deps but missing scripts/.env.example"
+                errors=$((errors + 1))
+              fi
+            fi
+          done < <(find . -name 'SKILL.md' -not -path './.github/*' -print0)
+
+          [ "$errors" -eq 0 ] || { echo "$errors convention violation(s)."; exit 1; }

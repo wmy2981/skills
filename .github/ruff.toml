@@ -1,0 +1,20 @@
+# Ruff configuration for wmy-skills CI
+# See https://docs.astral.sh/ruff/settings/
+
+target-version = "py310"
+
+# Rules:
+#   F - pyflakes (logic errors, unused imports, undefined names)
+#   E - pycodestyle errors
+#   W - pycodestyle warnings
+#   I - isort (import ordering)
+#   N - pep8-naming
+#   UP - pyupgrade (modernize syntax)
+
+select = ["F", "E", "W", "I", "N", "UP"]
+
+# Allow long lines (project convention for descriptive strings)
+ignore = ["E501"]
+
+# Allow unused imports in __init__.py
+per-file-ignores = {}
