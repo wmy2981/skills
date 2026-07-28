@@ -62,9 +62,9 @@ jobs:
               issues="$issues[pýthon3]"
             fi
 
-            # 2) Must have UTF-8 stdout reconfigure if output is user-facing
-            #    (heuristic: check for emoji or non-ASCII in the file)
-            if grep -qP '[^\x00-\x7F]' "$f" 2>/dev/null; then
+            # 2) Must have UTF-8 stdout reconfigure if the script prints non-ASCII
+            #    (check print statements containing non-ASCII characters)
+            if grep -qP 'print\([^)]*[^\x00-\x7F]' "$f" 2>/dev/null; then
               if ! grep -q 'sys.stdout.reconfigure' "$f" 2>/dev/null; then
                 issues="$issues[missing UTF-8 reconfigure]"
               fi
@@ -76,13 +76,16 @@ jobs:
             fi
           done < <(find . -name '*.py' -not -path './.github/*' -print0)
 
-          # 3) Every scripts/ dir should have .env.example if it has a requirements section
+          # 3) Every scripts/ dir should have .env.example if its scripts read env vars
           while IFS= read -r -d '' sk; do
             dir="$(dirname "$sk")"
-            if grep -q 'pip install' "$sk" 2>/dev/null && [ -d "$dir/scripts" ]; then
-              if [ ! -f "$dir/scripts/.env.example" ]; then
-                echo "  ❌ $dir/SKILL.md has deps but missing scripts/.env.example"
-                errors=$((errors + 1))
+            if [ -d "$dir/scripts" ]; then
+              # Check if any .py in scripts/ uses environment variables
+              if grep -qr 'os\.environ\.get\|os\.getenv' "$dir/scripts" 2>/dev/null; then
+                if [ ! -f "$dir/scripts/.env.example" ]; then
+                  echo "  ❌ $dir/scripts/ reads env vars but missing .env.example"
+                  errors=$((errors + 1))
+                fi
               fi
             fi
           done < <(find . -name 'SKILL.md' -not -path './.github/*' -print0)

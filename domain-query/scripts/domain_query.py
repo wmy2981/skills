@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Domain query — ICP filing + WHOIS + WeChat block check via 接口盒子 API"""
 
-import sys
-import subprocess
-import os
-import json
 import argparse
-import urllib.request
-import urllib.parse
+import json
+import os
+import subprocess
+import sys
 import urllib.error
+import urllib.parse
+import urllib.request
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")

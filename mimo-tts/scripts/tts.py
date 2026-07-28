@@ -13,16 +13,17 @@ OpenAI-compatible /v1/chat/completions interface supporting:
 Environment variable: MIMO_APIKEY
 """
 
-import json
-import os
-import sys
-import subprocess
 import argparse
 import base64
 import datetime
-import urllib.request
+import json
+import os
+import subprocess
+import sys
 import urllib.error
+import urllib.request
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")

@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """Chinese calendar query — get traditional calendar info via 接口盒子 API"""
 
-import sys
-import subprocess
-import os
-import json
 import argparse
-import urllib.request
-import urllib.parse
+import json
+import os
+import subprocess
+import sys
 import urllib.error
-from pathlib import Path
+import urllib.parse
+import urllib.request
 from datetime import datetime
+from pathlib import Path
 from zoneinfo import ZoneInfo
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")

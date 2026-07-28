@@ -1,9 +1,9 @@
 """Normalize image inputs (local path, URL, base64 data URI) to API-ready format."""
 
-import os
-import re
 import base64
 import binascii
+import os
+import re
 import sys
 import urllib.parse
 
@@ -41,7 +41,7 @@ def _load_local_image(path: str) -> str:
             mime = "image/png"  # fallback
         b64 = base64.b64encode(data).decode("ascii")
         return f"data:{mime};base64,{b64}"
-    except (OSError, IOError) as e:
+    except OSError as e:
         print(f"Error: Cannot read image file '{path}': {e}", file=sys.stderr)
         sys.exit(1)
 

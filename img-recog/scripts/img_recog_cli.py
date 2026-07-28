@@ -10,12 +10,12 @@ Usage:
 """
 
 import argparse
-import sys
 import os
+import sys
 
-from config_loader import load_provider_config, load_model_config, resolve_model
-from image_handler import normalize_image
 from api_caller import call_vision_model
+from config_loader import load_model_config, load_provider_config, resolve_model
+from image_handler import normalize_image
 from output_formatter import format_output
 
 
@@ -33,9 +33,9 @@ def parse_prompt(prompt_arg: str | None) -> str:
             print(f"Error: Prompt file not found: '{filepath}'", file=sys.stderr)
             sys.exit(1)
         try:
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, encoding="utf-8") as f:
                 return f.read().strip()
-        except (OSError, IOError) as e:
+        except OSError as e:
             print(f"Error: Cannot read prompt file '{filepath}': {e}", file=sys.stderr)
             sys.exit(1)
     return prompt_arg

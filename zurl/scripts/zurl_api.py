@@ -13,12 +13,13 @@ import json
 import os
 import random
 import string
-import sys
 import subprocess
+import sys
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -257,7 +258,7 @@ def main():
                 try:
                     val = int(val)
                 except ValueError:
-                    print(json.dumps({"error": True, "detail": f"ttl_days must be an integer"}), ensure_ascii=False)
+                    print(json.dumps({"error": True, "detail": "ttl_days must be an integer"}), ensure_ascii=False)
                     sys.exit(1)
             kwargs[key] = val
         if not kwargs:

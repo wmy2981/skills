@@ -2,6 +2,7 @@
 
 import os
 import sys
+
 import yaml
 from dotenv import load_dotenv
 
@@ -25,10 +26,10 @@ MODEL_FILE = os.environ.get(
 def _load_yaml(path: str, label: str) -> dict:
     if not os.path.exists(path):
         print(f"Error: {label} not found at {path}", file=sys.stderr)
-        print(f"Create it with provider entries. See SKILL.md for instructions.", file=sys.stderr)
+        print("Create it with provider entries. See SKILL.md for instructions.", file=sys.stderr)
         sys.exit(1)
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
         if data is None:
             print(f"Error: {label} is empty or contains only comments", file=sys.stderr)

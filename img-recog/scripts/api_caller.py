@@ -1,7 +1,15 @@
 """Call OpenAI-compatible vision model API."""
 
 import sys
-from openai import OpenAI, APIError, APITimeoutError, APIConnectionError, AuthenticationError, RateLimitError
+
+from openai import (
+    APIConnectionError,
+    APIError,
+    APITimeoutError,
+    AuthenticationError,
+    OpenAI,
+    RateLimitError,
+)
 
 
 def call_vision_model(provider_cfg: dict, model: str, image_uri: str,

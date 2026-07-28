@@ -9,13 +9,12 @@ Requires env vars: LINKGO_HOST, LINKGO_PASSWORD
 import argparse
 import json
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
-from typing import Optional
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
-from urllib.parse import urlencode
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -45,8 +44,8 @@ API_URL: str = ""  # set in _init_env after BASE_URL is known
 
 # ─── HTTP helpers ─────────────────────────────────────────────
 
-def _request(method: str, path: str, data: Optional[dict] = None,
-             headers: Optional[dict] = None, auth_header: bool = False) -> dict:
+def _request(method: str, path: str, data: dict | None = None,
+             headers: dict | None = None, auth_header: bool = False) -> dict:
     """Unified HTTP request returning JSON dict."""
     url = f"{API_URL}{path}"
     hdrs = {"Content-Type": "application/json"}
@@ -275,7 +274,7 @@ def cmd_upload_icon(args):
         f"--{boundary}\r\n"
         f'Content-Disposition: form-data; name="icons"; filename="{filename}"\r\n'
         f"Content-Type: application/octet-stream\r\n\r\n"
-    ).encode("utf-8") + file_data + f"\r\n--{boundary}--\r\n".encode("utf-8")
+    ).encode() + file_data + f"\r\n--{boundary}--\r\n".encode()
 
     url = f"{API_URL}/upload_icon.php"
     req = Request(url, data=body, method="POST")
@@ -315,7 +314,7 @@ def cmd_export(args):
 
 def cmd_import(args):
     """Import config file (overwrites all data)."""
-    with open(args.filepath, "r", encoding="utf-8") as f:
+    with open(args.filepath, encoding="utf-8") as f:
         data = json.load(f)
 
     result = save_data(data)

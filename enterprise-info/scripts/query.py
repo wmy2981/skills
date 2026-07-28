@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Enterprise info query — lookup Chinese company registration via 接口盒子 API"""
 
-import os
-import sys
-import subprocess
 import json
-import urllib.request
+import os
+import subprocess
+import sys
 import urllib.parse
+import urllib.request
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")

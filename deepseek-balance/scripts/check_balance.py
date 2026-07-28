@@ -6,8 +6,8 @@
 """
 import json
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen

@@ -13,15 +13,15 @@ Usage:
   send.py <to> <subject> --file <file.html>
   [attachment...] can be appended to any form.
 """
-import sys
-import os
-import smtplib
 import codecs
+import os
 import pathlib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
+import smtplib
+import sys
 from email import encoders
+from email.mime.base import MIMEBase
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Force UTF-8 on Windows terminals (default GBK)
 if hasattr(sys.stdout, "reconfigure"):

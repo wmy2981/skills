@@ -15,8 +15,8 @@ Checks:
 
 import argparse
 import re
-import sys
 import subprocess
+import sys
 import zipfile
 from pathlib import Path
 
@@ -38,9 +38,9 @@ def verify_translation(source_md_path, translation_md_path):
         return
 
     print("\n[V] Translation Verification (warning-only)")
-    with open(source_md_path, "r", encoding="utf-8") as f:
+    with open(source_md_path, encoding="utf-8") as f:
         src = f.read()
-    with open(translation_md_path, "r", encoding="utf-8") as f:
+    with open(translation_md_path, encoding="utf-8") as f:
         tgt = f.read()
 
     src_sections = re.split(r'(<!-- FILE: .*?\.xhtml -->)', src)

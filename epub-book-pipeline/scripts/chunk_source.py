@@ -85,7 +85,7 @@ class Chunk:
 
 def parse_source_sections(source_path):
     """Parse source.md into FILE sections without changing marker text."""
-    with open(source_path, "r", encoding="utf-8", newline=None) as source_file:
+    with open(source_path, encoding="utf-8", newline=None) as source_file:
         lines = source_file.read().splitlines()
 
     sections = []

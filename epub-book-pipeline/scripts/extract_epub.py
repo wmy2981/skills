@@ -21,15 +21,15 @@ Output (in output_dir):
 """
 
 import argparse
-import os
 import re
-import sys
 import subprocess
+import sys
+import warnings
 from collections import Counter
 from pathlib import Path
-from bs4 import BeautifulSoup, NavigableString, Tag, XMLParsedAsHTMLWarning
-import warnings
+
 import ebooklib
+from bs4 import BeautifulSoup, Tag, XMLParsedAsHTMLWarning
 from ebooklib import epub
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")

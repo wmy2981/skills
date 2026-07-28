@@ -17,16 +17,15 @@ What it does:
 """
 
 import argparse
-import json
 import os
 import re
-import shutil
-import sys
 import subprocess
+import sys
+import warnings
 import zipfile
 from pathlib import Path
-from bs4 import BeautifulSoup, NavigableString, Tag, XMLParsedAsHTMLWarning
-import warnings
+
+from bs4 import BeautifulSoup, NavigableString, XMLParsedAsHTMLWarning
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 if sys.platform == "win32":
@@ -36,7 +35,7 @@ warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 def parse_translation_md(md_path):
     """Split translation.md by <!-- FILE: ... --> markers."""
-    with open(md_path, "r", encoding="utf-8") as f:
+    with open(md_path, encoding="utf-8") as f:
         content = f.read()
     sections = re.split(r'(<!-- FILE: .*?\.xhtml -->)', content)
     file_map = {}
@@ -160,7 +159,7 @@ def load_toc_translations(toc_path):
     if not toc_path or not toc_path.exists():
         return None, ""
     try:
-        with open(toc_path, "r", encoding="utf-8") as f:
+        with open(toc_path, encoding="utf-8") as f:
             text = f.read()
         # Parse book_title
         title_m = re.search(r'^book_title_cn:\s*(.+)', text, re.MULTILINE)

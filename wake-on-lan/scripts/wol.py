@@ -18,9 +18,10 @@ import argparse
 import json
 import os
 import socket
-import sys
 import subprocess
+import sys
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -62,7 +63,7 @@ def load_config(config_path: Path) -> dict:
         print(json.dumps({"success": False, "error": "pyyaml is not installed. Run: pip install pyyaml"}))
         sys.exit(1)
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             return yaml.safe_load(f) or {"hosts": []}
     except Exception as e:
         print(json.dumps({"success": False, "error": f"Failed to load config: {e}"}))

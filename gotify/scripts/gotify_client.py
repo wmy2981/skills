@@ -14,12 +14,13 @@ Usage:
 import argparse
 import json
 import os
-import sys
 import subprocess
-import urllib.request
+import sys
 import urllib.error
 import urllib.parse
+import urllib.request
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
