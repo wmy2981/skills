@@ -1,11 +1,11 @@
 ---
 name: fun-asr
-description: Use when the user shares an audio file (mp3, wav, m4a, flac) and asks to transcribe it to text — includes queries containing "speech recognition", "audio to text", "transcribe", "transcription", "ASR", "meeting notes", "convert audio", "subtitle", "SRT", "speaker diarization", "who said what". Also triggers on audio meeting recordings, interviews, phone calls, lectures, voice memos, podcasts. Requires BAILIAN_APIKEY (Alibaba Cloud Bailian / DashScope) and S3-compatible storage credentials.
+description: Use when the user shares an audio file (mp3, wav, m4a, flac) and asks to transcribe it to text — includes queries containing "speech recognition", "audio to text", "transcribe", "transcription", "ASR", "meeting notes", "convert audio", "subtitle", "SRT", "speaker diarization", "who said what". Also triggers on audio meeting recordings, interviews, phone calls, lectures, voice memos, podcasts. Requires DASHSCOPE_API_KEY (Alibaba Cloud DashScope) and S3-compatible storage credentials.
 ---
 
 # Fun-ASR: Audio Transcription
 
-Transcribe audio files using Alibaba Cloud Bailian's Fun-ASR non-real-time speech recognition model. Supports speaker diarization, multi-language recognition, and multiple output formats (plain text, JSON, SRT subtitles).
+Transcribe audio files using Alibaba Cloud DashScope's Fun-ASR non-real-time speech recognition model. Supports speaker diarization, multi-language recognition, and multiple output formats (plain text, JSON, SRT subtitles).
 
 ## Workflow
 
@@ -21,7 +21,7 @@ Set these in `scripts/.env` (copy from the `.env` template):
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `BAILIAN_APIKEY` | Yes | Alibaba Cloud Bailian (DashScope) API key |
+| `DASHSCOPE_API_KEY` | Yes | Alibaba Cloud DashScope API key |
 | `S3_ENDPOINT` | Yes | S3-compatible storage endpoint URL |
 | `S3_BUCKET` | Yes | S3 bucket name for audio uploads |
 | `S3_REGION` | No | S3 region (default: `us-east-1`) |

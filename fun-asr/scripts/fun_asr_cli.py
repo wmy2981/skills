@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Fun-ASR CLI — Audio transcription via Alibaba Cloud Bailian Fun-ASR API.
+Fun-ASR CLI — Audio transcription via Alibaba Cloud DashScope Fun-ASR API.
 
 Transcribes audio files (mp3, wav, m4a, flac, ogg, aac, etc.) using the
 Fun-ASR non-real-time speech recognition model. Supports speaker diarization,
@@ -154,11 +154,11 @@ def load_env():
 # ---------------------------------------------------------------------------
 
 def get_api_key() -> str:
-    """Return the Bailian API key or raise ConfigError."""
-    key = os.getenv("BAILIAN_APIKEY") or os.getenv("DASHSCOPE_API_KEY")
+    """Return the DashScope API key or raise ConfigError."""
+    key = os.getenv("DASHSCOPE_API_KEY") or os.getenv("BAILIAN_APIKEY")
     if not key:
         raise ConfigError(
-            "BAILIAN_APIKEY (or DASHSCOPE_API_KEY) is not set. "
+            "DASHSCOPE_API_KEY is not set. "
             "Set it in your environment or .env file."
         )
     return key
@@ -167,8 +167,8 @@ def get_api_key() -> str:
 def validate_config():
     """Validate required configuration. Raises ConfigError on failure."""
     missing = []
-    if not os.getenv("BAILIAN_APIKEY") and not os.getenv("DASHSCOPE_API_KEY"):
-        missing.append("BAILIAN_APIKEY (or DASHSCOPE_API_KEY)")
+    if not os.getenv("DASHSCOPE_API_KEY") and not os.getenv("BAILIAN_APIKEY"):
+        missing.append("DASHSCOPE_API_KEY")
     if not os.getenv("S3_ENDPOINT"):
         missing.append("S3_ENDPOINT")
     if not os.getenv("S3_BUCKET"):
@@ -577,7 +577,7 @@ def format_as(result: dict, fmt: str) -> str:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Transcribe audio using Alibaba Cloud Bailian Fun-ASR "
+            "Transcribe audio using Alibaba Cloud DashScope Fun-ASR "
             "(non-real-time speech recognition)."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
