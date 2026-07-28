@@ -9,7 +9,7 @@
 [x] gotify
 [x] img-recog
 [x] linkgo
-[] mimo-tts
+[x] mimo-tts
 [x] send-email
 [x] fun-asr
 [] wake-on-lan

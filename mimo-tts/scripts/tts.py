@@ -1,23 +1,31 @@
 #!/usr/bin/env python3
 """
-MiMo-V2.5-TTS 语音合成 API 客户端
-使用 OpenAI-compatible /v1/chat/completions 接口
+MiMo-V2.5-TTS speech synthesis API client.
 
-覆盖功能：
-  - 预置音色合成 (mimo-v2.5-tts)
-  - 文本设计音色 (mimo-v2.5-tts-voicedesign)
-  - 音色复刻 (mimo-v2.5-tts-voiceclone)
-  - 自然语言风格控制
-  - 流式/非流式输出
-  - 查询音色列表
+OpenAI-compatible /v1/chat/completions interface supporting:
+  - Preset voice synthesis (mimo-v2.5-tts)
+  - Voice design from text description (mimo-v2.5-tts-voicedesign)
+  - Voice cloning from audio sample (mimo-v2.5-tts-voiceclone)
+  - Natural language style control
+  - Streaming / non-streaming output
+  - List available voices
 
-环境变量：MIMO_APIKEY
-提示词传参方式：写入 txt 文件后用 $(cat) 传入
+Environment variable: MIMO_APIKEY
 """
 
-import json, os, sys, argparse, base64, datetime
-import urllib.request, urllib.error
+import json
+import os
+import sys
+import argparse
+import base64
+import datetime
+import urllib.request
+import urllib.error
+from pathlib import Path
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 API_BASE = "https://api.xiaomimimo.com/v1"
 
@@ -25,19 +33,21 @@ API_BASE = "https://api.xiaomimimo.com/v1"
 def get_api_key():
     key = os.environ.get("MIMO_APIKEY", "")
     if not key:
-        raise RuntimeError("环境变量 MIMO_APIKEY 未设置")
+        raise RuntimeError("Environment variable MIMO_APIKEY not set")
     return key
 
 
 def resolve_output_path(output_arg):
-    """确定输出路径。不指定则默认到当前工作目录"""
+    """Determine output path. Defaults to ~/.wmyskills/mimo-tts/outputs/ with timestamp name."""
     if output_arg:
         d = os.path.dirname(output_arg)
         if d:
             os.makedirs(d, exist_ok=True)
         return output_arg
+    out_dir = Path.home() / ".wmyskills" / "mimo-tts" / "outputs"
+    out_dir.mkdir(parents=True, exist_ok=True)
     ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    return os.path.join(os.getcwd(), f"tts_{ts}.wav")
+    return str(out_dir / f"tts_{ts}.wav")
 
 
 def chat_completion(payload, stream=False):
@@ -60,12 +70,12 @@ def chat_completion(payload, stream=False):
 
 
 def save_audio_from_response(resp_body, output_path):
-    """解析 OpenAI 格式响应，提取音频 base64 并保存"""
+    """Parse OpenAI-format response, extract base64 audio, save to file."""
     try:
         data = json.loads(resp_body)
         audio_b64 = data["choices"][0]["message"]["audio"]["data"]
     except (KeyError, TypeError, json.JSONDecodeError, IndexError):
-        print(json.dumps({"error": True, "message": "响应中未找到音频数据", "raw": str(resp_body)[:500]}, ensure_ascii=False))
+        print(json.dumps({"error": True, "message": "No audio data in response", "raw": str(resp_body)[:500]}, ensure_ascii=False))
         return
     audio_bytes = base64.b64decode(audio_b64)
     out = resolve_output_path(output_path)
@@ -76,12 +86,12 @@ def save_audio_from_response(resp_body, output_path):
 
 
 def handle_stream_response(stream, output_path):
-    """处理流式 SSE 响应，拼接 PCM 数据"""
+    """Handle SSE stream response, concatenate PCM chunks."""
     try:
         import numpy as np
         import soundfile as sf
     except ImportError:
-        print(json.dumps({"error": True, "message": "流式输出需要 numpy 和 soundfile，请先 pip install numpy soundfile"}))
+        print(json.dumps({"error": True, "message": "Streaming requires numpy and soundfile — pip install numpy soundfile"}))
         return
     collected = np.array([], dtype=np.float32)
     buffer = ""
@@ -125,38 +135,38 @@ def handle_http_response(result, output_path, stream):
 
 
 def main():
-    load_dotenv()
-    parser = argparse.ArgumentParser(description="MiMo-V2.5-TTS 语音合成")
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    parser = argparse.ArgumentParser(description="MiMo-V2.5-TTS Speech Synthesis")
     sub = parser.add_subparsers(dest="command")
 
     # voices
-    pv = sub.add_parser("voices", help="列出可用音色")
+    pv = sub.add_parser("voices", help="List available voices")
     pv.add_argument("--format", choices=["json", "text"], default="json")
 
     # synthesize
-    ps = sub.add_parser("synthesize", aliases=["tts"], help="预置音色合成")
-    ps.add_argument("text", help="合成文本 (用 \$(cat) 传参)")
+    ps = sub.add_parser("synthesize", aliases=["tts"], help="Synthesize with preset voice")
+    ps.add_argument("text", help="Text to synthesize (pipe via $(cat))")
     ps.add_argument("--voice", "-v", default="mimo_default")
-    ps.add_argument("--user-prompt", "-up", help="自然语言风格指令 (用 \$(cat) 传参)")
+    ps.add_argument("--user-prompt", "-up", help="Natural language style prompt (pipe via $(cat))")
     ps.add_argument("--format", choices=["wav", "mp3", "pcm16"], default="wav")
     ps.add_argument("--stream", action="store_true")
     ps.add_argument("--output", "-o")
     ps.add_argument("--outfmt", choices=["json", "text"], default="json")
 
     # design
-    pd = sub.add_parser("design", help="文本设计音色")
-    pd.add_argument("voice_prompt", help="音色描述文本 (用 \$(cat) 传参)")
-    pd.add_argument("--text", "-t", help="合成文本 (用 \$(cat) 传参，可选)")
+    pd = sub.add_parser("design", help="Design voice from text description")
+    pd.add_argument("voice_prompt", help="Voice description (pipe via $(cat))")
+    pd.add_argument("--text", "-t", help="Text to synthesize (pipe via $(cat), optional)")
     pd.add_argument("--format", choices=["wav", "mp3", "pcm16"], default="wav")
     pd.add_argument("--stream", action="store_true")
     pd.add_argument("--output", "-o")
     pd.add_argument("--outfmt", choices=["json", "text"], default="json")
 
     # clone
-    pc = sub.add_parser("clone", help="音色复刻")
-    pc.add_argument("audio_sample", help="音频样本文件路径")
-    pc.add_argument("text", help="合成文本 (用 \$(cat) 传参)")
-    pc.add_argument("--user-prompt", "-up", help="自然语言风格指令 (用 \$(cat) 传参)")
+    pc = sub.add_parser("clone", help="Clone voice from audio sample")
+    pc.add_argument("audio_sample", help="Path to audio sample file")
+    pc.add_argument("text", help="Text to synthesize (pipe via $(cat))")
+    pc.add_argument("--user-prompt", "-up", help="Natural language style prompt (pipe via $(cat))")
     pc.add_argument("--format", choices=["wav", "mp3", "pcm16"], default="wav")
     pc.add_argument("--stream", action="store_true")
     pc.add_argument("--output", "-o")
@@ -171,11 +181,11 @@ def main():
     # voices
     if args.command == "voices":
         voices = [
-            {"id": "mimo_default", "name": "MiMo-默认", "lang": "auto", "gender": "auto"},
-            {"id": "冰糖", "name": "冰糖", "lang": "zh", "gender": "female"},
-            {"id": "茉莉", "name": "茉莉", "lang": "zh", "gender": "female"},
-            {"id": "苏打", "name": "苏打", "lang": "zh", "gender": "male"},
-            {"id": "白桦", "name": "白桦", "lang": "zh", "gender": "male"},
+            {"id": "mimo_default", "name": "MiMo-Default", "lang": "auto", "gender": "auto"},
+            {"id": "冰糖", "name": "Bingtang", "lang": "zh", "gender": "female"},
+            {"id": "茉莉", "name": "Moli", "lang": "zh", "gender": "female"},
+            {"id": "苏打", "name": "Soda", "lang": "zh", "gender": "male"},
+            {"id": "白桦", "name": "Birch", "lang": "zh", "gender": "male"},
             {"id": "Mia", "name": "Mia", "lang": "en", "gender": "female"},
             {"id": "Chloe", "name": "Chloe", "lang": "en", "gender": "female"},
             {"id": "Milo", "name": "Milo", "lang": "en", "gender": "male"},
@@ -183,7 +193,8 @@ def main():
         ]
         if args.format == "text":
             for v in voices:
-                print(f"  {v['name']} ({v['id']}) — {v['lang']} {v['gender']}")
+                label = f"{v['name']} ({v['id']})" if v['name'] != v['id'] else v['id']
+                print(f"  {label} — {v['lang']} {v['gender']}")
         else:
             print(json.dumps({"voices": voices}, ensure_ascii=False, indent=2))
         return
