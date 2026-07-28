@@ -202,6 +202,12 @@ def main():
     p.add_argument("description", nargs="?", help="New description")
     p.add_argument("ttl_days", nargs="?", type=int, help="New TTL in days")
 
+    # edit
+    p = sub.add_parser("edit", help="Edit a short URL (key=value style)")
+    p.add_argument("id", type=int, help="URL ID from list/search results")
+    p.add_argument("-o", "--option", action="append", default=[],
+                   help="Field to update, e.g. -o long_url=https://new.url -o title=\"New Title\"")
+
     # delete
     p = sub.add_parser("delete", help="Delete a short URL by code")
     p.add_argument("short_code", help="Short URL code to delete")
@@ -239,6 +245,25 @@ def main():
     elif args.command == "update":
         print(json.dumps(api.update(args.id, long_url=args.long_url, short_url=args.short_code,
                                     title=args.title, description=args.description, ttl_days=args.ttl_days), ensure_ascii=False))
+    elif args.command == "edit":
+        kwargs = {}
+        for opt in args.option:
+            if "=" not in opt:
+                print(json.dumps({"error": True, "detail": f"Invalid option format: {opt} (expected key=value)"}))
+                sys.exit(1)
+            key, val = opt.split("=", 1)
+            key = key.strip()
+            if key == "ttl_days":
+                try:
+                    val = int(val)
+                except ValueError:
+                    print(json.dumps({"error": True, "detail": f"ttl_days must be an integer"}), ensure_ascii=False)
+                    sys.exit(1)
+            kwargs[key] = val
+        if not kwargs:
+            print(json.dumps({"error": True, "detail": "No options provided. Use -o key=value."}), ensure_ascii=False)
+            sys.exit(1)
+        print(json.dumps(api.update(args.id, **kwargs), ensure_ascii=False))
     elif args.command == "delete":
         print(json.dumps(api.delete(args.short_code), ensure_ascii=False))
     elif args.command == "delete-batch":

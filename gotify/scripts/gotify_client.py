@@ -8,7 +8,7 @@ Environment variables:
   GOTIFY_APP_TOKEN    - App token (send messages)
 
 Usage:
-  python3 gotify_client.py <command> [options]
+  python gotify_client.py <command> [options]
 """
 
 import argparse

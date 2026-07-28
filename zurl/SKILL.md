@@ -80,6 +80,15 @@ python scripts/zurl_api.py update <id> [long_url] [short_code] [title] [descript
 
 > `long_url` and `short_code` are **required by the API** — omitting them causes a 422 error. Optional fields left empty will be **cleared**. `short_code` must be a valid value; empty string causes a 500 error.
 
+### Edit a Short URL (key=value style)
+
+```bash
+# Update specific fields using -o key=value (repeatable)
+python scripts/zurl_api.py edit <id> -o long_url=https://new.url -o title="New Title"
+```
+
+This is an alternative to `update` that uses `-o key=value` pairs instead of positional arguments. Only the fields you specify with `-o` will be changed.
+
 ### Delete Short URLs
 
 ```bash
