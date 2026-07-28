@@ -10,7 +10,6 @@
 [x] img-recog
 [x] linkgo
 [] mimo-tts
-[] s3
 [x] send-email
 [x] fun-asr
 [] wake-on-lan
