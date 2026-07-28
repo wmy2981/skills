@@ -16,3 +16,5 @@ fun-asr/scripts/meeting_*.json
 # OS
 .DS_Store
 Thumbs.db
+
+scripts/code-review-results.json
