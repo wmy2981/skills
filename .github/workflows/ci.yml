@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [master, dev]
+  pull_request:
+    branches: [master]
+
+jobs:
+  python-syntax:
+    name: Check Python syntax
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Find all Python files and check syntax
+        run: |
+          echo "Checking Python syntax for all .py files..."
+          errors=0
+          while IFS= read -r -d '' f; do
+            if python -m py_compile "$f" 2>/dev/null; then
+              echo "  ✅ ${f#./}"
+            else
+              echo "  ❌ ${f#./}"
+              errors=$((errors + 1))
+            fi
+          done < <(find . -name '*.py' -not -path './.github/*' -print0)
+          echo ""
+          if [ "$errors" -eq 0 ]; then
+            echo "All Python files passed syntax check."
+          else
+            echo "$errors file(s) have syntax errors."
+            exit 1
+          fi
