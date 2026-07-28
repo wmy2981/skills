@@ -2,6 +2,7 @@
 """Chinese calendar query — get traditional calendar info via 接口盒子 API"""
 
 import sys
+import subprocess
 import os
 import json
 import argparse
@@ -14,6 +15,8 @@ from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 API_URL = "https://cn.apihz.cn/api/time/getzdday.php"

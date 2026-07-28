@@ -14,6 +14,7 @@ import os
 import random
 import string
 import sys
+import subprocess
 import urllib.parse
 import urllib.request
 import urllib.error
@@ -21,6 +22,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 BASE_URL = ""

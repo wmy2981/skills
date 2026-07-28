@@ -7,9 +7,15 @@
 import json
 import os
 import sys
+import subprocess
 from pathlib import Path
 from urllib.error import URLError
 from urllib.request import Request, urlopen
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 
 API_URL = "https://api.deepseek.com/user/balance"
 

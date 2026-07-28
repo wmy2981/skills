@@ -2,6 +2,7 @@
 """Domain query — ICP filing + WHOIS + WeChat block check via 接口盒子 API"""
 
 import sys
+import subprocess
 import os
 import json
 import argparse
@@ -12,6 +13,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 BASE = "https://cn.apihz.cn/api/wangzhan"

@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 from pathlib import Path
 from typing import Optional
 from urllib.request import Request, urlopen
@@ -18,6 +19,8 @@ from urllib.parse import urlencode
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # ─── Config (set by _init_env) ─────────────────────────────

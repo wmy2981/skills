@@ -19,13 +19,14 @@ import json
 import os
 import socket
 import sys
+import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 if sys.platform == "win32":
-    os.system("chcp 65001 > nul")
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 
 # ─── Defaults ─────────────────────────────────────────────────
 

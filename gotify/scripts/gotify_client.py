@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 import urllib.request
 import urllib.error
 import urllib.parse
@@ -22,6 +23,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
