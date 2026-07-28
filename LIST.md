@@ -8,7 +8,7 @@
 [x] gaokao-english-answer-parser
 [x] gotify
 [x] img-recog
-[] linkgo
+[x] linkgo
 [] mimo-tts
 [] s3
 [x] send-email
