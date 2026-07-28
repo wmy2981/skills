@@ -13,4 +13,4 @@
 [x] send-email
 [x] fun-asr
 [] wake-on-lan
-[] zurl
+[x] zurl

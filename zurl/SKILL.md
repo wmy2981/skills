@@ -1,132 +1,145 @@
 ---
 name: zurl
-description: 管理 Zurl 短链接服务。当用户需要创建短链接、缩短 URL、编辑/删除/查看短链接、搜索短链、批量管理短链时使用。即使用户只说"缩短这个链接""生成短链""把这个转成短链接"等也要触发。
+description: >-
+  Manage a Zurl short link service — create, update, delete, search, and list
+  short URLs, and fetch URL metadata. Trigger whenever the user asks to
+  "shorten this link", "generate a short URL", "create a short link",
+  "短链接", "缩短", "短链", manage short links, or pastes a long URL and
+  asks to make it shorter. Do NOT skip this skill just because the user didn't
+  explicitly say "短链接" or "short URL" — even "帮我缩短这个链接" or "把这个
+  网址变短" should trigger it. Any request involving URL shortening, short
+  link management, or batch URL operations should use this skill.
 metadata:
   skill_version: "1.0.0"
 ---
 
-# Zurl 短链接管理
+# Zurl Short Link Management
 
-短链接管理服务，API 地址从环境变量 `ZURL_APIURL` 获取。
+Manage short URLs via the [Zurl](https://github.com/zurl) service API.
 
-## 重要规则
+## Execution Rule
 
-### 1. API 接入规则
-API 地址从环境变量 `ZURL_APIURL` 获取，禁止在调用中硬编码地址。创建/编辑短链后，**必须展示所有配置的短链接域名**（通过环境变量 `ZURL_DISPLAY_URLS` 配置，逗号分隔，脚本返回的 `short_links` 字段自动包含所有域名下的完整链接）。
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
 
-## 环境变量
+## Important Rules
 
-| 变量 | 必填 | 说明 |
-|---|---|---|
-| `ZURL_APIURL` | ✅ | Zurl API 地址，如 `http://192.168.124.12:3088` |
-| `ZURL_TOKEN` | ❌ | API 认证 Token（如服务端开启了鉴权则必填） |
-| `ZURL_DISPLAY_URLS` | ❌ | 逗号分隔的展示域名列表，默认使用上一行的 API 地址加两个公网域名 |
+1. **API URL from env var only** — `ZURL_APIURL` must be set; never hardcode the API address.
+2. **Auto-generate short code** — When the user asks to shorten a URL without specifying a code, the script auto-generates a 4-character random code (letters + digits).
+3. **No title on creation** — Pass empty string `""` for title on new short links so Zurl auto-fetches the page title. Do NOT fill in a title yourself.
+4. **Display all domains** — After creating/updating a short link, always show all configured display domains (from `ZURL_DISPLAY_URLS`; the script's `short_links` field contains the full URLs).
+5. **QR code domain** — If generating a QR code, use the first domain from `ZURL_DISPLAY_URLS` as the QR content (unless the user specifies one).
 
-> 💡 环境变量可配置 `scripts/.env` 模板文件。脚本会自动加载。
+## Environment Variables
 
-### 3. 自动生成短链接代号
-用户要求缩短 URL 但未指定短链接代号时，脚本自动生成 **4 位随机字符**（大小写字母 + 数字）。
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ZURL_APIURL` | ✅ | API base URL, e.g. `http://192.168.1.100:3088` |
+| `ZURL_TOKEN` | ❌ | API auth token (required if server has auth enabled) |
+| `ZURL_DISPLAY_URLS` | ❌ | Comma-separated display domain list; defaults to `ZURL_APIURL` |
 
-### 4. 新建短链不设标题
-新建短链时，title 参数传空字符串 `""`，让 Zurl 自动抓取页面标题。Agent 不要自行填写标题。
+The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
 
-### 5. 二维码使用展示域名
-如果生成短链后还需要生成二维码，**在用户不指定域名的情况下，使用 `ZURL_DISPLAY_URLS` 中的第一个域名作为二维码内容**。
+## Requirements
 
-## 脚本调用
-
-脚本路径：`scripts/zurl_api.py`
-Token 从环境变量 `ZURL_TOKEN` 获取。
-
-### 创建短链接
 ```bash
-python3 scripts/zurl_api.py shorten <long_url> [short_url] [title] [description] [ttl_days]
+pip install python-dotenv
 ```
-| 参数 | 必填 | 说明 |
-|---|---|---|
-| `long_url` | ✅ | 原始长链接 |
-| `short_url` | ❌ | 自定义短链接代号，不传自动生成4位随机字符 |
-| `title` | ❌ | 标题 |
-| `description` | ❌ | 描述 |
-| `ttl_days` | ❌ | 有效期（天） |
 
-### 更新短链接
+## Usage
+
+Script: `scripts/zurl_api.py`
+
+### Create a Short URL
+
 ```bash
-python3 scripts/zurl_api.py update <id> [long_url] [short_url] [title] [description] [ttl_days]
+python scripts/zurl_api.py shorten <long_url> [short_code] [title] [description] [ttl_days]
 ```
 
-| 参数 | 必填 | 说明 |
-|---|---|---|
-| `id` | ✅ | 短链接数据库 ID（从 list/search 获取） |
-| `long_url` | ✅ | 原始长链接 |
-| `short_url` | ✅ | 短链接代号 |
-| `title` | ❌ | 标题 |
-| `description` | ❌ | 描述 |
-| `ttl_days` | ❌ | 有效期（天） |
+| Arg | Required | Description |
+|-----|----------|-------------|
+| `long_url` | ✅ | Original long URL |
+| `short_code` | ❌ | Custom short code; auto-generated (4 chars) if omitted |
+| `title` | ❌ | Title (leave empty to auto-fetch) |
+| `description` | ❌ | Description |
+| `ttl_days` | ❌ | Time-to-live in days |
 
-**⚠️ update 注意事项：**
-- `long_url` 和 `short_url` 为 **必填参数**，不传会导致 422 错误
-- 可选字段（title/description/ttl_days）传空字符串会**清空**对应字段，不想修改的字段直接不传或用 `""` 占位
-- `short_url` 传空字符串会导致 500 错误，脚本已过滤空值
-- 更新不存在的 ID 返回 404
+### Update a Short URL
 
-### 删除单个短链接
 ```bash
-python3 scripts/zurl_api.py delete <short_url>
+python scripts/zurl_api.py update <id> [long_url] [short_code] [title] [description] [ttl_days]
 ```
 
-### 批量删除
+| Arg | Required | Description |
+|-----|----------|-------------|
+| `id` | ✅ | URL database ID (from list/search results) |
+| `long_url` | ❌ | New long URL |
+| `short_code` | ❌ | New short code |
+| `title` | ❌ | New title |
+| `description` | ❌ | New description |
+| `ttl_days` | ❌ | New TTL in days |
+
+> `long_url` and `short_code` are **required by the API** — omitting them causes a 422 error. Optional fields left empty will be **cleared**. `short_code` must be a valid value; empty string causes a 500 error.
+
+### Delete Short URLs
+
 ```bash
-python3 scripts/zurl_api.py delete_batch <id1,id2,...>
+# Delete by short code
+python scripts/zurl_api.py delete <short_code>
+
+# Batch delete by codes (comma-separated)
+python scripts/zurl_api.py delete-batch code1,code2,code3
 ```
 
-### 查看列表
+### List & Search
+
 ```bash
-python3 scripts/zurl_api.py list [page] [limit]
+# List short URLs (paginated)
+python scripts/zurl_api.py list [page] [limit]
+
+# Search
+python scripts/zurl_api.py search <keyword> [filter_type]
 ```
 
-### 搜索
+`filter_type`: `all` (default) / `long_url` / `short_url` / `title`
+
+### Get URL Metadata
+
 ```bash
-python3 scripts/zurl_api.py search <keyword> [filter_type]
+python scripts/zurl_api.py metadata <url>
 ```
-- `filter_type`：`all` / `long_url` / `short_url` / `title`
 
-### 获取 URL 元数据
-```bash
-python3 scripts/zurl_api.py metadata <url>
+Returns the target page's title and description.
+
+## Output Format
+
+After creating or updating a short link, use the `short_links` field from the API response to show all domains (configured via `ZURL_DISPLAY_URLS`):
+
 ```
-返回目标网页的标题和描述。
+✅ Short URL created
 
-## API 端点验证状态
+Short Links:
+  https://short.example.com/abc123
+  https://s.example.com/abc123
 
-| API | 状态 |
-|---|---|
-| `/api/shorten_url` (POST JSON) | ✅ 通过 |
-| `/api/update_url/{id}` (POST JSON) | ✅ 通过 |
-| `/api/delete/url` (POST form) | ✅ 通过 |
-| `/api/delete/urls` (POST JSON) | ✅ 通过 |
-| `/api/urls` (GET) | ✅ 通过 |
-| `/api/search` (POST JSON) | ✅ 通过 |
-| `/api/get_url_metadata` (POST form) | ✅ 通过 |
-| `/api/get_url_info` (POST form) | ❌ 500，已移除 |
-| `/api/import` (multipart) | ❌ 未验证，已移除 |
-
-## 返回格式
-
-成功：`{"code": 200, "msg": "...", "data": {...}, "short_links": [...]}`
-失败：`{"error": true, "status": ..., "detail": {...}}`
-
-## 输出格式
-
-Agent 输出短链结果时按以下格式（展示域名来自 `ZURL_DISPLAY_URLS`，脚本 `short_links` 字段）：
+Original URL: https://very-long-url.com/page
+Title: Page Title
 ```
-✅ 短链接创建成功
 
-短链接：
-  {domain1}/{short_url}
-  {domain2}/{short_url}
-  ...
+> The actual domains come from `ZURL_DISPLAY_URLS` — the example above is illustrative.
 
-原始链接：{long_url}
-标题：{title}
-```
+## API Endpoints Verified
+
+| Endpoint | Method | Status |
+|----------|--------|--------|
+| `/api/shorten_url` | POST JSON | ✅ |
+| `/api/update_url/{id}` | POST JSON | ✅ |
+| `/api/delete/url` | POST form | ✅ |
+| `/api/delete/urls` | POST JSON | ✅ |
+| `/api/urls` | GET | ✅ |
+| `/api/search` | POST JSON | ✅ |
+| `/api/get_url_metadata` | POST form | ✅ |
+
+## Response Format
+
+Success: `{"code": 200, "msg": "...", "data": {...}, "short_links": [...]}`
+Failure: `{"error": true, "status": ..., "detail": {...}}`
