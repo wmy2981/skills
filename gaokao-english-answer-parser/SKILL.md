@@ -1,85 +1,85 @@
 ---
 name: gaokao-english-answer-parser
-description: 从高中英语试卷（PDF 或图片）中提取参考答案并按标准结构化输出。当用户发送高中英语试卷、答案解析、模拟卷答案等文件并要求提取答案、整理答案、结构化答案时触发。即使用户只是发了一个 英语试卷 PDF 或图片说"看答案""提取答案""整理一下"也要触发。
+description: Extract answer keys from Chinese Gaokao-style English exam papers (PDF or image) and format them into a standardized structured output. Trigger when the user sends an English exam paper, answer key, mock test answer sheet, or similar file and asks to extract, organize, or structure the answers. Trigger even for casual requests like "look at the answers", "extract answers", or "organize this".
 metadata:
   skill_version: "0.1.0"
 ---
 
-# 高中英语试卷答案结构化提取
+# Structured Answer Extraction for Gaokao English Exam Papers
 
-## 固定题号分布
+## Fixed Question Number Distribution
 
-本 skill 严格按照以下题号分布处理，**不允许假设、调整或补全题号**：
+This skill strictly follows the question numbering scheme below. **Do not assume, adjust, or infer question ranges from the source text.**
 
-| 大题 | 题号范围 | 分组方式 |
-|------|----------|----------|
-| 听力 | 1-20 | 1-5, 6-10, 11-15, 16-20 |
-| A阅读 | 21-23 | 逐题输出 |
-| B阅读 | 24-27 | 逐题输出 |
-| C阅读 | 28-31 | 逐题输出 |
-| D阅读 | 32-35 | 逐题输出 |
-| 七选五 | 36-40 | 逐题输出 |
-| 完形填空 | 41-55 | 41-45, 46-50, 51-55 |
-| 语法填空 | 56-65 | 逐题输出 |
+| Section | Question Range | Grouping |
+|---------|---------------|----------|
+| Listening | 1-20 | 1-5, 6-10, 11-15, 16-20 |
+| Reading A | 21-23 | One per question |
+| Reading B | 24-27 | One per question |
+| Reading C | 28-31 | One per question |
+| Reading D | 32-35 | One per question |
+| Seven-of-Five (Gap Fill) | 36-40 | One per question |
+| Cloze | 41-55 | 41-45, 46-50, 51-55 |
+| Grammar Fill-in | 56-65 | One per question |
 
-## 处理流程
+## Processing Flow
 
-### 第一步：读取文件内容
+### Step 1: Read the file content
 
-**PDF 文件**：
-1. 先用 `pdfplumber` 提取文本
-2. 如果文本缺少答案信息（扫描件），用 `pdftoppm` 转图片后 `view_image` 视觉识别
+**PDF files:**
+1. First try `pdfplumber` to extract text
+2. If the text lacks answer information (scanned document), convert pages with `pdftoppm` and use visual recognition (`view_image`)
 
-**图片文件**：
-1. 直接用 `view_image` 查看
-2. 不完整时用 `image_ocr` skill 补充
+**Image files:**
+1. Use `view_image` to inspect directly
+2. If incomplete, supplement with OCR
 
-### 第二步：提取纯答案
+### Step 2: Extract raw answers
 
-在文本中定位答案区域（关键词：参考答案、答案、Answer Key 等），只提取答案本身：
-- 选择题：只取字母（A-G）
-- 填空题：只取填入的单词/短语
-- **完全忽略解析文字**，无论解析是否紧挨答案混排
+Locate the answer key area in the text by searching for keywords (参考答案, 答案, Answer Key, etc.). Extract only the answers:
+- Multiple choice: letters only (A-G)
+- Fill-in-the-blank: the word/phrase to be filled in
+- **Completely ignore explanatory text**, regardless of how closely it is mixed with the answers
 
-### 第三步：按固定结构输出
+### Step 3: Output in fixed structure
 
-输出为 Markdown 格式，**不使用代码块包裹**，不生成文件，直接在聊天中回复。
+Output as Markdown — **no code blocks**, no file generation. Reply directly in the chat.
 
-## 输出模板
+## Output Template
 
-## 参考答案
+## Answer Key
 
-### 听力
+### Listening
 | 1-5 | 6-10 | 11-15 | 16-20 |
 |-----|------|-------|-------|
 | BCBAC | BCCAA | BACAB | CACBB |
 
-### 阅读理解
-**A篇**
+### Reading Comprehension
+**Passage A**
 **21**.B  **22**.A  **23**.C
 
-**B篇**
+**Passage B**
 **24**.C  **25**.B  **26**.D  **27**.A
 
-**C篇**
+**Passage C**
 **28**.C  **29**.B  **30**.A  **31**.C
 
-**D篇**
+**Passage D**
 **32**.D  **33**.A  **34**.B  **35**.C
 
-**七选五**
+**Seven-of-Five (Gap Fill)**
 **36**.F  **37**.D  **38**.A  **39**.E  **40**.G
 
-### 语言运用
+### Language Use
 
-**完形填空**
+**Cloze**
 | 41-45 | 46-50 | 51-55 |
 |-------|-------|-------|
 | BACDB | AACDC | BCABD |
 
-**语法填空**
-| 题号 | 答案 |
-|------|------|
+**Grammar Fill-in**
+| No. | Answer |
+|-----|--------|
 | 56 | to |
 | 57 | a |
 | 58 | playful |
@@ -91,15 +91,15 @@ metadata:
 | 64 | has created |
 | 65 | hidden |
 
-## 输出规则
+## Output Rules
 
-1. **严格按固定题号分布输出**，不允许根据源文本自行调整题号分组或范围。源文本中21-35可能连续5个一组（如 `21-25 DDBBB`），必须重新映射到固定分组：A篇21-23、B篇24-27、C篇28-31、D篇32-35。
-2. **听力**：4 组，每组 5 题，用表格呈现，每组填入连续 5 个字母。
-3. **阅读理解**：A 篇 3 题、B 篇 4 题、C 篇 4 题、D 篇 4 题，按篇分组，每题独立。
-4. **七选五**：5 题逐题输出。
-5. **完形填空**：3 组，每组 5 题，用表格呈现。
-6. **语法填空**：10 题用竖版表格输出，第一列题号，第二列答案。
-7. **只输出答案，不输出解析**。
-8. **输出 Markdown 格式，不代码块包裹，不生成文件**。
-9. 读后续写/写作题不列入答案结构。
-10. **生成 Word/PDF 时格式与 MD 输出模板一致**：阅读理解 ABCD篇和七选五用文本行格式（如 `A篇  21.B  22.A  23.C`），**不用表格**；听力、完形填空、语法填空保持表格。
+1. **Strictly follow the fixed question number distribution.** Do not adjust question ranges or groupings based on the source text. If the source groups 21-35 in continuous blocks of 5 (e.g., `21-25 DDBBB`), remap to the fixed groups: Passage A 21-23, Passage B 24-27, Passage C 28-31, Passage D 32-35.
+2. **Listening**: 4 groups of 5 questions each, presented as a table row with 5 consecutive letters per cell.
+3. **Reading Comprehension**: Passage A (3 questions), Passage B (4), Passage C (4), Passage D (4) — grouped by passage, each question on its own line.
+4. **Seven-of-Five**: 5 questions, one per line.
+5. **Cloze**: 3 groups of 5 questions each, presented as a table row.
+6. **Grammar Fill-in**: 10 questions in a vertical table — first column question number, second column answer.
+7. **Output answers only, no explanations.**
+8. **Output as Markdown, no code blocks, no file generation.**
+9. **Continuation writing / composition sections are not included in the answer structure.**
+10. **Match the user's language.** The output language (section headers, explanatory labels like "Passage A", "Cloze", etc.) MUST match the language of the user's question. If the user asks in Chinese, output headers in Chinese; if in English, output headers in English. The answer content (letters, words) itself remains unchanged.
