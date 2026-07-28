@@ -1,123 +1,131 @@
 ---
 name: mimo-tts
-description: 使用 MiMo-V2.5-TTS 系列模型进行语音合成，支持预置音色合成、文本设计音色、音色复刻、自然语言风格控制、流式输出。需要 MIMO_APIKEY 环境变量。
+description: >-
+  Speech synthesis using MiMo-V2.5-TTS models. Supports preset voice synthesis,
+  text-to-voice design, voice cloning, natural language style control, and
+  streaming output. Trigger whenever the user wants to generate speech audio
+  from text, especially with Chinese voices and style control. Requires
+  MIMO_APIKEY environment variable.
+metadata:
+  skill_version: "1.0.0"
 ---
 
-# MiMo-V2.5-TTS 语音合成
+# MiMo-V2.5-TTS Speech Synthesis
 
-通过 OpenAI-compatible API (`/v1/chat/completions`) 调用语音合成模型。
+Calls the speech synthesis model via OpenAI-compatible API (`/v1/chat/completions`).
 
-## 前提
+## Execution Rule
 
-- 环境变量 `MIMO_APIKEY` 已设置
-- 流式输出需要：`pip install numpy soundfile`
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
 
-## API 基础
+## Requirements
+
+- Environment variable `MIMO_APIKEY` must be set
+- Streaming output: `pip install numpy soundfile`
+
+## API Basics
 
 - **Base URL**: `https://api.xiaomimimo.com/v1`
-- **认证**: HTTP Header `api-key`
-- **接口**: `/v1/chat/completions` (OpenAI 兼容)
-- **模型与功能对应关系**：
+- **Auth**: HTTP Header `api-key`
+- **Endpoint**: `/v1/chat/completions` (OpenAI-compatible)
+- **Model & Feature Mapping**:
 
-| 模型 | 功能 | 支持唱歌 | 支持音色设计 | 支持音色复刻 |
-|------|------|:--------:|:----------:|:----------:|
-| `mimo-v2.5-tts` | 预置音色合成 | ✅ | ❌ | ❌ |
-| `mimo-v2.5-tts-voicedesign` | 文本设计音色 | ❌ | ✅ | ❌ |
-| `mimo-v2.5-tts-voiceclone` | 音色复刻 | ❌ | ❌ | ✅ |
+| Model | Feature | Singing | Voice Design | Voice Clone |
+|-------|---------|:-------:|:------------:|:-----------:|
+| `mimo-v2.5-tts` | Preset voice synthesis | ✅ | ❌ | ❌ |
+| `mimo-v2.5-tts-voicedesign` | Text-to-voice design | ❌ | ✅ | ❌ |
+| `mimo-v2.5-tts-voiceclone` | Voice cloning | ❌ | ❌ | ✅ |
 
-## ⚠️ 提示词传参规范（硬性规则）
+## ⚠️ Text Input: Use File Redirection
 
-**所有提示词（文本内容、音色描述、风格指令等）必须先写入 txt 文件，再用 `$(cat)` 传参。**
+**All text content (synthesis text, voice descriptions, style prompts) MUST be written to a txt file first and passed via `$(cat)`.**
 
 ```bash
-write_file("tts_text.txt", "要合成的文本")
-python3 scripts/tts.py synthesize "$(cat tts_text.txt)" --voice 冰糖
+# Write text to file first
+echo "Text to synthesize" > tts_text.txt
+python scripts/tts.py synthesize "$(cat tts_text.txt)" --voice Bingtang
 ```
 
 ---
 
-# 风格控制指南
+# Style Control Guide
 
-MiMo-V2.5-TTS 提供两种风格控制方式，可叠加使用。
+MiMo-V2.5-TTS offers two complementary style control methods that can be used together.
 
-## 一、自然语言控制（推荐）
+## 1. Natural Language Control (Recommended)
 
-放在 `user message` 中。一句话描述想要的风格。
+Place a style description in the `user message`. Describe the desired style in one sentence.
 
-### 简单指令示例
-
-```
-用轻快上扬的语调向领导报喜，语速稍快，带着查到成绩后压抑不住的激动与骄傲，声音明亮有活力。
-```
+### Simple Examples
 
 ```
-用明亮活泼的青少年嗓音，带着恶作剧得逞后的得意与戏谑，语速偏快且咬字轻巧。
+Speak in a bright, uplifting tone as if reporting good news to a boss, slightly fast pace, with excitement and pride that can't be contained, voice bright and energetic.
 ```
 
-### 导演模式（高级）
-
-像给演员写剧本，从**角色、场景、指导**三个维度刻画。
-
 ```
-【角色】百年门阀岑家的现任大当家。常年深居简出，对人有着极强的阶级疏离感。
-【场景】在祠堂的阴影里，看着那个不顾一切冲破保安防线来找她的男人。
-【指导】冰冷、慵懒却极具威压的低音御姐。语速极慢，每个字都像是在舌尖滚过才吐出来。句与句之间留下极长的空白。实音重且硬，在某些尾音处加入轻微的气音收束。
+Use a bright, lively teenage voice with the smugness of a successful prank, fast pace with light articulation.
 ```
 
-### 使用方法
+### Director Mode (Advanced)
+
+Write like directing an actor, covering **character, scene, and direction**.
+
+```
+[Character] The current head of a century-old distinguished family. Has lived in seclusion for years, with a strong sense of class alienation from others.
+[Scene] In the shadow of the ancestral hall, watching the man who broke through security to find her.
+[Direction] Cold, languid yet commanding low alto. Extremely slow speech, each word as if rolled on the tongue before release. Long silences between sentences. Heavy, solid voice with slight breathiness at tail ends.
+```
+
+### Usage
 
 ```bash
-# 自然语言风格指令 → --user-prompt 参数
-python3 scripts/tts.py synthesize "$(cat text.txt)" --voice 冰糖 --user-prompt "$(cat style.txt)"
+# Natural language style → --user-prompt parameter
+python scripts/tts.py synthesize "$(cat text.txt)" --voice Bingtang --user-prompt "$(cat style.txt)"
 ```
 
-## 二、音频标签控制（精细控制）
+## 2. Audio Tag Control (Fine-Grained)
 
-放在 `assistant content` 中，与合成文本在一起。
+Tags go directly in the `assistant content` (the synthesis text).
 
-### 风格标签（文本开头）
+### Style Tags (at text start)
 
-在文本开头添加 `(风格)` 标签指定整体风格。
+Add `(style)` at the beginning of the text to set overall style.
 
-**格式**：`(风格1 风格2)待合成内容`
+**Format**: `(style1 style2)text to synthesize`
 
-**风格标签列表：**
+| Type | Options |
+|------|---------|
+| Basic Emotion | 开心/悲伤/愤怒/恐惧/惊讶/兴奋/委屈/平静/冷漠 |
+| Compound Emotion | 怅然/欣慰/无奈/愧疚/释然/嫉妒/厌倦/忐忑/动情 |
+| Overall Tone | 温柔/高冷/活泼/严肃/慵懒/俏皮/深沉/干练/凌厉 |
+| Voice Character | 磁性/醇厚/清亮/空灵/稚嫩/苍老/甜美/沙哑/醇雅 |
+| Persona | 夹子音/御姐音/正太音/大叔音/台湾腔 |
+| Dialect | 东北话/四川话/河南话/粤语 |
+| Character Roleplay | 孙悟空/林黛玉 |
+| Singing | 唱歌/sing/singing (must be at the very start) |
 
-| 类型 | 可选值 |
-|------|--------|
-| 基础情绪 | 开心/悲伤/愤怒/恐惧/惊讶/兴奋/委屈/平静/冷漠 |
-| 复合情绪 | 怅然/欣慰/无奈/愧疚/释然/嫉妒/厌倦/忐忑/动情 |
-| 整体语调 | 温柔/高冷/活泼/严肃/慵懒/俏皮/深沉/干练/凌厉 |
-| 音色定位 | 磁性/醇厚/清亮/空灵/稚嫩/苍老/甜美/沙哑/醇雅 |
-| 人设腔调 | 夹子音/御姐音/正太音/大叔音/台湾腔 |
-| 方言 | 东北话/四川话/河南话/粤语 |
-| 角色扮演 | 孙悟空/林黛玉 |
-| 唱歌 | 唱歌/sing/singing（必须在文本最开头） |
-
-**示例：**
+**Examples:**
 ```
 (怅然)这么多年过去了，再走过那条街，心里一下子空了一块。
 (慵懒)再让我睡五分钟……就五分钟，真的。
 (磁性)夜已经深了，我是今晚陪你的人，欢迎收听《午夜电台》。
 (东北话)哎呀妈呀，这天儿也忒冷了吧！
 (粤语)呢个真係好正啊！食过一次就唔会忘记！
-(唱歌)原谅我这一生不羁放纵爱自由
+(singing)原谅我这一生不羁放纵爱自由
 ```
 
-### 音频标签（文本中任意位置插入）
+### Audio Tags (insert anywhere in text)
 
-在文本中插入 `[标签]` 进行细粒度控制。
+Insert `[tag]` in the text for fine-grained control.
 
-**音频标签列表：**
+| Type | Options |
+|------|---------|
+| Pace & Rhythm | 吸气/深呼吸/叹气/长叹一口气/喘息/屏息 |
+| Emotional State | 紧张/害怕/激动/疲惫/委屈/撒娇/心虚/震惊/不耐烦 |
+| Voice Features | 颤抖/声音颤抖/变调/破音/鼻音/气声/沙哑 |
+| Laughing & Crying | 笑/轻笑/大笑/冷笑/抽泣/呜咽/哽咽/嚎啕大哭 |
 
-| 类型 | 可选值 |
-|------|--------|
-| 语速与节奏 | 吸气/深呼吸/叹气/长叹一口气/喘息/屏息 |
-| 情绪状态 | 紧张/害怕/激动/疲惫/委屈/撒娇/心虚/震惊/不耐烦 |
-| 语音特征 | 颤抖/声音颤抖/变调/破音/鼻音/气声/沙哑 |
-| 哭笑表达 | 笑/轻笑/大笑/冷笑/抽泣/呜咽/哽咽/嚎啕大哭 |
-
-**示例：**
+**Examples:**
 ```
 （紧张，深呼吸）呼……冷静，冷静。不就是一个面试吗……（语速加快）自我介绍已经背了五十遍了。
 （极其疲惫，有气无力）师傅……到地方了叫我一声……（长叹一口气）我先眯一会儿。
@@ -126,131 +134,127 @@ python3 scripts/tts.py synthesize "$(cat text.txt)" --voice 冰糖 --user-prompt
 
 ---
 
-# 文本设计音色指南
+# Voice Design Guide
 
-## 如何写好音色描述
+## How to Write a Good Voice Description
 
-使用 `mimo-v2.5-tts-voicedesign` 模型时，`user message` 中的文本就是音色设计描述。描述越具体越生动，效果越好。
+When using `mimo-v2.5-tts-voicedesign`, the `user message` text IS the voice design description. The more vivid and specific, the better.
 
-### 关键维度
+### Key Dimensions
 
-| 维度 | 示例 |
-|------|------|
-| 性别与年龄 | "young woman in her mid-20s"、"五十多岁的中年男性" |
-| 音色/质感 | "deep and gravelly"、"丝滑醇厚、带着磁性" |
-| 情绪/语气 | "warm and confident"、"温柔但带着一丝疲惫" |
-| 语速/节奏 | "slow and deliberate"、"语速极快，像连珠炮" |
+| Dimension | Example |
+|-----------|---------|
+| Gender & Age | "young woman in her mid-20s"、"五十多岁的中年男性" |
+| Timbre / Texture | "deep and gravelly"、"丝滑醇厚、带着磁性" |
+| Emotion / Tone | "warm and confident"、"温柔但带着一丝疲惫" |
+| Pace / Rhythm | "slow and deliberate"、"语速极快，像连珠炮" |
 
-### 可增加丰富度的维度
+### Additional Dimensions for Richness
 
-- **角色/人设**：narrator, podcast host, 评书先生, 深夜电台DJ
-- **说话风格**：casual and colloquial, 一本正经, 压低嗓音像在密谋
-- **场景描写**：narrating a nature documentary, 在给投资人路演
-- **年代参照**：1940s film noir, 八十年代译制片配音
+- **Character / Persona**: narrator, podcast host, 评书先生, 深夜电台DJ
+- **Speaking Style**: casual and colloquial, 一本正经, 压低嗓音像在密谋
+- **Scene Description**: narrating a nature documentary, 在给投资人路演
+- **Era Reference**: 1940s film noir, 八十年代译制片配音
 
-### 写法风格
+### Writing Styles
 
-**简洁描述型：**
+**Concise description:**
 ```
 Heavy Russian accent, gruff middle-aged male, blunt and matter-of-fact.
 ```
 
-**专业描述型：**
+**Professional description:**
 ```
 一位年迈的老先生，说带北方口音的普通话，语速缓慢而沉稳，嗓音略带沙哑和沧桑感，仿佛一位饱经风霜的老爷爷在讲故事，充满岁月的智慧。
 ```
 
-### 注意事项
+### Notes
 
-1. **长度**：1-4 句即可，核心特征比堆砌维度更重要
-2. **避免冲突**：不要同时要求矛盾的特征（如"稚嫩的童声 + CEO气场"）
-3. **避免音质效果词**：不要写混响、回声、EQ、压缩等后期处理描述
-4. **避免模糊词**：不要用"普通的""正常的"等缺乏具体指向的描述
-5. **中英文均可**：选择最能精确表达的语言
-6. **合成文本要贴合音色**：`assistant` 消息中的合成文本应与音色描述相匹配
+1. **Length**: 1-4 sentences — core features matter more than exhaustiveness
+2. **Avoid conflicts**: Don't request contradictory features (e.g. "child-like voice + CEO presence")
+3. **Avoid DSP terms**: Don't mention reverb, echo, EQ, compression, etc.
+4. **Avoid vague words**: Don't use "normal", "ordinary", etc.
+5. **Chinese or English**: Use whichever expresses the idea most precisely
+6. **Match text to voice**: The synthesized text in `assistant` should match the voice description
 
 ---
 
-# 功能与用法
+# Commands & Usage
 
-## 1. 预置音色合成 (synthesize)
-
-```bash
-python3 scripts/tts.py synthesize "$(cat text.txt)" --voice <音色ID> [--output <path>]
-```
-
-带自然语言风格控制：
-```bash
-python3 scripts/tts.py synthesize "$(cat text.txt)" --voice 茉莉 --user-prompt "$(cat style.txt)"
-```
-
-带音频标签控制（风格标签直接写在 text.txt 中）：
-```bash
-# text.txt 内容：(温柔)夜已经深了，欢迎收听我的节目。
-python3 scripts/tts.py synthesize "$(cat text.txt)" --voice 冰糖
-```
-
-唱歌模式（需用 mimo-v2.5-tts 模型）：
-```bash
-# text.txt 内容：(唱歌)原谅我这一生不羁放纵爱自由
-python3 scripts/tts.py synthesize "$(cat text.txt)" --voice 冰糖
-```
-
-## 2. 文本设计音色 (design)
+## 1. Preset Voice Synthesis (synthesize)
 
 ```bash
-python3 scripts/tts.py design "$(cat voice_desc.txt)" --text "$(cat speech.txt)"
+python scripts/tts.py synthesize "$(cat text.txt)" --voice <voice_id> [--output <path>]
 ```
 
-不传 `--text` 时自动润色生成匹配文本：
+With natural language style control:
 ```bash
-python3 scripts/tts.py design "$(cat voice_desc.txt)"
+python scripts/tts.py synthesize "$(cat text.txt)" --voice Bingtang --user-prompt "$(cat style.txt)"
 ```
 
-## 3. 音色复刻 (clone)
-
+With audio tag control (tags in text.txt directly):
 ```bash
-python3 scripts/tts.py clone <样本音频.wav> "$(cat text.txt)"
+# text.txt content: (温柔)夜已经深了，欢迎收听我的节目。
+python scripts/tts.py synthesize "$(cat text.txt)" --voice Bingtang
 ```
 
-带风格控制：
+Singing mode (requires mimo-v2.5-tts model):
 ```bash
-python3 scripts/tts.py clone <样本音频.wav> "$(cat text.txt)" --user-prompt "$(cat style.txt)"
+# text.txt content: (singing)原谅我这一生不羁放纵爱自由
+python scripts/tts.py synthesize "$(cat text.txt)" --voice Bingtang
 ```
 
-## 4. 流式输出
-
-所有合成命令加 `--stream` 参数（格式需指定为 `pcm16`）。
-
-## 5. 查询音色
+## 2. Voice Design from Text (design)
 
 ```bash
-python3 scripts/tts.py voices
+python scripts/tts.py design "$(cat voice_desc.txt)" --text "$(cat speech.txt)"
 ```
 
-## 预置音色列表
+Without `--text`, auto-generates matching text:
+```bash
+python scripts/tts.py design "$(cat voice_desc.txt)"
+```
 
-| Voice ID | 名称 | 语言 | 性别 |
-|----------|------|------|------|
-| `mimo_default` | MiMo-默认 | 中国集群=冰糖，其他=Mia | — |
-| `冰糖` | 冰糖 | 中文 | 女 |
-| `茉莉` | 茉莉 | 中文 | 女 |
-| `苏打` | 苏打 | 中文 | 男 |
-| `白桦` | 白桦 | 中文 | 男 |
-| `Mia` | Mia | 英文 | 女 |
-| `Chloe` | Chloe | 英文 | 女 |
-| `Milo` | Milo | 英文 | 男 |
-| `Dean` | Dean | 英文 | 男 |
+## 3. Voice Cloning (clone)
 
-## 输出
+```bash
+python scripts/tts.py clone <sample.wav> "$(cat text.txt)"
+```
 
-- 音频默认输出到当前工作目录（可用 `--output` 或 `-o` 指定路径）
-- 命令输出 JSON：`{"status":"ok","path":"...","size_bytes":N}`
+With style control:
+```bash
+python scripts/tts.py clone <sample.wav> "$(cat text.txt)" --user-prompt "$(cat style.txt)"
+```
 
-## 环境变量
+## 4. Streaming Output
 
-- `MIMO_APIKEY` — API Key，必填。可配置 `scripts/.env` 模板文件，脚本会自动加载。
+Add `--stream` to any synthesis command (format must be `pcm16`).
 
-## 计费
+## 5. List Available Voices
 
-当前限时免费。用户不问价格不用主动提及。
+```bash
+python scripts/tts.py voices
+```
+
+## Preset Voice List
+
+| Voice ID | Name | Language | Gender |
+|----------|------|----------|--------|
+| `mimo_default` | MiMo-Default | auto (zh-CN=Bingtang, else=Mia) | — |
+| `冰糖` | Bingtang | Chinese | Female |
+| `茉莉` | Moli | Chinese | Female |
+| `苏打` | Soda | Chinese | Male |
+| `白桦` | Birch | Chinese | Male |
+| `Mia` | Mia | English | Female |
+| `Chloe` | Chloe | English | Female |
+| `Milo` | Milo | English | Male |
+| `Dean` | Dean | English | Male |
+
+## Output
+
+- Audio saved to `~/.wmyskills/mimo-tts/outputs/` by default (use `--output` / `-o` to specify a custom path or directory)
+- Command outputs JSON: `{"status":"ok","path":"...","size_bytes":N}`
+
+## Environment
+
+- `MIMO_APIKEY` — API Key, required. The script loads it from `scripts/.env` automatically. See `scripts/.env.example` for the template.

@@ -1,87 +1,73 @@
 ---
 name: enterprise-info
-description: 企业工商信息查询，通过接口盒子 API 查询企业工商登记信息。当用户提到"查公司""查企业""企业信息""工商信息""查一下XX公司""查XX的统一信用代码""这家公司信息""营业执照查询""企业工商查询"时触发。即使用户只说"帮我查一下XX公司""看看这家企业"也要触发。支持按企业名称或统一社会信用代码查询。
-metadata:
-  skill_version: "1.0.0"
+description: >-
+  Chinese enterprise registration info lookup — queries the 接口盒子 API for
+  company registration details (工商信息) by company name or Unified Social Credit
+  Code (统一社会信用代码). Triggered whenever the user asks about a Chinese company:
+  "查公司", "查企业", "企业信息", "工商信息", "查一下XX公司",
+  "查XX的统一信用代码", "这家公司信息", "营业执照查询", "企业工商查询",
+  "查一下这家公司", "看看这家企业", "this company info", or pastes a company
+  name or credit code and asks to look it up. Supports both full company name
+  and 18-digit Unified Social Credit Code.
 ---
 
-# 企业工商信息查询 (enterprise-info)
+# Enterprise Info Query
 
-通过接口盒子 API 查询中国大陆企业的工商登记信息。
+Queries the [接口盒子 API](https://cn.apihz.cn/api/shiming/qyinfo.php) to retrieve Chinese company registration details from the official business registry.
 
-## 触发场景
+## Environment Variables
 
-用户说出以下内容时**必须**触发此 skill：
-- "查公司"、"查企业"、"企业信息"、"工商信息"
-- "查一下XX公司"、"看看XX这家公司"
-- "XX公司的统一信用代码"、"xx的工商信息"
-- "这家公司靠谱吗"、"查营业执照"
-- 用户发来企业名称或信用代码要求查询
+| Variable | Description |
+|----------|-------------|
+| `JKHZ_ID` | 接口盒子 (apihz.cn) user ID |
+| `JKHZ_KEY` | 接口盒子 API key |
 
-## 环境变量
+The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
 
-- `JKHZ_ID` — 开发者 ID（已在环境中）
-- `JKHZ_KEY` — 开发者 KEY（已在环境中）
-
-> 💡 环境变量可配置 `scripts/.env` 模板文件。脚本会自动加载。
-
-## API 说明
-
-- **接口地址**：`https://cn.apihz.cn/api/shiming/qyinfo.php`
-- **请求方式**：GET
-- **请求参数**：
-
-| 参数 | 必填 | 说明 |
-|------|------|------|
-| id | 是 | 开发者ID（JKHZ_ID） |
-| key | 是 | 开发者KEY（JKHZ_KEY） |
-| words | 是 | 企业名称或统一社会信用代码 |
-| dkey | 否 | 动态秘钥 |
-| uip | 否 | 用户IP |
-
-- **返回格式**：JSON
-- **成功响应**：`code` 为 200，`data` 中包含企业详细信息
-- **错误响应**：`code` 为 400，`msg` 中说明错误原因
-
-## 使用方法
-
-### 1. 查询企业信息
-
-使用 `scripts/query.py` 脚本查询：
+## Requirements
 
 ```bash
-python3 scripts/query.py "企业名称或信用代码"
+pip install python-dotenv
 ```
 
-### 2. 格式化输出
+## Usage
 
-脚本会自动判断成功/失败，成功时输出结构化的关键字段，失败时输出错误原因。
+Script: `scripts/query.py`
 
-### 3. 输出字段说明
+### Query by company name or credit code
 
-脚本返回的关键字段包括：
+```bash
+python scripts/query.py "Company Name"
+python scripts/query.py "91440101MA5XXXXXXX"
+```
 
-| 字段 | 说明 |
-|------|------|
-| 企业名称 | 工商注册全称 |
-| 统一社会信用代码 | 18位信用代码 |
-| 法定代表人 | 法人姓名 |
-| 注册资本 | 注册资金（万元） |
-| 成立日期 | 成立时间 |
-| 经营状态 | 存续/在业/注销/吊销等 |
-| 核准日期 | 最后核准时间 |
-| 登记机关 | 注册登记的工商行政管理部门 |
-| 注册地址 | 工商注册地址 |
-| 经营范围 | 主营业务范围 |
-| 联系电话 | 企业联系方式 |
-| 邮箱 | 企业邮箱 |
-| 企业类型 | 有限责任公司等 |
-| 纳税人资质 | 一般纳税人/小规模等 |
-| 人员规模 | 参保人数等 |
-| 股东信息 | 主要股东（如有） |
+The script automatically determines success or failure. On success it prints structured key fields; on failure it prints the error reason.
 
-## 错误处理
+## Output Fields
 
-- HTTP 请求失败 → 提示网络错误
-- API 返回 code=400 → 显示错误原因（如"企业名称不存在"）
-- 环境变量未设置 → 提示配置缺失
+| Field | Description |
+|-------|-------------|
+| Company Name | Full registered business name |
+| Unified Social Credit Code | 18-digit credit code |
+| Legal Representative | Legal person name |
+| Registered Capital | Registered capital (10K CNY) |
+| Establishment Date | Date of founding |
+| Business Status | Active / Deregistered / Revoked, etc. |
+| Approval Date | Last approval date |
+| Registration Authority | Registering bureau |
+| Registered Address | Business address |
+| Business Scope | Main business scope |
+| Contact Phone | Company phone number |
+| Email | Company email |
+| Company Type | LLC, etc. |
+| Taxpayer Qualification | General taxpayer / small-scale, etc. |
+| Personnel Scale | Number of insured employees |
+| Shareholder Info | Major shareholders |
+
+Additional fields shown when available: paid-in capital, industry, operating period, website, historical names, key personnel.
+
+## Error Handling
+
+- HTTP request failure → network error message
+- API returns code=400 → specific error (e.g. "company name not found")
+- Env vars not set → configuration missing prompt

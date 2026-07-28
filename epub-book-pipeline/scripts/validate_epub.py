@@ -16,10 +16,13 @@ Checks:
 import argparse
 import re
 import sys
+import subprocess
 import zipfile
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 
 
 def verify_translation(source_md_path, translation_md_path):

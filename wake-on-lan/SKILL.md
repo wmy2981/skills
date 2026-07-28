@@ -1,123 +1,119 @@
 ---
 name: wake-on-lan
-description: >
-  远程唤醒局域网内的计算机（Wake on LAN），发送 Magic Packet 启动远程主机。
-  触发场景：用户提到"开机""远程开机""唤醒主机""wake on lan""WOL""远程唤醒"或需要启动局域网内的设备。
-  也适用于"帮我把XX电脑打开""服务器关了帮我开一下""把电脑开着"等日常表述。
-  支持按主机名或 MAC 地址唤醒，支持唤醒后在线验证。
+description: >-
+  Remote wake-up computers on a local network via Wake-on-LAN (Magic Packet).
+  Manage host configurations (add, edit, remove, list) and send wake-up signals
+  by host name or MAC address. Triggered whenever the user mentions "开机",
+  "远程开机", "唤醒主机", "wake on lan", "WOL", "远程唤醒", "帮我把XX电脑打开",
+  "服务器关了帮我开一下", "把电脑开着", or asks to start a computer on
+  the local network. Also use for managing wake-up host lists.
 metadata:
-  skill_version: "0.1.0"
+  skill_version: "1.0.0"
 ---
 
 # Wake on LAN
 
-通过 UDP 广播发送 Magic Packet，远程唤醒局域网内支持 WoL 的计算机。
+Send Magic Packets via UDP broadcast to wake up WoL-compatible computers on the local network. Manage host configurations through the script — no manual YAML editing needed.
 
-## Files
+## Execution Rule
 
-| File | Path | Description |
-|------|------|-------------|
-| wol.py | `scripts/wol.py` | Core script — builds & sends Magic Packet |
-| hosts.yaml | `skills/wake-on-lan/references/hosts.yaml` | Host configuration (name, MAC, IP, etc.) |
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
 
-## Quick Start
+## Environment Variables
 
-### Wake by host name (from config)
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `WOL_CONFIG_PATH` | ❌ | Custom path to `hosts.yaml` (default: `~/.wmyskills/wake-on-lan/hosts.yaml`) |
 
-```bash
-python3 scripts/wol.py --host <name>
-```
+The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
 
-### Wake by raw MAC address
+## Requirements
 
 ```bash
-python3 scripts/wol.py --mac AA:BB:CC:DD:EE:FF
+pip install pyyaml python-dotenv
 ```
 
-### Wake + verify online
+## Usage
+
+Script: `scripts/wol.py`
+
+### Manage Hosts
 
 ```bash
-python3 scripts/wol.py --host <name> --verify
+# List all configured hosts
+python scripts/wol.py list
+
+# Add a host
+python scripts/wol.py add my-pc AA:BB:CC:DD:EE:FF --ip 192.168.1.100
+
+# Edit a host's fields
+python scripts/wol.py edit my-pc --mac 00:11:22:33:44:55 --ip 192.168.1.10
+
+# Remove a host
+python scripts/wol.py remove my-pc
 ```
 
-### List configured hosts
+### Wake a Host
 
 ```bash
-python3 scripts/wol.py --list
+# Wake by name (from host list)
+python scripts/wol.py wake my-pc
+
+# Wake with more packets (improves reliability on lossy networks)
+python scripts/wol.py wake my-pc --count 5
+
+# Wake by raw MAC address (no config needed)
+python scripts/wol.py wake-mac AA:BB:CC:DD:EE:FF
+
+# Wake by MAC with custom broadcast
+python scripts/wol.py wake-mac AA:BB:CC:DD:EE:FF --broadcast 192.168.1.255 --port 9
 ```
 
-## Command Reference
+### Add Command Options
 
 | Flag | Description |
 |------|-------------|
-| `--host NAME` | Host name (case-insensitive lookup in hosts.yaml) |
-| `--mac MAC` | Raw MAC address, supports `XX:XX:XX:XX:XX:XX` or `XX-XX-XX-XX-XX-XX` |
-| `--broadcast IP` | Override broadcast address (with `--mac`, default `255.255.255.255`) |
-| `--port PORT` | Override UDP port (with `--mac`, default `9`) |
-| `-n / --count N` | Number of magic packets to send (with `--mac`, default `3`) |
-| `--verify` | After sending, ping the host's IP to check if it comes online |
-| `--list` | Print all configured hosts as JSON and exit |
-| `--config PATH` | Custom path to hosts.yaml |
+| `--ip IP` | IP address (for display/reference) |
+| `--broadcast BC` | Broadcast address (default: `255.255.255.255`) |
+| `--port PORT` | UDP port (default: `9`) |
+| `--count N` | Number of magic packets to send (default: `3`) |
 
-## hosts.yaml Format
+### Wake / Wake-MAC Options
 
-```yaml
-hosts:
-  - name: "my-pc"
-    mac: "00:11:22:33:44:55"
-    ip: "192.168.1.100"             # optional — used by --verify to ping
-    broadcast: "192.168.1.255"      # optional — default 255.255.255.255
-    port: 9                         # optional — default 9
-    packet_count: 3                 # optional — default 3
-```
+| Flag | Description |
+|------|-------------|
+| `--broadcast BC` | Override broadcast address |
+| `--port PORT` | Override UDP port (default: `9`) |
+| `--count N` | Number of packets to send (default: `3`; higher counts improve reliability) |
 
-**Fields:**
+### Edit Options
 
-- **name** (required) — Human-friendly identifier. Case-insensitive matching.
-- **mac** (required) — Network adapter MAC address.
-- **ip** (optional) — Host IP for `--verify` ping check. If omitted, verification is skipped.
-- **broadcast** (optional) — Subnet broadcast address. Default `255.255.255.255`.
-- **port** (optional) — UDP port. Default `9`.
-- **packet_count** (optional) — How many Magic Packets to send. Default `3`. Sending multiple packets improves reliability on lossy networks.
+| Flag | Description |
+|------|-------------|
+| `--new-name NAME` | Rename the host |
+| `--mac MAC` | Change MAC address |
+| `--ip IP` | Change IP address |
+| `--broadcast BC` | Change broadcast address |
+| `--port PORT` | Change UDP port |
+| `--count N` | Change packet count |
 
 ## Output Format
 
-All output is JSON to stdout:
+All output is JSON:
 
 ```json
-{
-  "success": true,
-  "host": "my-pc",
-  "mac": "00:11:22:33:44:55",
-  "broadcast": "192.168.1.255",
-  "port": 9,
-  "packets_sent": 3,
-  "online": true,
-  "message": "Host 'my-pc' is online"
-}
+{"success": true, "host": "my-pc", "mac": "AA:BB:CC:DD:EE:FF", "packets_sent": 3, "message": "Magic packet sent to AA:BB:CC:DD:EE:FF (3x via 255.255.255.255:9)"}
 ```
 
 On failure:
 
 ```json
-{
-  "success": false,
-  "error": "Host 'xyz' not found in config",
-  "available_hosts": ["my-pc", "my-server"]
-}
+{"success": false, "error": "Host 'xyz' not found", "available_hosts": ["my-pc", "my-server"]}
 ```
-
-## Agent Workflow
-
-1. Receive user request (e.g. "wake up my PC").
-2. Determine whether to use `--host` (by name from config) or `--mac` (direct MAC).
-3. Run `python3 scripts/wol.py ...`.
-4. Parse the JSON output.
-5. Report the result to the user in natural language.
 
 ## Notes
 
-- The host's network adapter and motherboard must support WoL and have it enabled in BIOS/UEFI.
+- The target computer's network adapter and motherboard must support WoL and have it enabled in BIOS/UEFI.
 - Magic Packet is a UDP broadcast — it stays within the local subnet. Cross-subnet WoL requires directed broadcast or relay configuration.
-- `--verify` sends up to 3 pings (5 s apart). A negative result does not mean failure — the host may simply be slow to boot.
-- Dependencies: Python 3.8+, `pyyaml`. Standard library sockets are used for packet construction.
+- Host configurations are stored in `~/.wmyskills/wake-on-lan/hosts.yaml` by default. The script auto-creates this file on first run.
+- Dependencies: Python 3.8+, `pyyaml`. Standard library sockets used for packet construction.

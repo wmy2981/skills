@@ -1,160 +1,150 @@
 ---
 name: linkgo
-description: Manage a remote LinkGo v3 instance via its HTTP API. Use when the user wants to list/add/edit/delete service cards, modify page settings, upload icons, change passwords, export/import config, or query debug info on the LinkGo navigation page. Also triggers for "导航页", "服务卡片", "LinkGo", "add card", "edit card", "sublink" and similar card management tasks.
+description: >-
+  Manage a remote LinkGo v3 instance via its HTTP API. Use when the user wants
+  to list/add/edit/delete service cards, modify page settings, upload icons,
+  change passwords, export/import config, or query debug info on the LinkGo
+  navigation page. Also triggers for "导航页", "服务卡片", "LinkGo",
+  "add card", "edit card", "sublink" and similar card management tasks.
 metadata:
   skill_version: "2.0.0"
 ---
 
-# LinkGo v3 远程管理
+# LinkGo v3 Remote Management
 
-通过 HTTP API 管理 LinkGo v3 实例的服务卡片、页面配置和系统设置。
+Manage service cards, page configuration, icons, and system settings on a [LinkGo v3](https://github.com/ommi2/LinkGo) navigation page via its HTTP API.
 
-## 实例信息
+## Environment Variables
 
-从环境变量读取：
-- `LINKGO_HOST` — 实例地址，如 `http://192.168.124.12:80`
-- `LINKGO_PASSWORD` — 管理密码
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `LINKGO_HOST` | ✅ | Instance address, e.g. `http://192.168.1.100:80` |
+| `LINKGO_PASSWORD` | ✅ | Admin password |
 
-> 💡 环境变量可配置 `scripts/.env` 模板文件。脚本会自动加载。
+The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
 
-## 使用方式
+## Requirements
 
-所有操作通过 `python3 scripts/linkgo.py` 执行。
+No external dependencies (stdlib only).
 
-### 命令速查
+## Usage
+
+Script: `scripts/linkgo.py`
+
+### Connectivity
 
 ```bash
-# 连通性测试
-python3 scripts/linkgo.py ping
-
-# ─── 查询 ──────────────────────────────────────────────
-
-# 列出启用的服务卡片（默认）
-python3 scripts/linkgo.py list
-
-# 列出所有服务卡片（含禁用）
-python3 scripts/linkgo.py list --all
-
-# 查询指定 id 的卡片
-python3 scripts/linkgo.py list --id agent
-
-# ─── 卡片管理 ──────────────────────────────────────────
-
-# 添加卡片（JSON 字符串参数）
-python3 scripts/linkgo.py add '{"id":"myservice","title":"我的服务","href":"http://example.com","icon":"static/icon/link.svg","displayAddress":"example.com","description":"服务描述","status":1}'
-
-# 编辑卡片（按 id 定位，只传要改的字段）
-python3 scripts/linkgo.py edit myservice '{"title":"新标题","href":"http://new.example.com"}'
-
-# 删除卡片
-python3 scripts/linkgo.py delete myservice
-
-# 启用/禁用卡片
-python3 scripts/linkgo.py enable myservice
-python3 scripts/linkgo.py disable myservice
-
-# ─── 页面设置 ──────────────────────────────────────────
-
-# 修改页面设置
-python3 scripts/linkgo.py page '{"title":"新标题","searchEnabled":0}'
-
-# ─── 图标 ──────────────────────────────────────────────
-
-# 上传图标
-python3 scripts/linkgo.py upload-icon /path/to/icon.svg
-
-# 列出可用图标
-python3 scripts/linkgo.py icons
-
-# ─── 配置导入导出 ──────────────────────────────────────
-
-# 导出配置到文件
-python3 scripts/linkgo.py export -o web.json
-
-# 导出到 stdout
-python3 scripts/linkgo.py export
-
-# 导入配置（覆盖全部数据）
-python3 scripts/linkgo.py import web.json
-
-# 恢复默认配置
-python3 scripts/linkgo.py reset
-
-# ─── 密码与调试 ────────────────────────────────────────
-
-# 修改管理密码
-python3 scripts/linkgo.py change-password <旧密码> <新密码>
-
-# 调试信息
-python3 scripts/linkgo.py debug
+python scripts/linkgo.py ping
 ```
 
-## 服务卡片字段
+### Query Cards
 
-| 字段 | 必填 | 类型 | 说明 |
-|------|------|------|------|
-| `id` | ✅ | string | 唯一标识，**只能包含英文字母和数字**，创建后不可修改 |
-| `title` | ✅ | string | 显示标题，支持变量替换 |
-| `href` | ✅ | string | 点击跳转地址，支持 `javascript:` 伪协议 |
-| `icon` | ❌ | string | 图标路径（如 `static/icon/home.svg`），上传后可用 |
-| `displayAddress` | ❌ | string | 卡片上显示的地址文本 |
-| `description` | ❌ | string | 描述文本，支持变量替换和 HTML |
-| `status` | ❌ | int | `1`=启用（默认），`0`=禁用 |
+```bash
+# List enabled cards (default)
+python scripts/linkgo.py list
 
-### description 中的变量语法
+# List all cards (including disabled)
+python scripts/linkgo.py list --all
 
-| 语法 | 说明 | 示例 |
-|------|------|------|
-| `{link:URL,文本}` | 普通链接 | `{link:https://example.com,示例}` |
-| `{sublink:URL,文本}` | 蓝色加粗链接 | `{sublink:https://example.com,详情}` |
-| `{modallink:URL,标题,文本}` | iframe 模态框链接 | `{modallink:http://x:8080,服务,查看}` |
-| `{tip:内容}` | 搜索关键词提示（不显示） | `{tip:关键词1 关键词2}` |
-| `{space}` | 间隔空格 | `第一行{space}第二行` |
-| `{icon_path}` | 图标目录 | `{icon_path}myicon.svg` → `/static/icon/myicon.svg` |
-| `{hostname}` | 动态主机名 | `http://{hostname}:8088` |
+# Query a specific card by id
+python scripts/linkgo.py list --id my-service
+```
 
-### 动态变量（前端自动替换）
+### Card Management
+
+```bash
+# Add a card (JSON string)
+python scripts/linkgo.py add '{"id":"my-service","title":"My Service","href":"http://example.com","icon":"static/icon/link.svg","displayAddress":"example.com","description":"Service description","status":1}'
+
+# Edit a card (merge fields by id)
+python scripts/linkgo.py edit my-service '{"title":"New Title","href":"http://new.example.com"}'
+
+# Delete a card
+python scripts/linkgo.py delete my-service
+
+# Enable / disable
+python scripts/linkgo.py enable my-service
+python scripts/linkgo.py disable my-service
+```
+
+### Page Settings
+
+```bash
+python scripts/linkgo.py page '{"title":"New Title","searchEnabled":0}'
+```
+
+### Icons
+
+```bash
+# Upload an icon
+python scripts/linkgo.py upload-icon /path/to/icon.svg
+
+# List available icons
+python scripts/linkgo.py icons
+```
+
+### Config Export / Import
+
+```bash
+# Export config to file
+python scripts/linkgo.py export -o backup.json
+
+# Export to stdout
+python scripts/linkgo.py export
+
+# Import config (overwrites all data)
+python scripts/linkgo.py import backup.json
+
+# Reset to default config
+python scripts/linkgo.py reset
+```
+
+### Password & Debug
+
+```bash
+# Change admin password
+python scripts/linkgo.py change-password <old_password> <new_password>
+
+# Debug info
+python scripts/linkgo.py debug
+```
+
+## Service Card Fields
+
+| Field | Required | Type | Description |
+|-------|----------|------|-------------|
+| `id` | ✅ | string | Unique identifier, **alphanumeric only**, immutable after creation |
+| `title` | ✅ | string | Display title, supports variable substitution |
+| `href` | ✅ | string | Click target URL, supports `javascript:` protocol |
+| `icon` | ❌ | string | Icon path (e.g. `static/icon/home.svg`), available after upload |
+| `displayAddress` | ❌ | string | Address text shown on the card |
+| `description` | ❌ | string | Description text, supports variable substitution and HTML |
+| `status` | ❌ | int | `1`=enabled (default), `0`=disabled |
+
+### Description Variable Syntax
+
+| Syntax | Description | Example |
+|--------|-------------|---------|
+| `{link:URL,text}` | Plain link | `{link:https://example.com,Example}` |
+| `{sublink:URL,text}` | Blue bold link | `{sublink:https://example.com,Details}` |
+| `{modallink:URL,title,text}` | Iframe modal link | `{modallink:http://x:8080,Service,View}` |
+| `{tip:content}` | Search keyword hint (invisible) | `{tip:keyword1 keyword2}` |
+| `{space}` | Spacing space | `Line 1{space}Line 2` |
+| `{icon_path}` | Icon directory | `{icon_path}myicon.svg` → `/static/icon/myicon.svg` |
+| `{hostname}` | Dynamic hostname | `http://{hostname}:8088` |
+
+### Dynamic Variables (auto-replaced by frontend)
 
 `{host}` / `{hostname}` / `{port}` / `{protocol}` / `{pathname}` / `{href}` / `%s`
 
-## 操作说明
+## Important Notes
 
-### 编辑卡片
+- **Edit is incremental** — only pass the fields you want to change; others stay as-is
+- **Backup before import/reset** — both operations **overwrite all data** and are irreversible
+- Icon upload limit: 1MB; supported formats: SVG/PNG/JPG/JPEG/GIF/WEBP/ICO
+- `reset` clears all custom cards
+- Password change auto-updates the server's `config.php`
 
-`edit` 是增量合并——只传要改的字段，其他保持不变。可一次改多个字段：
+## Reference
 
-```bash
-python3 scripts/linkgo.py edit myservice '{"title":"新标题","description":"新描述{space} {sublink:https://x.com,新链接}"}'
-```
-
-### 添加 sublink 到已有卡片
-
-读取当前 description → 追加 `{sublink:URL,名称}` → 编辑写回：
-
-```bash
-# 1. 查看当前卡片
-python3 scripts/linkgo.py list --id agent
-
-# 2. 拼接新的 description（在 tip 之前插入 sublink）
-# 3. edit 写回
-python3 scripts/linkgo.py edit agent '{"description":"原内容 {sublink:https://new.url,新链接}{tip:原有关键词}"}'
-```
-
-### 备份
-
-导入、恢复默认、编辑操作前建议先备份：
-
-```bash
-python3 scripts/linkgo.py export -o backup_$(date +%Y%m%d_%H%M%S).json
-```
-
-## 完整 API 文档
-
-如需了解 LinkGo v3 的全部 API 接口、变量替换系统、前端模块和部署配置，参阅 `references/api.md`。
-
-## 注意事项
-
-- `import` 和 `reset` 会**覆盖全部数据**，操作前务必备份
-- `reset` 不可逆，会清空所有自定义卡片
-- 图标上传限制 1MB，格式：SVG/PNG/JPG/JPEG/GIF/WEBP/ICO
-- 密码修改会自动更新服务器端 `config.php`
+For the full LinkGo v3 API reference, variable substitution system, frontend modules, and deployment config, read `references/api.md`.

@@ -1,25 +1,32 @@
 ---
 name: epub-book-pipeline
 description: >-
-  Full EPUB book translation pipeline — handles the EPUB-specific operations
-  that baoyu-translate does not cover. Use this when translating a complete
-  EPUB-format book (novel, light novel, etc.) from one language to another.
-  This skill extracts EPUB to structured markdown so baoyu-translate can
-  translate it, then rebuilds the translated markdown back into a valid EPUB.
-  Trigger keywords: "epub 翻译", "整本书", "翻译 ebook/epub/book", "epub 打包",
-  "epub 解包", "epub rebuild", "epub repackage", "整本 epub 翻译",
-  or any request involving translating an EPUB file end-to-end.
+  EPUB book processing pipeline — extract, chunk, rebuild, and validate EPUB
+  files. Use this whenever you need to programmatically manipulate the content
+  of an EPUB book: extract structured text, split into manageable chunks,
+  apply batch modifications, rebuild a valid EPUB from modified content, or
+  validate structural integrity. Triggered by any request involving EPUB
+  extraction ("extract epub", "unpack epub"), chunking ("split epub",
+  "chunk epub"), rebuilding ("rebuild epub", "repackage epub", "pack epub"),
+  or validation ("validate epub", "check epub"). Also triggered when the user
+  needs to batch-edit EPUB content (replace text, reformat, inject styles,
+  modify structure) and then rebuild a valid EPUB from the edited files.
+  Does NOT handle content-level operations like AI translation or text
+  rewriting — only the EPUB mechanical pipeline.
 ---
 
 # EPUB Book Pipeline
 
-Companion skill for **[baoyu-translate](../baoyu-translate/SKILL.md)**. Handles EPUB-specific operations before and after translation.
+Provides the EPUB-specific mechanical operations for extracting, chunking, rebuilding, and validating EPUB files. It handles the structural EPUB work so you can focus on whatever content transformation you need to apply in between.
 
-## Overview
+## Pipeline Overview
 
 ```
-origin.epub → [Step 1] Extract → [Step 2] Chunk → [baoyu-translate] → [Step 3] Rebuild → final.epub
-                                                                              [Step 4] Validate
+origin.epub → [Step 1: Extract] → source.md + toc_original.yaml + terminology_candidates.md
+              → [Step 2: Chunk] → chunk-*.md files (for parallel processing)
+              → [** your content modifications here **]
+              → [Step 3: Rebuild] → modified.epub
+              → [Step 4: Validate]
 ```
 
 ## Requirements
@@ -30,7 +37,7 @@ pip install ebooklib beautifulsoup4 lxml
 
 Scripts at `{baseDir}/scripts/`.
 
-## Step 1: Extract EPUB → Markdown
+## Step 1: Extract EPUB → Structured Markdown
 
 ```bash
 python {baseDir}/scripts/extract_epub.py --epub <input.epub> --output-dir <output_dir>
@@ -38,39 +45,24 @@ python {baseDir}/scripts/extract_epub.py --epub <input.epub> --output-dir <outpu
 
 **What it does:**
 - Parses EPUB structure (OPF, NCX, CSS, spine)
-- Extracts text-bearing XHTML into a single merged markdown
-- Removes `<ruby>` (furigana) tags
+- Extracts text-bearing XHTML into a single merged markdown file
 - Adds structural markers: `<!-- FILE: ... -->`, `<!-- CHAPTER-HEADING-IMAGE: ... -->`, `<!-- IMAGE: ... -->`
-- Extracts NCX navLabel entries into `toc_original.yaml`
-- Scans katakana sequences into `terminology_candidates.md`
+- Extracts NCX navLabel entries into `toc_original.yaml` (for later TOC rebuilding)
+- Scans katakana sequences into `terminology_candidates.md` (proper noun candidates for review)
 
 **Output:**
 
 | File | Description |
 |------|-------------|
 | `source.md` | Merged markdown with all text + structural markers |
-| `toc_original.yaml` | NCX TOC entries + Chinese title/entries (see below) |
-| `terminology_candidates.md` | Proper noun candidates for review |
+| `toc_original.yaml` | NCX/EPUB3 TOC entries (play_order, label, src) |
+| `terminology_candidates.md` | Auto-detected proper noun candidates (katakana sequences) for review |
 
-**Critical:** `<!-- FILE: ... -->` markers map each section to its original XHTML file. **Never remove or modify them**.
+**Critical:** `<!-- FILE: ... -->` markers map each section to its original XHTML file. **Never remove or modify them** — the rebuild step relies on them to place modified content back into the correct XHTML files.
 
-**TOC translation setup:** After deciding chapter title translations, add `label_cn` entries:
+## Step 2: Chunk source.md for Parallel Processing
 
-```yaml
-book_title: 魔女の旅々２２
-book_title_cn: 魔女之旅 22
-toc:
-  - play_order: 1
-    label: "第一章　伝説の略奪者"
-    label_cn: "第一章　传说的掠夺者"
-    src: "Text/p-006.xhtml#toc-001"
-```
-
-Step 3 reads `label_cn` fields to auto-translate NCX, nav.xhtml, and OPF `<dc:title>`.
-
-## Step 2: Chunk source.md for parallel translation
-
-Book-length content must be chunked so baoyu-translate can translate in parallel:
+When an EPUB is large, chunking lets you process sections independently (e.g., in parallel subagents, or one section at a time):
 
 ```bash
 python {baseDir}/scripts/chunk_source.py \
@@ -89,88 +81,100 @@ python {baseDir}/scripts/chunk_source.py \
 - Small trailing fragments (< max_chars/3) merge back into the previous chunk
 - Tiny FILE sections (image-only pages, short sections) accumulate into adjacent chunks rather than creating standalone tiny blocks
 
-**Output:** `chunk-NN.md` files + `chunk_index.json` mapping chunks to FILE ranges.
+**Output:** `chunk-NN.md` files + `chunk_index.json` mapping chunk numbers to `<!-- FILE: ... -->` ranges.
 
-Then run baoyu-translate on the chunk directory:
+After you've modified the chunk content, concatenate them back into a single markdown file (in order) for the rebuild step:
 
 ```bash
-# baoyu-translate will read chunks/*.md individually and translate them in parallel
-# Or combine chunks back and translate as a single file:
-cat chunks/chunk-*.md > source_combined.md
+cat chunks/chunk-*.md > ../modified.md
 ```
 
+Or if processing sequentially, you can edit `source.md` directly and skip Step 2 entirely.
+
 ## Step 3: Rebuild EPUB
+
+After modifying the markdown content, rebuild it into a valid EPUB:
 
 ```bash
 python {baseDir}/scripts/rebuild_epub.py \
   --epub <origin.epub> \
-  --translation <translation.md> \
+  --translation <modified.md> \
   --output <final.epub> \
   [--toc <toc_original.yaml>]
 ```
 
-`--toc` auto-detects next to `translation.md` if omitted. Default language direction: ja→zh-CN, vertical→horizontal.
+**Arguments:**
+- `--epub`: Original EPUB file (used as structural template)
+- `--translation`: Modified markdown with content changes
+- `--output`: Output EPUB path
+- `--toc`: YAML file for TOC label customization (auto-detects next to `--translation` if omitted)
+- `--from-lang` / `--to-lang`: Source/target language codes (defaults: `ja` → `zh-CN`); only needed if the script's built-in language-specific transformations (ruby removal, writing mode, typography CSS) apply to your use case
 
 **What it does:**
-- Copies original EPUB as base, replaces text per FILE-mapped sections
-- Removes `<ruby>`, changes `xml:lang`, `class="vrtl"` → `"hltr"`
-- Adds Chinese chapter title text below heading images (`<p class="chapter-title-cn">`)
-- Updates CSS: vertical-rl → horizontal Chinese typography
-- Updates OPF: language, title (from `book_title_cn`), writing mode
-- Translates NCX + nav.xhtml from `toc_original.yaml` `label_cn` fields
+- Copies original EPUB as base, replaces text per `<!-- FILE: ... -->` mapped sections
+- Rebuilds NCX/EPUB3 TOC from `toc_original.yaml` (if provided)
+- Preserves all non-text assets (images, fonts, stylesheets) from the original
+- Handles both EPUB2 and EPUB3 formats
+- Handles SVG-wrapper pages (cover, color plates) — preserved as-is
+
+**TOC customization:** Create a YAML file (based on `toc_original.yaml`) to customize TOC labels when rebuilding:
+
+```yaml
+book_title: The Original Title
+toc:
+  - play_order: 1
+    label: "Custom Chapter Title"
+    src: "Text/p-006.xhtml#toc-001"
+```
+
+Fields not specified fall back to the original EPUB's values.
 
 ## Step 4: Validate
+
+Verify the rebuilt EPUB is structurally sound:
 
 ```bash
 python {baseDir}/scripts/validate_epub.py \
   --epub <final.epub> \
   --source-md <output_dir>/source.md \
-  --translation-md <output_dir>/translation.md
+  --translation-md <output_dir>/modified.md
 ```
 
-**Checks** — ZIP structure, OPF metadata, all text-bearing XHTML (no ruby, correct lang/class, Chinese text), TOC translation (NCX or EPUB3 nav), image integrity. Translation verification (line count comparison per FILE section) is warning-only.
+**Checks:** ZIP structure, OPF metadata integrity, all text-bearing XHTML files present and well-formed, image integrity, TOC consistency across NCX and nav.xhtml, structural marker alignment between source and modified content.
 
 **Output format:**
-- Each text-bearing XHTML file is scanned individually; issues are reported as `[WARN]` per file
-- Summary line: `XHTML files checked: N (OK: M, no Chinese: P, ruby: Q, lang: R)`
+- Each XHTML file is scanned individually; issues reported as `[WARN]` per file
+- Summary line: `XHTML files checked: N (OK: M, issues: P)`
 - Overall result: `Summary: X/Y checks passed (Z%)` — exits 0 unless a critical structural error prevents verification
 
-## Full Pipeline
+## Full Pipeline Example
 
 ```bash
 # 1. Extract
-python extract_epub.py --epub book.epub --output-dir book-zh/
+python extract_epub.py --epub book.epub --output-dir book-work/
 
-# 2. Chunk
-python chunk_source.py --source book-zh/source.md --output-dir book-zh/chunks/ --max-chars 12000
+# 2. (Optional) Chunk for parallel processing
+python chunk_source.py --source book-work/source.md --output-dir book-work/chunks/ --max-chars 12000
 
-# 3. Translate with baoyu-translate (outside this skill's scope)
+# 3. Apply your content modifications to chunk-*.md or source.md
+#    (this is where you edit text, replace content, reformat, etc.)
 
 # 4. Rebuild
-python rebuild_epub.py --epub book.epub --translation book-zh/translation.md --output book-zh/final.epub
+python rebuild_epub.py --epub book.epub --translation book-work/modified.md --output book-work/final.epub
 
 # 5. Validate
-python validate_epub.py --epub book-zh/final.epub --source-md book-zh/source.md --translation-md book-zh/translation.md
-```
-
-## Chinese Typography CSS
-
-When rebuilding, Chinese horizontal layout CSS is injected. See `{baseDir}/references/chinese-typography.css` for the full rule set. Key rules:
-
-```css
-p { text-indent: 2em; line-height: 1.8; text-align: justify; }
-h1, h2, h3 { text-align: center; text-indent: 0; }
+python validate_epub.py --epub book-work/final.epub --source-md book-work/source.md --translation-md book-work/modified.md
 ```
 
 ## Edge Cases
 
 - **SVG-wrapper pages** (cover, color plates): Preserved as-is
-- **Chapter heading images** (`<h1><img>`): Image kept, Chinese text title inserted below
-- **Scene breaks**: `○`/`●` → `---` in markdown, restored during rebuild
-- **Empty paragraphs** (`<p><br/>`): Preserved structurally; no translation.md line needed
-- **`---` alignment**: Must match original scene breaks one-to-one; mismatches shift subsequent paragraphs
+- **Chapter heading images** (`<h1><img>`): Image kept, additional text can be inserted via the markdown
+- **Scene breaks**: `○`/`●` → `---` in markdown, restored during rebuild — `---` alignment must match original one-to-one; mismatches shift subsequent paragraphs
+- **Empty paragraphs** (`<p><br/>`): Preserved structurally
 - **EPUB2 vs EPUB3**: Both handled (NCX and nav.xhtml)
-- **Embedded fonts**: Preserved
+- **Embedded fonts**: Preserved automatically
+- **Right-to-left / vertical writing mode CSS**: Removed during rebuild (controlled by `--from-lang`/`--to-lang`); skipped if the generated CSS doesn't apply to your direction
 
 ## Scripts Reference
 
@@ -178,5 +182,5 @@ h1, h2, h3 { text-align: center; text-indent: 0; }
 |--------|---------|
 | `extract_epub.py` | EPUB → structured markdown (`--epub INPUT --output-dir DIR`) |
 | `chunk_source.py` | FILE-bounded chunking (`--source SRC --output-dir DIR [--max-chars N]`) |
-| `rebuild_epub.py` | Translation → final EPUB (`--epub SRC --translation MD --output EPUB`) |
-| `validate_epub.py` | Structural check + translation verification (`--epub EPUB [--source-md SRC --translation-md TGT]`) |
+| `rebuild_epub.py` | Modified markdown → final EPUB (`--epub SRC --translation MD --output EPUB [--toc YAML]`) |
+| `validate_epub.py` | Structural check + content alignment (`--epub EPUB [--source-md SRC --translation-md TGT]`) |

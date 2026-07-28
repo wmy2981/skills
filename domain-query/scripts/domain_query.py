@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
-"""域名全查询 - ICP备案 + WHOIS + 微信防红检测"""
+"""Domain query — ICP filing + WHOIS + WeChat block check via 接口盒子 API"""
 
 import sys
+import subprocess
 import os
 import json
 import argparse
 import urllib.request
 import urllib.parse
 import urllib.error
+from pathlib import Path
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 BASE = "https://cn.apihz.cn/api/wangzhan"
 
@@ -37,7 +44,10 @@ def api_request(url: str, params: dict) -> dict:
             # API 返回的 whois 字段值中可能含有未转义的双引号（如 ("VeriSign")）
             # 先尝试直接解析
             try:
-                return json.loads(raw)
+                data = json.loads(raw)
+                if not isinstance(data, dict):
+                    return {"error": "API returned unexpected data format"}
+                return data
             except json.JSONDecodeError:
                 # 用正则提取各顶层字段
                 return _parse_broken_json(raw)
@@ -139,13 +149,13 @@ def format_wxfh(data: dict) -> str:
 
 
 def main():
-    load_dotenv()
-    parser = argparse.ArgumentParser(description="域名全查询（ICP + WHOIS + 微信防红）")
-    parser.add_argument("domain", help="要查询的域名（如 example.com）")
-    parser.add_argument("--url", help="微信防红检测的 URL（默认用 https://domain）")
-    parser.add_argument("--live", action="store_true", help="WHOIS 实时查询（不使用缓存）")
-    parser.add_argument("--json", action="store_true", help="输出原始 JSON")
-    parser.add_argument("--only", choices=["icp", "whois", "wxfh"], help="只查询指定项")
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    parser = argparse.ArgumentParser(description="Domain query — ICP + WHOIS + WeChat block check")
+    parser.add_argument("domain", help="Domain to query (e.g. example.com)")
+    parser.add_argument("--url", help="URL for WeChat check (default: https://domain)")
+    parser.add_argument("--live", action="store_true", help="WHOIS live query (bypass cache)")
+    parser.add_argument("--json", action="store_true", help="Output raw JSON")
+    parser.add_argument("--only", choices=["icp", "whois", "wxfh"], help="Query only one item")
     args = parser.parse_args()
 
     domain = args.domain.strip().lower()

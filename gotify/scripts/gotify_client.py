@@ -15,10 +15,17 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 import urllib.request
 import urllib.error
 import urllib.parse
+from pathlib import Path
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 def _base_url():
@@ -34,8 +41,10 @@ def _base_url():
 def _headers(token=None):
     h = {"Content-Type": "application/json"}
     t = token or os.environ.get("GOTIFY_APP_TOKEN") or os.environ.get("GOTIFY_CLIENT_TOKEN")
-    if t:
-        h["X-Gotify-Key"] = t
+    if not t:
+        print(json.dumps({"error": "No token available — set GOTIFY_APP_TOKEN or GOTIFY_CLIENT_TOKEN"}))
+        sys.exit(1)
+    h["X-Gotify-Key"] = t
     return h
 
 
@@ -197,7 +206,7 @@ def cmd_ws_subscribe(args):
 # ── CLI Parser ──────────────────────────────────────────────────────────────
 
 def main():
-    load_dotenv()
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
     parser = argparse.ArgumentParser(description="Gotify CLI Client")
     sub = parser.add_subparsers(dest="command", required=True)
 

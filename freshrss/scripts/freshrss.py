@@ -18,6 +18,9 @@ from datetime import datetime, timezone
 from html import unescape
 from urllib.parse import quote
 
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 from dotenv import load_dotenv
 
 load_dotenv()

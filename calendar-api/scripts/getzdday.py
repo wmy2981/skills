@@ -1,16 +1,23 @@
 #!/usr/bin/env python3
-"""万年历 - 取指定日期信息（接口盒子 API）"""
+"""Chinese calendar query — get traditional calendar info via 接口盒子 API"""
 
 import sys
+import subprocess
 import os
 import json
 import argparse
 import urllib.request
 import urllib.parse
 import urllib.error
+from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 API_URL = "https://cn.apihz.cn/api/time/getzdday.php"
 TZ = ZoneInfo("Asia/Shanghai")
@@ -37,6 +44,8 @@ def get_calendar_info(year: int, month: int, day: int) -> dict:
         })
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
+            if not isinstance(data, dict):
+                return {"error": "API returned unexpected data format"}
         return data
     except urllib.error.HTTPError as e:
         return {"error": f"HTTP {e.code}: {e.reason}"}
@@ -136,10 +145,10 @@ def format_output(data: dict, year: int, month: int, day: int) -> str:
 
 
 def main():
-    load_dotenv()
-    parser = argparse.ArgumentParser(description="万年历 - 查询指定日期信息")
-    parser.add_argument("date", nargs="?", help="日期，格式 YYYY-MM-DD，默认今天")
-    parser.add_argument("--json", action="store_true", help="输出原始 JSON")
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    parser = argparse.ArgumentParser(description="Chinese calendar query — get traditional calendar info")
+    parser.add_argument("date", nargs="?", help="Date in YYYY-MM-DD format (default: today)")
+    parser.add_argument("--json", action="store_true", help="Output raw JSON")
     args = parser.parse_args()
 
     if args.date:

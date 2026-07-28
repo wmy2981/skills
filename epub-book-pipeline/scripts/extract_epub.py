@@ -24,6 +24,7 @@ import argparse
 import os
 import re
 import sys
+import subprocess
 from collections import Counter
 from pathlib import Path
 from bs4 import BeautifulSoup, NavigableString, Tag, XMLParsedAsHTMLWarning
@@ -32,6 +33,8 @@ import ebooklib
 from ebooklib import epub
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
 warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 
