@@ -8,6 +8,7 @@ import argparse
 import urllib.request
 import urllib.parse
 import urllib.error
+from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
@@ -136,7 +137,7 @@ def format_output(data: dict, year: int, month: int, day: int) -> str:
 
 
 def main():
-    load_dotenv()
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
     parser = argparse.ArgumentParser(description="万年历 - 查询指定日期信息")
     parser.add_argument("date", nargs="?", help="日期，格式 YYYY-MM-DD，默认今天")
     parser.add_argument("--json", action="store_true", help="输出原始 JSON")

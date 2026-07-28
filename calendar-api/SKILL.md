@@ -1,67 +1,81 @@
 ---
 name: calendar-api
-description: 万年历查询工具，获取指定日期的农历、干支、节气、节日、宜忌、生肖、星座、胎神、彭祖百忌、星宿、佛道历等完整黄历信息。当用户提到"万年历""农历""黄历""今天是什么日子""某天的农历""节气""宜忌""干支""生肖""星座""今天宜做什么""冲煞""胎神""星宿"时触发。即使用户只是随口问"今天农历几号""今天宜做什么""今天什么节气"也要触发。
-metadata:
-  skill_version: "1.0.0"
+description: >-
+  Chinese calendar query tool — retrieves comprehensive traditional calendar
+  information for any date, including lunar calendar, Heavenly Stems and Earthly
+  Branches (干支), solar terms (节气), festivals, auspicious/inauspicious
+  activities (宜忌), zodiac (生肖), constellation (星座), fetal god (胎神),
+  Peng Zu's hundred taboos (彭祖百忌), 28 mansions (星宿), Buddhist/Taoist
+  calendar, and more. Triggered whenever the user asks about the Chinese
+  calendar: "what's the lunar date today", "today's 宜忌", "what solar term
+  is it", "is today auspicious", "Chinese zodiac for this year",
+  "constellation", "今天农历几号", "今天宜做什么", "黄历", "万年历",
+  "今天什么节气". Trigger even for casual one-line questions.
 ---
 
-# 万年历 - 取指定日期信息
+# Chinese Calendar Query
 
-基于接口盒子 API（APIID: 278）查询指定日期的万年历完整信息。
+Queries the [接口盒子 API](https://apihz.cn) (API ID: 278) to retrieve comprehensive traditional Chinese calendar (黄历) information for any date.
 
-## 环境变量
+## Environment Variables
 
-| 变量 | 说明 |
-|------|------|
-| `JKHZ_ID` | 接口盒子用户 ID |
-| `JKHZ_KEY` | 接口盒子 API Key |
+| Variable | Description |
+|----------|-------------|
+| `JKHZ_ID` | 接口盒子 (apihz.cn) user ID |
+| `JKHZ_KEY` | 接口盒子 API key |
 
-## 调用方式
+The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
 
-脚本路径：`scripts/getzdday.py`。环境变量可配置 `scripts/.env` 模板文件，脚本会自动加载。
-
-### 查询今天
+## Requirements
 
 ```bash
-python3 scripts/getzdday.py
+pip install python-dotenv
 ```
 
-### 查询指定日期
+## Usage
 
+Script: `scripts/getzdday.py`
+
+### Query today
 ```bash
-python3 scripts/getzdday.py 2025-06-05
+python scripts/getzdday.py
 ```
 
-### 输出原始 JSON（调试用）
-
+### Query a specific date
 ```bash
-python3 scripts/getzdday.py 2025-06-05 --json
+python scripts/getzdday.py 2025-06-05
 ```
 
-## 返回信息
+### Output raw JSON (debugging)
+```bash
+python scripts/getzdday.py 2025-06-05 --json
+```
 
-脚本按分类自动整理输出，主要包含：
+## Output Categories
 
-| 分类 | 字段 |
-|------|------|
-| 📆 公历 | 年月日、星期、闰年 |
-| 🌙 农历 | 年月日 |
-| 🎊 节日 | 阳历节日、阴历节日 |
-| ⭐ 星座与生肖 | 星座、生肖、日生肖 |
-| 📜 干支 | 年/月/日干支、日纳音 |
-| 🌿 节气与物候 | 节气、物候、数九、三伏 |
-| ☯ 宜忌 | 宜、忌、吉神宜趋、凶神宜忌 |
-| 🧭 方位 | 喜神、财神、福神、贵神 |
-| ⚠️ 冲煞 | 相冲、天神、黄黑道 |
-| 🔢 值星与神煞 | 十二值星、十二神、六曜、月相 |
-| 🌟 星宿 | 二十八宿、宿动物、吉凶、七曜 |
-| 📖 彭祖与胎神 | 彭祖百忌、胎神方位、太岁方位 |
-| 📅 佛道历 | 佛历、道历、伊斯兰历 |
-| 📊 其他 | 五行、儒略日、九星、季节 |
+The script organizes returned data into these categories:
 
-## 注意事项
+| Category | Fields |
+|----------|--------|
+| 📆 Gregorian Calendar (公历) | Year, month, day, weekday, leap year |
+| 🌙 Lunar Calendar (农历) | Lunar year, month, day |
+| 🎊 Festivals (节日) | Solar festivals, lunar festivals |
+| ⭐ Constellation & Zodiac (星座与生肖) | Constellation, Chinese zodiac, daily zodiac |
+| 📜 Stems & Branches (干支) | Year/month/day Ganzhi, day Nayin |
+| 🌿 Solar Terms & Phenology (节气与物候) | Solar term, description, Wuhou, Shujiu, Sanfu |
+| ☯ Auspicious/Inauspicious (宜忌) | Yi (宜), Ji (忌), auspicious/inauspicious gods |
+| 🧭 Directions (方位) | Xi (喜), Cai (财), Fu (福), Gui (贵) spirit directions |
+| ⚠️ Clash & Sha (冲煞) | Xiangchong, Richtungschong, Tian Shen, Huang/Hei Dao |
+| 🔢 Star & Spirit (值星与神煞) | Zhi Xing (12 value stars), 12 spirits, Liuyao, moon phase |
+| 🌟 Mansions (星宿) | 28 mansions, animal, luck, 7 luminaries, 4 palaces, 4 symbols |
+| 📖 Peng Zu & Fetal God (彭祖与胎神) | Peng Zu's hundred taboos, fetal god direction, Taisui |
+| 📅 Buddhist/Taoist Calendar (佛道历) | Buddhist calendar, Taoist calendar, Islamic calendar |
+| 📊 Other (其他) | Wuxing (5 elements), Julian day, 9 stars, season |
 
-- 默认查询当天日期（Asia/Shanghai 时区）
-- API 年份范围：1800 至次年
-- 格式化输出适合直接展示给用户；`--json` 用于调试
-- API 每次返回字段可能不完全一致，脚本会动态展示所有非空字段
+## Notes
+
+- Defaults to today's date (Asia/Shanghai timezone)
+- API year range: 1800 to next year
+- Formatted output is suitable for direct display; `--json` for debugging
+- The API may return different fields per date; the script dynamically displays all non-empty fields
+- **Match the user's language.** The output language MUST match the language of the user's question. If the user asks in Chinese, output all category labels and descriptions in Chinese; if in English, output in English.
