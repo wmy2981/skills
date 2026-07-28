@@ -1,0 +1,17 @@
+## 已准备好发布的skill
+[] calendar-api
+[x] deepseek-balance
+[] domain-query
+[] enterprise-info
+[x] epub-book-pipeline
+[x] freshrss
+[x] gaokao-english-answer-parser
+[] gotify
+[x] img-recog
+[] linkgo
+[] mimo-tts
+[] s3
+[x] send-email
+[x] fun-asr
+[] wake-on-lan
+[] zurl
