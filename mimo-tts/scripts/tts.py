@@ -95,7 +95,10 @@ def handle_stream_response(stream, output_path):
         return
     collected = np.array([], dtype=np.float32)
     buffer = ""
+    done = False
     for chunk in iter(lambda: stream.read(8192), b""):
+        if done:
+            break
         buffer += chunk.decode(errors="replace")
         while True:
             idx = buffer.find("\n")
@@ -108,12 +111,16 @@ def handle_stream_response(stream, output_path):
             if line.startswith("data: "):
                 ds = line[6:]
                 if ds == "[DONE]":
+                    done = True
                     break
                 try:
                     d = json.loads(ds)
                 except json.JSONDecodeError:
                     continue
-                delta = d.get("choices", [{}])[0].get("delta", {})
+                choices = d.get("choices")
+                if not choices:
+                    continue
+                delta = choices[0].get("delta", {})
                 audio = delta.get("audio", {})
                 if "data" in audio:
                     pcm = np.frombuffer(base64.b64decode(audio["data"]), dtype=np.int16).astype(np.float32) / 32768.0

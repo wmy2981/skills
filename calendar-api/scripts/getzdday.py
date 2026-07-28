@@ -41,6 +41,8 @@ def get_calendar_info(year: int, month: int, day: int) -> dict:
         })
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read().decode("utf-8"))
+            if not isinstance(data, dict):
+                return {"error": "API returned unexpected data format"}
         return data
     except urllib.error.HTTPError as e:
         return {"error": f"HTTP {e.code}: {e.reason}"}

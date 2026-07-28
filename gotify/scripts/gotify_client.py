@@ -38,8 +38,10 @@ def _base_url():
 def _headers(token=None):
     h = {"Content-Type": "application/json"}
     t = token or os.environ.get("GOTIFY_APP_TOKEN") or os.environ.get("GOTIFY_CLIENT_TOKEN")
-    if t:
-        h["X-Gotify-Key"] = t
+    if not t:
+        print(json.dumps({"error": "No token available — set GOTIFY_APP_TOKEN or GOTIFY_CLIENT_TOKEN"}))
+        sys.exit(1)
+    h["X-Gotify-Key"] = t
     return h
 
 

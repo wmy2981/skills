@@ -41,7 +41,10 @@ def api_request(url: str, params: dict) -> dict:
             # API 返回的 whois 字段值中可能含有未转义的双引号（如 ("VeriSign")）
             # 先尝试直接解析
             try:
-                return json.loads(raw)
+                data = json.loads(raw)
+                if not isinstance(data, dict):
+                    return {"error": "API returned unexpected data format"}
+                return data
             except json.JSONDecodeError:
                 # 用正则提取各顶层字段
                 return _parse_broken_json(raw)

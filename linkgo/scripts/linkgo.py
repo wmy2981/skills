@@ -11,6 +11,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Optional
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 from urllib.parse import urlencode
@@ -41,8 +42,8 @@ API_URL: str = ""  # set in _init_env after BASE_URL is known
 
 # ─── HTTP helpers ─────────────────────────────────────────────
 
-def _request(method: str, path: str, data: dict | None = None,
-             headers: dict | None = None, auth_header: bool = False) -> dict:
+def _request(method: str, path: str, data: Optional[dict] = None,
+             headers: Optional[dict] = None, auth_header: bool = False) -> dict:
     """Unified HTTP request returning JSON dict."""
     url = f"{API_URL}{path}"
     hdrs = {"Content-Type": "application/json"}
@@ -78,7 +79,7 @@ def api_post(path: str, data: dict, auth: bool = False) -> dict:
 def load_full_data() -> dict:
     """Load full config (including disabled cards). Exit on error."""
     raw = api_get("/load_data.php", auth=True)
-    if "error" in raw:
+    if raw.get("error"):
         print(f"Error: cannot load data — {raw['error']}", file=sys.stderr)
         sys.exit(1)
     return raw
@@ -121,31 +122,47 @@ def cmd_list(args):
 
 def cmd_add(args):
     """Add a service card."""
-    card = json.loads(args.json)
+    try:
+        card = json.loads(args.json)
+    except json.JSONDecodeError:
+        print("Error: invalid JSON", file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(card, dict):
+        print("Error: card JSON must be an object", file=sys.stderr)
+        sys.exit(1)
     if "id" not in card:
         print("Error: card JSON is missing 'id' field", file=sys.stderr)
         sys.exit(1)
+    card_id = str(card["id"])
 
     data = load_full_data()
-    existing = [s.get("id") for s in data.get("services", [])]
-    if card["id"] in existing:
-        print(f"Error: id '{card['id']}' already exists — use edit or choose another id", file=sys.stderr)
+    existing = [str(s.get("id", "")) for s in data.get("services", [])]
+    if card_id in existing:
+        print(f"Error: id '{card_id}' already exists — use edit or choose another id", file=sys.stderr)
         sys.exit(1)
 
+    card["id"] = card_id
     data.setdefault("services", []).append(card)
     result = save_data(data)
     output(result)
-    print(f"✓ Card '{card.get('title', card['id'])}' added")
+    print(f"✓ Card '{card.get('title', card_id)}' added")
 
 
 def cmd_edit(args):
     """Edit a service card (merge fields by id)."""
-    patch = json.loads(args.json)
+    try:
+        patch = json.loads(args.json)
+    except json.JSONDecodeError:
+        print("Error: invalid JSON", file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(patch, dict):
+        print("Error: patch JSON must be an object", file=sys.stderr)
+        sys.exit(1)
     data = load_full_data()
 
     found = False
     for s in data.get("services", []):
-        if s.get("id") == args.id:
+        if str(s.get("id", "")) == args.id:
             for k, v in patch.items():
                 if k != "id":
                     s[k] = v
@@ -165,7 +182,7 @@ def cmd_delete(args):
     """Delete a service card."""
     data = load_full_data()
     before = len(data.get("services", []))
-    data["services"] = [s for s in data.get("services", []) if s.get("id") != args.id]
+    data["services"] = [s for s in data.get("services", []) if str(s.get("id", "")) != args.id]
     after = len(data["services"])
 
     if before == after:
@@ -191,7 +208,7 @@ def _set_status(card_id: str, status: int):
     data = load_full_data()
     found = False
     for s in data.get("services", []):
-        if s.get("id") == card_id:
+        if str(s.get("id", "")) == card_id:
             s["status"] = status
             found = True
             break
@@ -208,7 +225,14 @@ def _set_status(card_id: str, status: int):
 
 def cmd_page(args):
     """Update page settings."""
-    patch = json.loads(args.json)
+    try:
+        patch = json.loads(args.json)
+    except json.JSONDecodeError:
+        print("Error: invalid JSON", file=sys.stderr)
+        sys.exit(1)
+    if not isinstance(patch, dict):
+        print("Error: page JSON must be an object", file=sys.stderr)
+        sys.exit(1)
     data = load_full_data()
 
     page = data.get("page", {})
@@ -260,8 +284,9 @@ def cmd_upload_icon(args):
             result = json.loads(resp.read().decode("utf-8"))
             output(result)
             if result.get("success"):
-                print(f"✓ Uploaded {len(result.get('uploaded', []))} file(s)")
-    except (HTTPError, URLError) as e:
+                uploaded = result.get("uploaded", [])
+                print(f"✓ Uploaded {len(uploaded)} file(s)")
+    except (HTTPError, URLError, json.JSONDecodeError) as e:
         print(f"Upload failed: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -312,6 +337,9 @@ def cmd_change_password(args):
     output(result)
     if result.get("success"):
         print("✓ Password changed")
+    else:
+        print(f"✗ Password change failed: {result.get('msg', result.get('error', 'unknown error'))}", file=sys.stderr)
+        sys.exit(1)
 
 
 def cmd_debug(args):
@@ -328,6 +356,7 @@ def cmd_ping(args):
         print(f"✓ Connected — {len(services)} service card(s)")
     except Exception as e:
         print(f"✗ Connection failed: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 # ─── CLI Entry Point ──────────────────────────────────────────────

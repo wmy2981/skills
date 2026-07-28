@@ -50,7 +50,7 @@ def safe_val(d: dict, *keys, default="-"):
     """从字典中按多个key依次取值，返回第一个非空值"""
     for k in keys:
         v = d.get(k)
-        if v is not None and str(v).strip() and str(v).strip() not in ("-", "0"):
+        if v is not None and str(v).strip() and str(v).strip() != "-":
             return str(v).strip()
     return default
 
@@ -121,50 +121,50 @@ def format_result(data: dict) -> str:
         return f"❌ Query failed: {msg}"
 
     info = data.get("data", data)
-    name = safe_val(info, "companyName", "entName")
+    name = safe_val(info, "companyName", "entName", "企业名称")
 
     lines = []
     lines.append("=" * 50)
     lines.append(f"  🏢 {name}")
     lines.append("=" * 50)
 
-    credit = safe_val(info, "creditNo", "creditCode", "creditcode")
+    credit = safe_val(info, "creditNo", "creditCode", "creditcode", "统一社会信用代码")
     if credit != "-":
         lines.append(f"  📌 Credit Code: {credit}")
 
-    lines.append(f"  📌 Legal Rep: {safe_val(info, 'legalPerson', 'frName')}")
-    lines.append(f"  📌 Registered Capital: {safe_val(info, 'capital', 'regCapital', 'regcap')}")
-    lines.append(f"  📌 Status: {safe_val(info, 'companyStatus', 'regStatus', 'regstatus')}")
-    lines.append(f"  📌 Established: {safe_val(info, 'establishDate', 'esDate', 'esdate')}")
-    lines.append(f"  📌 Type: {safe_val(info, 'companyType', 'entType', 'enttype')}")
-    lines.append(f"  📌 Authority: {safe_val(info, 'authority', 'regOrg', 'regorg')}")
-    lines.append(f"  📌 Address: {safe_val(info, 'companyAddress', 'regAddr', 'regaddr', 'address')}")
-    lines.append(f"  📌 Industry: {safe_val(info, 'industry', 'industryPhy')}")
+    lines.append(f"  📌 Legal Rep: {safe_val(info, 'legalPerson', 'frName', '法定代表人')}")
+    lines.append(f"  📌 Registered Capital: {safe_val(info, 'capital', 'regCapital', 'regcap', '注册资本')}")
+    lines.append(f"  📌 Status: {safe_val(info, 'companyStatus', 'regStatus', 'regstatus', '经营状态')}")
+    lines.append(f"  📌 Established: {safe_val(info, 'establishDate', 'esDate', 'esdate', '成立日期')}")
+    lines.append(f"  📌 Type: {safe_val(info, 'companyType', 'entType', 'enttype', '企业类型')}")
+    lines.append(f"  📌 Authority: {safe_val(info, 'authority', 'regOrg', 'regorg', '登记机关')}")
+    lines.append(f"  📌 Address: {safe_val(info, 'companyAddress', 'regAddr', 'regaddr', 'address', '注册地址')}")
+    lines.append(f"  📌 Industry: {safe_val(info, 'industry', 'industryPhy', '行业')}")
 
-    real_cap = safe_val(info, 'realCapital')
+    real_cap = safe_val(info, 'realCapital', '实收资本')
     if real_cap != "-":
         lines.append(f"  📌 Paid-in Capital: {real_cap}")
 
-    taxpayer = safe_val(info, 'taxpayerQual', 'taxpayerqual')
+    taxpayer = safe_val(info, 'taxpayerQual', 'taxpayerqual', '纳税人资质')
     if taxpayer != "-":
         lines.append(f"  📌 Taxpayer Type: {taxpayer}")
 
-    emp = safe_val(info, 'empCount', 'empcount')
+    emp = safe_val(info, 'empCount', 'empcount', '人员规模')
     if emp != "-":
         lines.append(f"  📌 Employees: {emp}")
 
-    issue = safe_val(info, 'issueDate')
+    issue = safe_val(info, 'issueDate', '核准日期')
     if issue != "-":
         lines.append(f"  📌 Approval Date: {issue}")
 
-    op_start = safe_val(info, 'operationStartdate')
-    op_end = safe_val(info, 'operationEnddate')
+    op_start = safe_val(info, 'operationStartdate', '营业起始日期')
+    op_end = safe_val(info, 'operationEnddate', '营业截止日期')
     if op_start != "-" and op_end != "-":
         lines.append(f"  📌 Operating Period: {op_start} to {op_end}")
     elif op_start != "-":
         lines.append(f"  📌 Operating Start: {op_start}")
 
-    scope = safe_val(info, 'businessScope', 'opScope', 'opscope')
+    scope = safe_val(info, 'businessScope', 'opScope', 'opscope', '经营范围')
     if scope != "-":
         lines.append(f"  📌 Business Scope: {scope}")
 
