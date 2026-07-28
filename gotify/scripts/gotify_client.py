@@ -18,7 +18,11 @@ import sys
 import urllib.request
 import urllib.error
 import urllib.parse
+from pathlib import Path
 from dotenv import load_dotenv
+
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 
 def _base_url():
@@ -197,7 +201,7 @@ def cmd_ws_subscribe(args):
 # ── CLI Parser ──────────────────────────────────────────────────────────────
 
 def main():
-    load_dotenv()
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
     parser = argparse.ArgumentParser(description="Gotify CLI Client")
     sub = parser.add_subparsers(dest="command", required=True)
 

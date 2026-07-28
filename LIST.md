@@ -6,7 +6,7 @@
 [x] epub-book-pipeline
 [x] freshrss
 [x] gaokao-english-answer-parser
-[] gotify
+[x] gotify
 [x] img-recog
 [] linkgo
 [] mimo-tts
