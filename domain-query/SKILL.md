@@ -1,77 +1,84 @@
 ---
 name: domain-query
-description: 域名全查询工具，一键查询域名的ICP备案信息、WHOIS注册信息（缓存/实时）、微信防红检测状态。当用户提到"域名查询""域名备案""ICP查询""WHOIS""域名信息""查一下这个域名""域名备案号""注册信息""微信防红""域名检测"时触发。即使用户只是发了一个域名说"查一下""帮我查"也要触发。
-metadata:
-  skill_version: "1.0.0"
+description: >-
+  Domain name multi-query tool — one-shot lookup of ICP filing (备案), WHOIS
+  registration info, and WeChat block status (微信防红) for any domain. Triggered
+  whenever the user mentions "domain lookup", "ICP", "备案", "WHOIS",
+  "registration info", "check this domain", "domain details", "微信防红",
+  "域名查询", "查一下这个域名", "帮我查这个域名", or simply pastes a domain and
+  asks "check it" or "查一下". Trigger even for one-line requests.
 ---
 
-# 域名全查询
+# Domain Query
 
-基于接口盒子 API，一站式查询域名的 ICP 备案、WHOIS 注册信息和微信防红检测。
+Queries the [接口盒子 API](https://apihz.cn) for ICP filing, WHOIS registration information, and WeChat block detection for any domain — all in one command.
 
-## 环境变量
+## Environment Variables
 
-| 变量 | 说明 |
-|------|------|
-| `JKHZ_ID` | 接口盒子用户 ID |
-| `JKHZ_KEY` | 接口盒子 API Key |
+| Variable | Description |
+|----------|-------------|
+| `JKHZ_ID` | 接口盒子 (apihz.cn) user ID |
+| `JKHZ_KEY` | 接口盒子 API key |
 
-## 调用方式
+The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
 
-脚本路径：`scripts/domain_query.py`。环境变量可配置 `scripts/.env` 模板文件，脚本会自动加载。
-
-### 查询全部（ICP + WHOIS + 微信防红）
+## Requirements
 
 ```bash
-python3 scripts/domain_query.py example.com
+pip install python-dotenv
 ```
 
-### 指定微信防红检测 URL
+## Usage
 
+Script: `scripts/domain_query.py`
+
+### Query all (ICP + WHOIS + WeChat check)
 ```bash
-python3 scripts/domain_query.py example.com --url https://example.com/page
+python scripts/domain_query.py example.com
 ```
 
-### WHOIS 实时查询（不使用缓存）
-
+### Specify a custom URL for WeChat check
 ```bash
-python3 scripts/domain_query.py example.com --live
+python scripts/domain_query.py example.com --url https://example.com/page
 ```
 
-### 只查询某一项
-
+### WHOIS live query (skip cache)
 ```bash
-python3 scripts/domain_query.py example.com --only icp
-python3 scripts/domain_query.py example.com --only whois
-python3 scripts/domain_query.py example.com --only wxfh
+python scripts/domain_query.py example.com --live
 ```
 
-### 输出原始 JSON
-
+### Query only one item
 ```bash
-python3 scripts/domain_query.py example.com --json
+python scripts/domain_query.py example.com --only icp
+python scripts/domain_query.py example.com --only whois
+python scripts/domain_query.py example.com --only wxfh
 ```
 
-## 返回信息
+### Output raw JSON
+```bash
+python scripts/domain_query.py example.com --json
+```
 
-| 查询项 | 包含内容 |
-|--------|----------|
-| 📋 ICP 备案 | 备案号、单位名称、类型、审核时间 |
-| 📝 WHOIS | 注册商、注册日期、到期日期、DNS 服务器、域名状态等完整注册信息 |
-| 🔗 微信防红 | URL 在微信中是否被拦截/安全 |
+## Query Items
 
-## 参数说明
+| Item | Content |
+|------|---------|
+| 📋 ICP Filing (ICP 备案) | Filing number, organization name, type, review date |
+| 📝 WHOIS | Registrar, registration/expiration dates, DNS servers, domain status, etc. |
+| 🔗 WeChat Block Status (微信防红) | Whether the URL is blocked / safe in WeChat |
 
-| 参数 | 说明 |
-|------|------|
-| `domain` | 域名（必填），如 `example.com` |
-| `--url` | 微信防红检测的目标 URL，默认 `https://{domain}` |
-| `--live` | WHOIS 实时查询，绕过缓存（默认使用缓存，速度更快） |
-| `--only` | 只查询 `icp`、`whois`、`wxfh` 其中之一 |
-| `--json` | 输出原始 JSON 数据（调试用） |
+## Arguments
 
-## 注意事项
+| Arg | Description |
+|-----|-------------|
+| `domain` | Domain name (required), e.g. `example.com` |
+| `--url` | Target URL for WeChat block check; defaults to `https://{domain}` |
+| `--live` | WHOIS live query (bypasses cache; cached is faster) |
+| `--only` | Query only one of: `icp`, `whois`, `wxfh` |
+| `--json` | Output raw JSON (debugging) |
 
-- 默认一次性查询全部三项
-- WHOIS 缓存模式速度更快，实时模式（`--live`）数据最新但较慢
-- 微信防红检测的 URL 默认为 `https://` + 域名，如有具体页面路径请用 `--url` 指定
+## Notes
+
+- Default behavior queries all three items at once
+- WHOIS cache mode is faster; `--live` gives the freshest data but takes longer
+- WeChat check URL defaults to `https://` + domain; use `--url` for a specific page path

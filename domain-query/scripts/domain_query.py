@@ -8,6 +8,7 @@ import argparse
 import urllib.request
 import urllib.parse
 import urllib.error
+from pathlib import Path
 from dotenv import load_dotenv
 
 BASE = "https://cn.apihz.cn/api/wangzhan"
@@ -139,7 +140,7 @@ def format_wxfh(data: dict) -> str:
 
 
 def main():
-    load_dotenv()
+    load_dotenv(dotenv_path=Path(__file__).parent / ".env")
     parser = argparse.ArgumentParser(description="域名全查询（ICP + WHOIS + 微信防红）")
     parser.add_argument("domain", help="要查询的域名（如 example.com）")
     parser.add_argument("--url", help="微信防红检测的 URL（默认用 https://domain）")
