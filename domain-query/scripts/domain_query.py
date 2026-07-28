@@ -144,12 +144,12 @@ def format_wxfh(data: dict) -> str:
 
 def main():
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
-    parser = argparse.ArgumentParser(description="域名全查询（ICP + WHOIS + 微信防红）")
-    parser.add_argument("domain", help="要查询的域名（如 example.com）")
-    parser.add_argument("--url", help="微信防红检测的 URL（默认用 https://domain）")
-    parser.add_argument("--live", action="store_true", help="WHOIS 实时查询（不使用缓存）")
-    parser.add_argument("--json", action="store_true", help="输出原始 JSON")
-    parser.add_argument("--only", choices=["icp", "whois", "wxfh"], help="只查询指定项")
+    parser = argparse.ArgumentParser(description="Domain query — ICP + WHOIS + WeChat block check")
+    parser.add_argument("domain", help="Domain to query (e.g. example.com)")
+    parser.add_argument("--url", help="URL for WeChat check (default: https://domain)")
+    parser.add_argument("--live", action="store_true", help="WHOIS live query (bypass cache)")
+    parser.add_argument("--json", action="store_true", help="Output raw JSON")
+    parser.add_argument("--only", choices=["icp", "whois", "wxfh"], help="Query only one item")
     args = parser.parse_args()
 
     domain = args.domain.strip().lower()

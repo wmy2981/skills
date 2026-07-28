@@ -29,7 +29,7 @@ The script loads these from `scripts/.env` automatically. See `scripts/.env.exam
 ## Requirements
 
 ```bash
-pip install python-dotenv
+pip install python-dotenv tzdata
 ```
 
 ## Usage

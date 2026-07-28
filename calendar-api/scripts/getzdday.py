@@ -141,9 +141,9 @@ def format_output(data: dict, year: int, month: int, day: int) -> str:
 
 def main():
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
-    parser = argparse.ArgumentParser(description="万年历 - 查询指定日期信息")
-    parser.add_argument("date", nargs="?", help="日期，格式 YYYY-MM-DD，默认今天")
-    parser.add_argument("--json", action="store_true", help="输出原始 JSON")
+    parser = argparse.ArgumentParser(description="Chinese calendar query — get traditional calendar info")
+    parser.add_argument("date", nargs="?", help="Date in YYYY-MM-DD format (default: today)")
+    parser.add_argument("--json", action="store_true", help="Output raw JSON")
     args = parser.parse_args()
 
     if args.date:

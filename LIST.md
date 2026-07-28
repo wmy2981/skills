@@ -1,8 +1,8 @@
 ## 已准备好发布的skill
-[] calendar-api
+[x] calendar-api
 [x] deepseek-balance
-[] domain-query
-[] enterprise-info
+[x] domain-query
+[x] enterprise-info
 [x] epub-book-pipeline
 [x] freshrss
 [x] gaokao-english-answer-parser
