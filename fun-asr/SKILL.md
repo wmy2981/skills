@@ -108,11 +108,11 @@ Full JSON with all metadata — timestamps, speaker IDs, confidence scores, and 
 
 Standard SRT subtitle format: `NN \n HH:MM:SS,mmm --> HH:MM:SS,mmm \n [SN] text`.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Agent Instructions
-
-### Execution Strategy
-
-> **Don't check dependencies, environment variables, or configuration before running the script.** Just execute the transcription command directly. If it fails due to missing dependencies or env vars, the script will exit with a clear error code and message — fix whatever is broken and retry. This avoids wasting time on pre-flight checks when everything is already set up.
 
 ### After Transcription Completes
 

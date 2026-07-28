@@ -17,6 +17,10 @@ description: >-
 
 Queries the [接口盒子 API](https://apihz.cn) (API ID: 278) to retrieve comprehensive traditional Chinese calendar (黄历) information for any date.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Environment Variables
 
 | Variable | Description |

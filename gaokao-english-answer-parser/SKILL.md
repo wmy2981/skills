@@ -7,6 +7,10 @@ metadata:
 
 # Structured Answer Extraction for Gaokao English Exam Papers
 
+## Execution Rule
+
+Start processing the user's request directly without pre-checking whether the format is supported or asking for confirmation. If the file can't be read or parsed as expected, adapt and fix then — not before.
+
 ## Fixed Question Number Distribution
 
 This skill strictly follows the question numbering scheme below. **Do not assume, adjust, or infer question ranges from the source text.**

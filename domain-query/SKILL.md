@@ -13,6 +13,10 @@ description: >-
 
 Queries the [接口盒子 API](https://apihz.cn) for ICP filing, WHOIS registration information, and WeChat block detection for any domain — all in one command.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Environment Variables
 
 | Variable | Description |

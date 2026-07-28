@@ -33,6 +33,10 @@ To customize paths, edit `scripts/.env` and set `img-recog_PROVIDER_FILE` / `img
 
 **After copying, replace placeholder values (marked with `TODO` / `REPLACE_WITH_YOUR_API_KEY`) with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
 
+## Execution Rule
+
+Run the image recognition command directly without pre-checking provider configurations, API keys, or model availability. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Usage
 
 ```bash

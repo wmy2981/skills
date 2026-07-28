@@ -14,6 +14,10 @@ metadata:
 
 Manage service cards, page configuration, icons, and system settings on a [LinkGo v3](https://github.com/ommi2/LinkGo) navigation page via its HTTP API.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Environment Variables
 
 | Variable | Required | Purpose |

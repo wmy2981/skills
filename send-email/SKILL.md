@@ -7,9 +7,9 @@ description: "Use when the user wants to send an email, email a file or document
 
 Send emails via SMTP from Claude Code. Supports plain text, HTML, attachments, and template-based workflow.
 
-## Action
+## Execution Rule
 
-Run the script directly — **do not** check configuration beforehand. The script already handles missing credentials and connection errors with clear messages, so pre-checking wastes time without adding value. Send first; if it fails, the error tells you exactly what to fix.
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
 
 ```bash
 cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <mode> <body> [attachment...]

@@ -29,6 +29,10 @@ origin.epub → [Step 1: Extract] → source.md + toc_original.yaml + terminolog
               → [Step 4: Validate]
 ```
 
+## Execution Rule
+
+Run the requested pipeline step directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the scripts will fail with clear errors — check and fix only then.
+
 ## Requirements
 
 ```bash

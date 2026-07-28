@@ -8,6 +8,10 @@ description: "Access and interact with my FreshRSS instance via python scripts. 
 Self-hosted RSS reader accessed via Google Reader compatible API (GReader).
 All operations go through a single python script.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Environment Variables
 
 | Variable | Description |

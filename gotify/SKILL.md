@@ -16,6 +16,10 @@ metadata:
 
 Send and manage push notifications on a self-hosted [Gotify](https://gotify.net/) server via its REST API v2.0.2.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Environment Variables
 
 | Variable | Required | Purpose |

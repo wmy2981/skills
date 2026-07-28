@@ -7,6 +7,10 @@ description: Query DeepSeek Open Platform account balance. Triggered when user a
 
 Use this skill when the user asks about their DeepSeek account balance.
 
+## Execution Rule
+
+Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
+
 ## Usage
 
 The script reads the API key from the `DEEPSEEK_APIKEY` environment variable (or `.env` file in the same directory), calls the balance API, and outputs raw JSON to stdout.
