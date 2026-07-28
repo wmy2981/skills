@@ -1,24 +1,23 @@
 # wmy-skills
 
-Agent 技能集合
+Agent 技能集合 | Agent Skills Collection
 
-## 技能列表
+## 技能列表 | Skills
 
-| 技能 | 说明 |
-|------|------|
-| `calendar-api/` | 万年历查询（农历、干支、节气、宜忌等） |
-| `deepseek-balance/` | DeepSeek 开放平台余额查询 |
-| `domain-query/` | 域名 ICP 备案 + WHOIS + 微信防红查询 |
-| `enterprise-info/` | 企业工商信息查询 |
-| `epub-book-pipeline/` | EPUB 整本书翻译流水线 — 解包、分块、翻译、重建、校验 |
-| `freshrss/` | FreshRSS RSS 阅读器管理 |
-| `gaokao-english-answer-parser/` | 高考结构英语试卷答案提取 |
-| `gotify/` | Gotify 推送通知管理 |
-| `img-recog/` | 图片识别 — 通过 OpenAI 兼容 API 调用视觉模型查看图片内容 |
-| `linkgo/` | LinkGo v3 导航页管理 |
-| `mimo-tts/` | MiMo-V2.5-TTS 语音合成 |
-| `s3/` | S3 兼容对象存储操作 |
-| `send-email/` | SMTP 邮件发送 — 支持纯文本、HTML、附件、模板工作流 |
-| `fun-asr/` | 阿里云百炼 Fun-ASR 语音识别 |
-| `wake-on-lan/` | 远程唤醒局域网计算机 |
-| `zurl/` | Zurl 短链接服务管理 |
+| skill | Description | 说明 |
+|------|-------------|------|
+| `calendar-api/` | Chinese calendar query (lunar, stems & branches, solar terms, auspicious days) | 万年历查询（农历、干支、节气、宜忌等） |
+| `deepseek-balance/` | DeepSeek Open Platform balance query | DeepSeek 开放平台余额查询 |
+| `domain-query/` | Domain ICP filing, WHOIS & WeChat block check | 域名 ICP 备案 + WHOIS + 微信防红查询 |
+| `enterprise-info/` | Chinese enterprise registration info lookup | 企业工商信息查询 |
+| `epub-book-pipeline/` | EPUB book processing pipeline — extract, chunk, rebuild, validate | EPUB 整本书处理流水线 — 解包、分块、重建、校验 |
+| `freshrss/` | FreshRSS RSS reader management | FreshRSS RSS 阅读器管理 |
+| `fun-asr/` | Alibaba Cloud Fun-ASR speech recognition | 阿里云百炼 Fun-ASR 语音识别 |
+| `gaokao-english-answer-parser/` | Gaokao English exam answer extraction | 高考英语试卷答案提取 |
+| `gotify/` | Gotify push notification management | Gotify 推送通知管理 |
+| `img-recog/` | Image recognition via vision models | 图片识别（视觉模型） |
+| `linkgo/` | LinkGo v3 navigation page management | LinkGo v3 导航页管理 |
+| `mimo-tts/` | MiMo-V2.5-TTS speech synthesis | MiMo-V2.5-TTS 语音合成 |
+| `send-email/` | SMTP email sending (text, HTML, attachments) | SMTP 邮件发送（文本/HTML/附件） |
+| `wake-on-lan/` | Wake-on-LAN remote wake-up | 远程唤醒局域网计算机 |
+| `zurl/` | Zurl short link service management | Zurl 短链接服务管理 |

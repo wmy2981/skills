@@ -6,49 +6,85 @@ This is a collection of **agent skills**. Each skill is a self-contained directo
 
 ```
 skill-name/
-├── SKILL.md       # Skill definition — trigger keywords, usage, docs
-├── scripts/       # Python/shell scripts that power the skill
-│   ├── .env.example    # Environment variable template
+├── SKILL.md           # Skill definition — trigger keywords, usage, docs (English)
+├── scripts/           # Python scripts that power the skill
+│   ├── .env.example   # Environment variable template (mandatory if env vars needed)
+│   ├── .env           # Local config (gitignored)
 │   └── *.py
-└── references/    # Reference docs, config templates
+└── references/        # Reference docs, config templates (optional)
 ```
 
-Each `SKILL.md` contains frontmatter (`name`, `description`) used for skill discovery and triggering.
+Root-level files:
+- `LIST.md` — tracks skill readiness: `[x]` = ready, `[]` = WIP
+- `README.md` — bilingual skill index with descriptions
+- `CLAUDE.md` — this file, conventions for AI agent development
 
 ## Skill Conventions
 
-- A **skill with scripts** uses `scripts/.env` for environment variables (gitignored). Scripts load it at startup via `python-dotenv`. The tracked template is `scripts/.env.example` — every skill that needs env vars **must commit a `.env.example`** so contributors know what to configure.
-- No explicit env var means the skill expects config through the agent conversation or system env vars.
-- Dependencies: listed inline in `SKILL.md` under a "Requirements" section — install via `pip install`.
-- Python scripts target Windows (`python` not `python3`).
-- **Runtime data** (configs, templates, output files) produced by a skill must be stored in `~/.wmyskills/<skill-name>/`. Scripts resolve the path via `pathlib.Path.home() / ".wmyskills" / "<skill-name>"`. Do not hardcode absolute paths or store runtime data inside the repo.
+### SKILL.md
+- **Written in English.** Description frontmatter includes both English and Chinese trigger keywords.
+- Most skills include an **Execution Rule** near the top: run the user's command directly without pre-checking; fix on failure.
+- Dependencies listed under a **Requirements** section (pip install).
+- Content under 500 lines; use `references/` for large reference docs.
+
+### Scripts
+- **English output** — all user-facing text, argparse help, and JSON keys must be English.
+- **`python` not `python3`** — Windows target.
+- **Environment variables** loaded via `python-dotenv` from `scripts/.env`. The tracked template is `scripts/.env.example`.
+- **`load_dotenv()`** always uses explicit path: `load_dotenv(dotenv_path=Path(__file__).parent / ".env")`
+- **`--help` must work without env vars** — env initialization goes after `argparse.parse_args()`.
+- **`import subprocess`** required for `chcp 65001` call.
+
+### Runtime Data
+Configs, templates, and output files produced at runtime go in `~/.wmyskills/<skill-name>/`. Resolve with `Path.home() / ".wmyskills" / "<skill-name>"`. Never store runtime data inside the repo.
 
 ## Common Commands
 
 ```bash
-# Install dependencies for a skill (read from requirements.txt or SKILL.md Requirements)
+# Install dependencies
 pip install -r <skill>/requirements.txt          # if requirements.txt exists
+pip install pyyaml python-dotenv                 # common across skills
 
-# Check skill script syntax
+# Check script syntax
 python -m py_compile <skill>/scripts/*.py
 
 # Validate SKILL.md frontmatter
-python -c "import yaml; yaml.safe_load(open('fun-asr/SKILL.md').read().split('---')[1])"
+python -c "import yaml; yaml.safe_load(open('<skill>/SKILL.md').read().split('---')[1])"
+
+# Test script entry point
+python <skill>/scripts/<script>.py --help
 ```
 
-Dependencies are declared in each skill's `SKILL.md` under **Requirements** or in a `requirements.txt`. When a new skill is added, update nothing — the convention is self-documenting.
+Dependencies are declared in each skill's `SKILL.md` under **Requirements** or in a `requirements.txt`. When adding a new skill, update `LIST.md` and `README.md`.
 
 ## Windows UTF-8 Support
 
-Python scripts that output user-facing Chinese/emoji text must add UTF-8 console support (force stdout/stderr to UTF-8 and run `chcp 65001`). Scripts producing only ASCII or JSON for machine consumption may skip it.
+Python scripts that output user-facing Chinese/emoji text must add UTF-8 console support. Standard pattern (placed after imports, before any code):
 
-## Skill Development
+```python
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+if sys.platform == "win32":
+    subprocess.run("chcp 65001", shell=True, capture_output=True)
+```
 
-When developing or modifying a skill in this repo:
-- **Focus on the current repo only.** Ignore any skill with the same name that may already be installed in Claude Code's local skill registry — work against the files in this repository.
-- Treat the repo's version as canonical; don't assume the installed skill's behavior or configuration matches this repo's code.
+Scripts producing only ASCII or JSON for machine consumption may skip it.
+
+## Skill Development Checklist
+
+When developing or modifying a skill:
+
+1. **SKILL.md** — English, with description trigger keywords, Execution Rule, Requirements
+2. **Script** — `python` not `python3`, English output, UTF-8 support, `--help` without env vars
+3. **`.env.example`** — created if the script needs env vars
+4. **Runtime data** — stored in `~/.wmyskills/<skill-name>/`, not in the repo
+5. **Tests** — `py_compile` syntax check + `--help` smoke test
+6. **`LIST.md`** — updated readiness status
+7. **`README.md`** — update if adding/removing a skill
+8. **Commit** — after all checks pass
 
 ## Git Workflow
 
 - Push via SSH (remote is `git@github.com:wmy2981/wmy-skills.git`)
 - Working tree is on a network share (G: drive mapped to `//WMY-SERVER/...`)
+- Commits follow Conventional Commits: `type(scope): lowercase description` in English
