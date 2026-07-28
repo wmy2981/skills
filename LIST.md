@@ -12,5 +12,5 @@
 [x] mimo-tts
 [x] send-email
 [x] fun-asr
-[] wake-on-lan
+[x] wake-on-lan
 [x] zurl
