@@ -91,3 +91,48 @@ jobs:
           done < <(find . -name 'SKILL.md' -not -path './.github/*' -print0)
 
           [ "$errors" -eq 0 ] || { echo "$errors convention violation(s)."; exit 1; }
+
+  skill-structure:
+    name: Skill structure validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate skill directory structure and SKILL.md metadata
+        run: |
+          errors=0
+          while IFS= read -r -d '' sk; do
+            skill_dir=$(dirname "$sk")
+            name="${skill_dir#./}"
+
+            # Check 1: Only SKILL.md and README.md allowed as files in skill root
+            while IFS= read -r -d '' f; do
+              base=$(basename "$f")
+              if [ "$base" != "SKILL.md" ] && [ "$base" != "README.md" ]; then
+                echo "  ❌ $name: disallowed file '$base' in skill root"
+                errors=$((errors + 1))
+              fi
+            done < <(find "$skill_dir" -maxdepth 1 -type f -print0 2>/dev/null)
+
+            # Check 2: SKILL.md must have YAML frontmatter with name and description
+            if ! head -1 "$sk" 2>/dev/null | grep -q '^---$'; then
+              echo "  ❌ $name/SKILL.md: missing YAML frontmatter (must start with '---')"
+              errors=$((errors + 1))
+            else
+              yaml=$(sed -n '/^---$/,/^---$/p' "$sk" | sed '1d;$d')
+              if [ -z "$(echo "$yaml" | tr -d '[:space:]')" ]; then
+                echo "  ❌ $name/SKILL.md: empty YAML frontmatter"
+                errors=$((errors + 1))
+              else
+                if ! echo "$yaml" | grep -q '^name:'; then
+                  echo "  ❌ $name/SKILL.md: missing 'name' in YAML frontmatter"
+                  errors=$((errors + 1))
+                fi
+                if ! echo "$yaml" | grep -q '^description:'; then
+                  echo "  ❌ $name/SKILL.md: missing 'description' in YAML frontmatter"
+                  errors=$((errors + 1))
+                fi
+              fi
+            fi
+          done < <(find . -name 'SKILL.md' -not -path './.github/*' -not -path './.git/*' -print0)
+
+          [ "$errors" -eq 0 ] || { echo "$errors skill structure violation(s)."; exit 1; }
