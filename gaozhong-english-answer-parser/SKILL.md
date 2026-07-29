@@ -1,11 +1,11 @@
 ---
-name: gaokao-english-answer-parser
-description: Extract answer keys from Chinese Gaokao-style English exam papers (PDF or image) and format them into a standardized structured output. Trigger when the user sends an English exam paper, answer key, mock test answer sheet, or similar file and asks to extract, organize, or structure the answers. Trigger even for casual requests like "look at the answers", "extract answers", or "organize this".
+name: gaozhong-english-answer-parser
+description: Extract answer keys from Chinese Gaozhong-style English exam papers (PDF or image) and format them into a standardized structured output. Trigger when the user sends an English exam paper, answer key, mock test answer sheet, or similar file and asks to extract, organize, or structure the answers. Trigger even for casual requests like "look at the answers", "extract answers", or "organize this".
 metadata:
   skill_version: "0.1.0"
 ---
 
-# Structured Answer Extraction for Gaokao English Exam Papers
+# Structured Answer Extraction for Gaozhong English Exam Papers
 
 ## Execution Rule
 

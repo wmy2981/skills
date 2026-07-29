@@ -13,7 +13,7 @@ Agent 技能集合 | Agent Skills Collection
 | `epub-book-pipeline/` | EPUB book processing pipeline — extract, chunk, rebuild, validate | EPUB 整本书处理流水线 — 解包、分块、重建、校验 |
 | `freshrss/` | FreshRSS RSS reader management | FreshRSS RSS 阅读器管理 |
 | `fun-asr/` | Alibaba Cloud Fun-ASR speech recognition | 阿里云百炼 Fun-ASR 语音识别 |
-| `gaokao-english-answer-parser/` | Gaokao English exam answer extraction | 高考英语试卷答案提取 |
+| `gaozhong-english-answer-parser/` | Gaozhong English exam answer extraction | 高中英语试卷答案提取 |
 | `gotify/` | Gotify push notification management | Gotify 推送通知管理 |
 | `img-recog/` | Image recognition via vision models | 图片识别（视觉模型） |
 | `linkgo/` | LinkGo v3 navigation page management | LinkGo v3 导航页管理 |
