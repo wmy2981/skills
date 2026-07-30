@@ -21,7 +21,8 @@ Set these in `scripts/.env` (copy from the `.env` template):
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `DASHSCOPE_API_KEY` | Yes | Alibaba Cloud DashScope API key |
+| `DASHSCOPE_API_KEY` | Yes | Alibaba Cloud DashScope API key (or use `BAILIAN_APIKEY`) |
+| `BAILIAN_APIKEY` | Yes* | Alternative to `DASHSCOPE_API_KEY` (Bailian/DashScope) |
 | `S3_ENDPOINT` | Yes | S3-compatible storage endpoint URL |
 | `S3_BUCKET` | Yes | S3 bucket name for audio uploads |
 | `S3_REGION` | No | S3 region (default: `us-east-1`) |
@@ -29,7 +30,7 @@ Set these in `scripts/.env` (copy from the `.env` template):
 | `AWS_ACCESS_KEY_ID` | No* | AWS access key (needed if not using IAM/default chain) |
 | `AWS_SECRET_ACCESS_KEY` | No* | AWS secret key (needed if not using IAM/default chain) |
 
-The script finds `.env` automatically — it searches the script directory (`scripts/`), the skill root (`fun-asr/`), and the current working directory.
+The script loads `.env` from the `scripts/` directory automatically (using `load_dotenv()` with the path `scripts/.env`). See the `.env` template in that directory.
 
 ### Python Dependencies
 
@@ -116,9 +117,9 @@ Run the user's requested command directly without pre-checking dependencies, env
 
 ### After Transcription Completes
 
-Output is always saved to a file — never printed to terminal. The default output directory is `~/.wmyskills/fun-asr/outputs/`.
+Transcription output is saved to a file — the text content is not printed to stdout. The only line printed to stdout is `Output file: <path>`, which tells you where the result file was saved. The default output directory is `~/.wmyskills/fun-asr/outputs/`.
 
-When transcription succeeds, stdout contains: `Output file: <path>`. Failures print full error logs to stderr.
+When transcription succeeds, stdout contains only: `Output file: <path>`. Info and error logs go to stderr.
 
 On success you **must** deliver the result to the user:
 
@@ -130,13 +131,11 @@ On success you **must** deliver the result to the user:
 
 The script exits with specific codes for programmatic handling:
 
-- **Code 2** — Configuration error: missing env vars. Check `.env` and system environment.
+- **Code 2** — Configuration error: missing env vars. Also used by argparse for invalid arguments (e.g. unknown flags, invalid model name).
 - **Code 3** — File error: file not found, too large, or exceeds limits.
 - **Code 4** — API/network error: submission or polling failed.
-- **Code 5** — Audio processing error.
 - **Code 6** — Task failure: ASR API returned an error. Check the error message.
 - **Code 7** — Timeout: transcription took longer than 30 minutes.
-- **Code 8** — Invalid arguments.
 
 ### Important Rules
 
