@@ -12,7 +12,7 @@ Send emails via SMTP from Claude Code. Supports plain text, HTML, attachments, a
 Run the user's requested command directly without pre-checking dependencies, environment variables, or configuration. If something is wrong, the script will fail with a clear error — check and fix only then.
 
 ```bash
-cd ~/.claude/skills/send-email && python scripts/send.py <to> <subject> <mode> <body> [attachment...]
+python scripts/send.py <to> <subject> <mode> <body> [attachment...]
 ```
 
 ### Modes
@@ -82,4 +82,13 @@ If sending fails:
 
 **Authentication failed** — `EMAIL_USER`/`EMAIL_AUTH` may be wrong; some providers require an app-specific password.
 
-**Script says "Missing ..."** — one of the env vars is empty or unset. Check which one is reported, then update `.env` accordingly. Do NOT read or display the `.env` file.
+**smtplib exception** — missing or incorrect env vars; SMTP exceptions are not caught and will print a traceback. Check `EMAIL_HOST`, `EMAIL_USER`, and `EMAIL_AUTH` are set correctly.
+
+**"file not found" / "attachment not found"** — the path to the HTML file or attachment is invalid. Check the path and try again.
+
+## Notes
+
+- Escape sequences (`\n`, `\t`, etc.) in `--text` and `--html` body arguments are decoded automatically
+- No `argparse` is used — arguments are positional and order-sensitive
+- The `EMAIL_PORT` defaults to `465` (SSL); STARTTLS (587) is not supported
+- The `--file` mode path supports `~` for home directory expansion
