@@ -78,7 +78,7 @@ python scripts/zurl_api.py update <id> [long_url] [short_code] [title] [descript
 | `description` | ❌ | New description |
 | `ttl_days` | ❌ | New TTL in days |
 
-> `long_url` and `short_code` are **required by the API** — omitting them causes a 422 error. Optional fields left empty will be **cleared**. `short_code` must be a valid value; empty string causes a 500 error.
+> The script skips `None` (unset) arguments — they are not sent to the API. If the API requires `long_url` or `short_code`, omitting them causes a 422 error. Pass `""` (empty string) to clear a field. `short_code` must be non-empty; an empty value is skipped to avoid a 500 error from the API.
 
 ### Edit a Short URL (key=value style)
 
@@ -87,7 +87,12 @@ python scripts/zurl_api.py update <id> [long_url] [short_code] [title] [descript
 python scripts/zurl_api.py edit <id> -o long_url=https://new.url -o title="New Title"
 ```
 
-This is an alternative to `update` that uses `-o key=value` pairs instead of positional arguments. Only the fields you specify with `-o` will be changed.
+| Arg | Required | Description |
+|-----|----------|-------------|
+| `id` | ✅ | URL database ID (from list/search results) |
+| `-o` / `--option` | ✅ | `key=value` pair (repeatable). Keys: `long_url`, `short_code`, `title`, `description`, `ttl_days` |
+
+This is an alternative to `update` that uses `-o key=value` pairs instead of positional arguments. Only the fields you specify with `-o` will be changed — unspecified fields are left untouched (unlike `update` where omitted positional args skip sending, but empty `""` clears the field).
 
 ### Delete Short URLs
 
@@ -95,9 +100,11 @@ This is an alternative to `update` that uses `-o key=value` pairs instead of pos
 # Delete by short code
 python scripts/zurl_api.py delete <short_code>
 
-# Batch delete by codes (comma-separated)
+# Batch delete by short codes (comma-separated)
 python scripts/zurl_api.py delete-batch code1,code2,code3
 ```
+
+> `delete-batch` accepts short codes (slugs) — the script looks up the corresponding database IDs across all pages, then deletes them. Codes that don't match any URL are silently skipped.
 
 ### List & Search
 
@@ -119,9 +126,9 @@ python scripts/zurl_api.py metadata <url>
 
 Returns the target page's title and description.
 
-## Output Format
+## Display to User
 
-After creating or updating a short link, use the `short_links` field from the API response to show all domains (configured via `ZURL_DISPLAY_URLS`):
+After creating or updating a short link, parse the JSON response and present the result to the user using the `short_links` field (configured via `ZURL_DISPLAY_URLS`). Example:
 
 ```
 ✅ Short URL created
@@ -150,5 +157,20 @@ Title: Page Title
 
 ## Response Format
 
-Success: `{"code": 200, "msg": "...", "data": {...}, "short_links": [...]}`
-Failure: `{"error": true, "status": ..., "detail": {...}}`
+The script outputs JSON to stdout.
+
+**Success** (commands that include `short_links`):
+```json
+{"code": 200, "msg": "...", "data": {"short_url": "abc123", "long_url": "...", ...}, "short_links": ["https://s.example/abc123", ...]}
+```
+The `short_links` field is added by `shorten`, `update`, `list`, and `search`. Other commands (`delete`, `delete-batch`, `metadata`) return the raw API response without it.
+
+**Success** (commands without `short_links`):
+```json
+{"code": 200, "msg": "...", "data": {...}}
+```
+
+**Failure**:
+```json
+{"error": true, "status": 4XX, "detail": {...}}
+```
