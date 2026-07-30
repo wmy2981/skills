@@ -59,7 +59,7 @@ python scripts/gotify_client.py send \
 |------|----------|-------------|
 | `--message` / `-m` | ✅ | Message body (markdown supported) |
 | `--title` / `-t` | | Notification title |
-| `--priority` / `-p` | | 0–10 (0=silent, 10=urgent; default 0) |
+| `--priority` / `-p` | | 0–10 (0=silent, 10=urgent; omitted → not sent, API uses 0) |
 | `--extras` | | JSON string for plugin-specific data |
 | `--token` | | Override app token |
 
@@ -83,6 +83,14 @@ python scripts/gotify_client.py create-app \
 # Delete an application
 python scripts/gotify_client.py delete-app --id 5
 ```
+
+| `create-app` Flag | Required | Description |
+|-------------------|----------|-------------|
+| `--name` | ✅ | Application name |
+| `--description` / `-d` | | Description |
+| `--default-priority` | | Default message priority (0–10) |
+| `--image` | | Application image URL |
+| `--internal` | | Mark as internal (flag, no value needed) |
 
 > The returned `token` from `create-app` is the app token for sending messages. Store it securely.
 
@@ -108,6 +116,9 @@ python scripts/gotify_client.py list-messages --limit 50
 # Pagination — get messages after ID 100
 python scripts/gotify_client.py list-messages --since 100
 
+# Use a specific token to list messages (app or client token)
+python scripts/gotify_client.py list-messages --token <token>
+
 # Delete a single message
 python scripts/gotify_client.py delete-message --id 42
 
@@ -117,6 +128,12 @@ python scripts/gotify_client.py delete-messages --before 500
 # Bulk delete from a specific app
 python scripts/gotify_client.py delete-messages --app-id 3 --before 500
 ```
+
+| `list-messages` Flag | Description |
+|----------------------|-------------|
+| `--limit` | Max messages to return (1–200; default 30) |
+| `--since` | Message ID offset — returns messages with ID > this value |
+| `--token` | Override token (defaults to client token from env) |
 
 ### 🔌 Plugins
 
@@ -148,6 +165,8 @@ Subscribe to live messages (requires `websocket-client`):
 ```bash
 pip install websocket-client
 python scripts/gotify_client.py ws-subscribe
+# Override token:
+python scripts/gotify_client.py ws-subscribe --token <client-or-app-token>
 ```
 
 Output is one JSON object per received message.
