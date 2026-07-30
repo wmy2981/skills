@@ -20,7 +20,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 | `FRESHRSS_API_USER` | API username |
 | `FRESHRSS_API_PASSWORD` | API password |
 
-> 💡 Environment variables can be configured in `scripts/.env`. The script loads them automatically.
+> 💡 Environment variables can be configured in a `.env` file in the script directory or current working directory. The script uses `load_dotenv()` to load them automatically.
 
 ## Usage
 
@@ -59,7 +59,7 @@ python scripts/freshrss.py starred --count 20
 ```
 
 ### Search articles
-Title only (fast, default 200 articles scanned):
+Title only (fast, default 200 articles scanned, max 1000):
 ```bash
 python scripts/freshrss.py search -k "keyword"
 ```

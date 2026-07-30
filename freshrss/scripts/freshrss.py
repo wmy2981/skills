@@ -431,13 +431,13 @@ def build_parser() -> argparse.ArgumentParser:
 def main():
     ensure_utf8_console()
 
-    # 启动前检查环境变量
+    parser = build_parser()
+    args = parser.parse_args()
+
+    # 执行命令前检查环境变量（放在 parse_args 之后，使 --help 无需 env var）
     _get_env("FRESHRSS_URL")
     _get_env("FRESHRSS_API_USER")
     _get_env("FRESHRSS_API_PASSWORD")
-
-    parser = build_parser()
-    args = parser.parse_args()
     args.func(args)
 
 
