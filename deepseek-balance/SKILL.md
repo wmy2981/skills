@@ -23,8 +23,14 @@ python scripts/check_balance.py
 
 The script outputs raw JSON (no pretty-printing):
 
+**Success:**
 ```json
 {"is_available":true,"balance_infos":[{"currency":"CNY","total_balance":"110.00","granted_balance":"10.00","topped_up_balance":"100.00"}]}
+```
+
+**Error** (missing API key or network failure):
+```json
+{"error": "DEEPSEEK_APIKEY environment variable not set"}
 ```
 
 ## Fields

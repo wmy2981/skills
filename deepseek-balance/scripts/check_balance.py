@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-"""DeepSeek 开放平台余额查询 - 最简版本
+"""DeepSeek Open Platform balance query — minimal version.
 
-从环境变量 DEEPSEEK_APIKEY 读取 API Key，调用余额接口，输出原始 JSON 到 stdout。
-同级 .env 文件中的变量也会自动加载。
+Reads the API key from the DEEPSEEK_APIKEY environment variable,
+calls the balance API, and prints raw JSON to stdout.
+A .env file in the same directory is also loaded automatically.
 """
 import json
 import os
@@ -39,7 +40,7 @@ def main():
 
     api_key = os.environ.get("DEEPSEEK_APIKEY")
     if not api_key:
-        print(json.dumps({"error": "环境变量 DEEPSEEK_APIKEY 未设置"}, ensure_ascii=False))
+        print(json.dumps({"error": "DEEPSEEK_APIKEY environment variable not set"}, ensure_ascii=False))
         sys.exit(1)
 
     req = Request(API_URL, headers={
@@ -51,7 +52,7 @@ def main():
         with urlopen(req, timeout=15) as resp:
             body = resp.read().decode("utf-8")
     except URLError as e:
-        print(json.dumps({"error": f"API 请求失败: {e}"}, ensure_ascii=False))
+        print(json.dumps({"error": f"API request failed: {e}"}, ensure_ascii=False))
         sys.exit(1)
 
     print(body)
