@@ -148,26 +148,32 @@ python {baseDir}/scripts/validate_epub.py \
 
 **Output format:**
 - Each XHTML file is scanned individually; issues reported as `[WARN]` per file
-- Summary line: `XHTML files checked: N (OK: M, issues: P)`
+- Summary line: `XHTML files checked: N (OK: M, no Chinese: ..., ruby: ..., lang: ...)`
 - Overall result: `Summary: X/Y checks passed (Z%)` — exits 0 unless a critical structural error prevents verification
+
+**Optional:**
+- `--sample`: XHTML filename to sample for content validation (default: `p-007.xhtml`)
+- `--verbose`: Show all checks including passing ones
 
 ## Full Pipeline Example
 
 ```bash
+BASE=book-work
+
 # 1. Extract
-python extract_epub.py --epub book.epub --output-dir book-work/
+python scripts/extract_epub.py --epub book.epub --output-dir $BASE/
 
 # 2. (Optional) Chunk for parallel processing
-python chunk_source.py --source book-work/source.md --output-dir book-work/chunks/ --max-chars 12000
+python scripts/chunk_source.py --source $BASE/source.md --output-dir $BASE/chunks/ --max-chars 12000
 
 # 3. Apply your content modifications to chunk-*.md or source.md
 #    (this is where you edit text, replace content, reformat, etc.)
 
 # 4. Rebuild
-python rebuild_epub.py --epub book.epub --translation book-work/modified.md --output book-work/final.epub
+python scripts/rebuild_epub.py --epub book.epub --translation $BASE/modified.md --output $BASE/final.epub
 
 # 5. Validate
-python validate_epub.py --epub book-work/final.epub --source-md book-work/source.md --translation-md book-work/modified.md
+python scripts/validate_epub.py --epub $BASE/final.epub --source-md $BASE/source.md --translation-md $BASE/modified.md
 ```
 
 ## Edge Cases
