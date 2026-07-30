@@ -102,7 +102,7 @@ python scripts/wol.py wake-mac AA:BB:CC:DD:EE:FF --broadcast 192.168.1.255 --por
 All output is JSON:
 
 ```json
-{"success": true, "host": "my-pc", "mac": "AA:BB:CC:DD:EE:FF", "packets_sent": 3, "message": "Magic packet sent to AA:BB:CC:DD:EE:FF (3x via 255.255.255.255:9)"}
+{"success": true, "host": "my-pc", "mac": "AA:BB:CC:DD:EE:FF", "broadcast": "255.255.255.255", "port": 9, "packets_sent": 3, "message": "Magic packet sent to AA:BB:CC:DD:EE:FF (3x via 255.255.255.255:9)"}
 ```
 
 On failure:
