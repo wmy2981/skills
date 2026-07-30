@@ -228,12 +228,25 @@ python scripts/tts.py clone <sample.wav> "$(cat text.txt)" --user-prompt "$(cat 
 
 ## 4. Streaming Output
 
-Add `--stream` to any synthesis command (format must be `pcm16`).
+Add `--stream` to any synthesis command. Streaming requires `--format pcm16`:
+
+```bash
+python scripts/tts.py synthesize "$(cat text.txt)" --voice Bingtang --stream --format pcm16
+python scripts/tts.py design "$(cat voice_desc.txt)" --text "$(cat speech.txt)" --stream --format pcm16
+python scripts/tts.py clone sample.wav "$(cat text.txt)" --stream --format pcm16
+```
 
 ## 5. List Available Voices
 
 ```bash
+# Default JSON output
 python scripts/tts.py voices
+
+# Plain text output
+python scripts/tts.py voices --format text
+
+# Also available via the "tts" alias:
+python scripts/tts.py tts "$(cat text.txt)" --voice Bingtang
 ```
 
 ## Preset Voice List
@@ -253,7 +266,10 @@ python scripts/tts.py voices
 ## Output
 
 - Audio saved to `~/.wmyskills/mimo-tts/outputs/` by default (use `--output` / `-o` to specify a custom path or directory)
-- Command outputs JSON: `{"status":"ok","path":"...","size_bytes":N}`
+- **Non-streaming**: JSON `{"status":"ok","path":"...","size_bytes":N}`
+- **Streaming**: JSON `{"status":"ok","path":"...","samples":N}` (uses `samples` instead of `size_bytes`)
+- **Error**: JSON `{"error": true, "status": 4XX, "message": "..."}`
+- All commands output JSON
 
 ## Environment
 

@@ -162,7 +162,6 @@ def main():
     ps.add_argument("--format", choices=["wav", "mp3", "pcm16"], default="wav")
     ps.add_argument("--stream", action="store_true")
     ps.add_argument("--output", "-o")
-    ps.add_argument("--outfmt", choices=["json", "text"], default="json")
 
     # design
     pd = sub.add_parser("design", help="Design voice from text description")
@@ -171,7 +170,6 @@ def main():
     pd.add_argument("--format", choices=["wav", "mp3", "pcm16"], default="wav")
     pd.add_argument("--stream", action="store_true")
     pd.add_argument("--output", "-o")
-    pd.add_argument("--outfmt", choices=["json", "text"], default="json")
 
     # clone
     pc = sub.add_parser("clone", help="Clone voice from audio sample")
@@ -181,7 +179,6 @@ def main():
     pc.add_argument("--format", choices=["wav", "mp3", "pcm16"], default="wav")
     pc.add_argument("--stream", action="store_true")
     pc.add_argument("--output", "-o")
-    pc.add_argument("--outfmt", choices=["json", "text"], default="json")
 
     args = parser.parse_args()
 
