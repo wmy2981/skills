@@ -13,9 +13,9 @@ Usage:
   send.py <to> <subject> --file <file.html>
   [attachment...] can be appended to any form.
 """
-import codecs
 import os
 import pathlib
+import re
 import smtplib
 import sys
 from email import encoders
@@ -57,8 +57,16 @@ def get_config():
 
 
 def decode_escapes(text):
-    """Decode escape sequences like \\n, \\t from CLI args into real characters."""
-    return codecs.decode(text, "unicode_escape")
+    """Decode escape sequences like \\n, \\t from CLI args into real characters.
+
+    Implemented with regex instead of codecs.decode(unicode_escape), which
+    would decode non-ASCII text as latin-1 and corrupt Chinese content.
+    """
+    return re.sub(
+        r"\\([nrt\\])",
+        lambda m: {"n": "\n", "r": "\r", "t": "\t", "\\": "\\"}[m.group(1)],
+        text,
+    )
 
 
 def send(to, subject, body, is_html=False, attachments=None):
