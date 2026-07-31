@@ -62,6 +62,29 @@ python scripts/send.py user@example.com "Files" --text "See attached" report.pdf
 - Do NOT create a different directory structure — send.py discovers files relative to this path
 - The repo stores code, not runtime data. Runtime data goes in `~/.wmyskills/<skill-name>/`
 
+## Contacts
+
+Send to a named recipient instead of a full email address. The name-to-address
+mapping lives in a user-editable YAML file:
+
+`~/.wmyskills/send-email/contacts.yaml` (`~` = user home directory)
+
+```yaml
+小明: xiaoming@example.com
+张三: zhangsan@example.com
+```
+
+**Lookup rule:** when the recipient is a name (not a full address containing
+`@`), read this file and match the name exactly. Use the resolved email as the
+`<to>` argument. Never guess or invent an address.
+
+| Situation | Action |
+|-----------|--------|
+| Recipient contains `@` | Use as-is, no lookup |
+| Name not found in file | Tell the user; list the available names from the file |
+| File missing | Show the structure above and let the user create it, or use the address the user provided |
+| YAML parse error | Ask the user to check the file format |
+
 ## Security
 
 **Never read, display, or share the contents of `scripts/.env`.** It contains SMTP credentials. Use the table below only as a reference for which variables exist — do not read the actual `.env` file.
