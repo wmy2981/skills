@@ -1,12 +1,12 @@
-# wmy-skills
+# wmy-skills (python)
 
 Agent 技能集合 | Agent Skills Collection
 
-[![Install with npx skills](https://img.shields.io/badge/Install%20with-npx%20skills-5B8DEF?logo=anthropic)](https://skills.sh/wmy2981/wmy-skills)
+[![Install with npx skills](https://img.shields.io/badge/Install%20with-npx%20skills-5B8DEF?logo=anthropic)](https://skills.sh/wmy2981/wmy-skills-py)
 
 ```bash
-npx skills add wmy2981/wmy-skills --all
-npx skills add wmy2981/wmy-skills -s <name> 
+npx skills add wmy2981/wmy-skills-py --all
+npx skills add wmy2981/wmy-skills-py -s <name> 
 ```
 
 ## 技能列表 | Skills
