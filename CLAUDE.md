@@ -85,6 +85,6 @@ When developing or modifying a skill:
 
 ## Git Workflow
 
-- Push via SSH (remote is `git@github.com:wmy2981/wmy-skills.git`)
+- Push via SSH (remote is `git@github.com:wmy2981/wmy-skills-py.git`)
 - Working tree is on a network share (G: drive mapped to `//WMY-SERVER/...`)
 - Commits follow Conventional Commits: `type(scope): lowercase description` in English
