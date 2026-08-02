@@ -17,7 +17,7 @@ Audio → S3 → Fun-ASR async → Poll → Save file → Agent reads
 
 ### Environment Variables
 
-Set these in `scripts/.env` (copy from the `.env` template):
+Set these in `~/.wmyskills/.env` (shared across skills), or `scripts/.env` (takes priority). Use `scripts/.env.example` as the template — add the variables to `~/.wmyskills/.env`, never overwriting an existing file:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -30,7 +30,7 @@ Set these in `scripts/.env` (copy from the `.env` template):
 | `AWS_ACCESS_KEY_ID` | No* | AWS access key (needed if not using IAM/default chain) |
 | `AWS_SECRET_ACCESS_KEY` | No* | AWS secret key (needed if not using IAM/default chain) |
 
-The script loads `.env` from the `scripts/` directory automatically (using `load_dotenv()` with the path `scripts/.env`). See the `.env` template in that directory.
+The script loads `.env` from `~/.wmyskills/.env` and `scripts/.env` automatically (script directory takes priority).
 
 ### Python Dependencies
 

@@ -9,9 +9,10 @@ from dotenv import load_dotenv
 CONFIG_DIR = os.path.expanduser("~/.wmyskills/img-recog")
 _script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Load .env files — lowest priority first, so config-dir .env wins over scripts/
+# .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+# load_dotenv never overrides, so script dir loads first, user global second.
 load_dotenv(os.path.join(_script_dir, ".env"))
-load_dotenv(os.path.join(CONFIG_DIR, ".env"))
+load_dotenv(os.path.join(os.path.expanduser("~/.wmyskills"), ".env"))
 
 PROVIDER_FILE = os.environ.get(
     "img-recog_PROVIDER_FILE",

@@ -25,7 +25,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 |----------|----------|-------------|
 | `WOL_CONFIG_PATH` | ❌ | Custom path to `hosts.yaml` (default: `~/.wmyskills/wake-on-lan/hosts.yaml`) |
 
-The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
+The script loads these from `~/.wmyskills/.env` (shared across skills) automatically; a `scripts/.env` in the script directory takes priority if present. Use `scripts/.env.example` as the template — add the variables to `~/.wmyskills/.env`, never overwriting an existing file.
 
 ## Requirements
 

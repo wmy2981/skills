@@ -13,7 +13,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 
 ## Usage
 
-The script reads the API key from the `DEEPSEEK_APIKEY` environment variable (or `.env` file in the same directory), calls the balance API, and outputs raw JSON to stdout.
+The script reads the API key from the `DEEPSEEK_APIKEY` environment variable, calls the balance API, and outputs raw JSON to stdout. Configure it in `~/.wmyskills/.env` (shared across skills) or `scripts/.env` (takes priority); use `scripts/.env.example` as the template — add the variable to `~/.wmyskills/.env`, never overwriting an existing file.
 
 ```bash
 python scripts/check_balance.py
@@ -46,4 +46,4 @@ The script outputs raw JSON (no pretty-printing):
 ## Notes
 
 - Only report the balance number. Do not volunteer pricing or conversion advice (e.g. "how many tokens this covers") unless the user asks.
-- The `DEEPSEEK_APIKEY` environment variable must be set (or configured in `.env`).
+- The `DEEPSEEK_APIKEY` environment variable must be set (or configured in `~/.wmyskills/.env` or `scripts/.env`).

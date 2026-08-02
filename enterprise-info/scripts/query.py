@@ -216,7 +216,10 @@ def format_result(data: dict) -> str:
 
 
 def main():
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     if len(sys.argv) < 2:
         print("❌ Please provide a company name or Unified Social Credit Code")
         print(f"Usage: python {sys.argv[0]} \"company name or credit code\"")

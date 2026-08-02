@@ -273,4 +273,4 @@ python scripts/tts.py tts "$(cat text.txt)" --voice Bingtang
 
 ## Environment
 
-- `MIMO_APIKEY` — API Key, required. The script loads it from `scripts/.env` automatically. See `scripts/.env.example` for the template.
+- `MIMO_APIKEY` — API Key, required. The script loads it from `~/.wmyskills/.env` (shared across skills) or `scripts/.env` (takes priority) automatically. Use `scripts/.env.example` as the template — add the variable to `~/.wmyskills/.env`, never overwriting an existing file.

@@ -16,13 +16,17 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from html import unescape
+from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 from dotenv import load_dotenv
 
-load_dotenv()
+# .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+# load_dotenv never overrides, so script dir loads first, user global second.
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
+load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
 
 try:
     import requests

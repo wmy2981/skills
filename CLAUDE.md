@@ -30,8 +30,8 @@ Root-level files:
 ### Scripts
 - **English output** — all user-facing text, argparse help, and JSON keys must be English.
 - **`python` not `python3`** — Windows target.
-- **Environment variables** loaded via `python-dotenv` from `scripts/.env`. The tracked template is `scripts/.env.example`.
-- **`load_dotenv()`** always uses explicit path: `load_dotenv(dotenv_path=Path(__file__).parent / ".env")`
+- **Environment variables** loaded via `python-dotenv` from `~/.wmyskills/.env` (shared across skills) and `scripts/.env` (per-skill). The tracked template is `scripts/.env.example`.
+- **`load_dotenv()`** always uses explicit paths, script dir first then user global — `load_dotenv` never overrides existing values, so the earlier load (script dir) takes priority: `load_dotenv(dotenv_path=Path(__file__).parent / ".env")` then `load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")`
 - **`--help` must work without env vars** — env initialization goes after `argparse.parse_args()`.
 - **`import subprocess`** required for `chcp 65001` call.
 

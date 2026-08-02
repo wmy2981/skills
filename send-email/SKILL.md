@@ -87,7 +87,7 @@ mapping lives in a user-editable YAML file:
 
 ## Security
 
-**Never read, display, or share the contents of `scripts/.env`.** It contains SMTP credentials. Use the table below only as a reference for which variables exist — do not read the actual `.env` file.
+**Never read, display, or share the contents of `scripts/.env` or `~/.wmyskills/.env`.** They contain SMTP credentials. Use the table below only as a reference for which variables exist — do not read the actual `.env` files.
 
 | Variable | Default | Description |
 |----------|---------|-------------|

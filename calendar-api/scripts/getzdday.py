@@ -146,7 +146,10 @@ def format_output(data: dict, year: int, month: int, day: int) -> str:
 
 
 def main():
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     parser = argparse.ArgumentParser(description="Chinese calendar query — get traditional calendar info")
     parser.add_argument("date", nargs="?", help="Date in YYYY-MM-DD format (default: today)")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")

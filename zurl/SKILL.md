@@ -37,7 +37,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 | `ZURL_TOKEN` | ❌ | API auth token (required if server has auth enabled) |
 | `ZURL_DISPLAY_URLS` | ❌ | Comma-separated display domain list; defaults to `ZURL_APIURL` |
 
-The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
+The script loads these from `~/.wmyskills/.env` (shared across skills) automatically; a `scripts/.env` in the script directory takes priority if present. Use `scripts/.env.example` as the template — add the variables to `~/.wmyskills/.env`, never overwriting an existing file.
 
 ## Requirements
 

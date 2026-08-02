@@ -146,7 +146,10 @@ def handle_http_response(result, output_path, stream):
 
 
 def main():
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     parser = argparse.ArgumentParser(description="MiMo-V2.5-TTS Speech Synthesis")
     sub = parser.add_subparsers(dest="command")
 

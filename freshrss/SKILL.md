@@ -20,7 +20,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 | `FRESHRSS_API_USER` | API username |
 | `FRESHRSS_API_PASSWORD` | API password |
 
-> 💡 Environment variables can be configured in a `.env` file in the script directory or current working directory. The script uses `load_dotenv()` to load them automatically.
+> 💡 Environment variables can be configured in `~/.wmyskills/.env` (shared across skills) or `scripts/.env` (takes priority if present). The script loads them automatically.
 
 ## Usage
 

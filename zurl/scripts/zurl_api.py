@@ -34,7 +34,10 @@ DISPLAY_URLS: list[str] = []
 def _init_env():
     """Load .env and set globals. Exit on failure."""
     global BASE_URL, DISPLAY_URLS
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     BASE_URL = os.environ.get("ZURL_APIURL", "").rstrip("/")
     if not BASE_URL:
         print("Error: ZURL_APIURL environment variable is not set", file=sys.stderr)

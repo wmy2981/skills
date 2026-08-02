@@ -31,7 +31,10 @@ PASSWORD = ""
 def _init_env():
     """Load .env and set globals BASE_URL / PASSWORD. Exit on failure."""
     global BASE_URL, PASSWORD
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     BASE_URL = os.environ.get("LINKGO_HOST", "").rstrip("/")
     PASSWORD = os.environ.get("LINKGO_PASSWORD", "")
     if not BASE_URL or not PASSWORD:

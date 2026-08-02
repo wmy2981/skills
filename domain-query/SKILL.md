@@ -24,7 +24,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 | `JKHZ_ID` | 接口盒子 (apihz.cn) user ID |
 | `JKHZ_KEY` | 接口盒子 API key |
 
-The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template.
+The script loads these from `~/.wmyskills/.env` (shared across skills) automatically; a `scripts/.env` in the script directory takes priority if present. Use `scripts/.env.example` as the template — add the variables to `~/.wmyskills/.env`, never overwriting an existing file.
 
 ## Requirements
 

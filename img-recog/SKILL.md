@@ -29,7 +29,7 @@ cp references/templates/provider.yaml.template ~/.wmyskills/img-recog/provider.y
 cp references/templates/model.yaml.template ~/.wmyskills/img-recog/model.yaml
 ```
 
-To customize paths, edit `scripts/.env` and set `img-recog_PROVIDER_FILE` / `img-recog_MODEL_FILE` to your desired locations.
+To customize paths, set `img-recog_PROVIDER_FILE` / `img-recog_MODEL_FILE` in `~/.wmyskills/.env` (or `scripts/.env`, which takes priority) to your desired locations.
 
 **After copying, replace placeholder values (marked with `TODO` / `REPLACE_WITH_YOUR_API_KEY`) with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
 
@@ -104,7 +104,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - Timeout: connection 10s, read 30s
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
-- Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `scripts/.env` or `~/.wmyskills/img-recog/.env`); defaults remain `~/.wmyskills/img-recog/`
+- Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `~/.wmyskills/.env` or `scripts/.env`); defaults remain `~/.wmyskills/img-recog/`
 
 ## Troubleshooting
 

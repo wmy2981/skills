@@ -41,7 +41,10 @@ DEFAULT_PACKET_COUNT = 3
 
 def _resolve_config() -> Path:
     """Return config path from env var or default."""
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     env_path = os.environ.get("WOL_CONFIG_PATH", "").strip()
     return Path(env_path) if env_path else DEFAULT_CONFIG
 

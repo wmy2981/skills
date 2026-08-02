@@ -22,17 +22,22 @@ API_URL = "https://api.deepseek.com/user/balance"
 
 
 def _load_env():
-    """加载同级 .env 文件中的环境变量（仅处理 KEY=VALUE 格式，不覆盖已有变量）。"""
-    env_path = Path(__file__).resolve().parent / ".env"
-    if not env_path.exists():
-        return
-    with open(env_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            key, _, val = line.partition("=")
-            os.environ.setdefault(key.strip(), val.strip())
+    """加载 .env 中的环境变量（仅处理 KEY=VALUE 格式，不覆盖已有变量）。
+    优先级：同级 scripts/.env 先加载（占位），用户全局 ~/.wmyskills/.env 后加载（只补缺）。"""
+    env_paths = [
+        Path(__file__).resolve().parent / ".env",
+        Path.home() / ".wmyskills" / ".env",
+    ]
+    for env_path in env_paths:
+        if not env_path.exists():
+            continue
+        with open(env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, val = line.partition("=")
+                os.environ.setdefault(key.strip(), val.strip())
 
 
 def main():

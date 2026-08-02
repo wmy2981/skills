@@ -28,7 +28,7 @@ Run the user's requested command directly without pre-checking dependencies, env
 | `GOTIFY_CLIENT_TOKEN` | ✅ | Client token — manage apps, clients, read messages |
 | `GOTIFY_APP_TOKEN` | ✅ | Application token — send messages |
 
-The script loads these from `scripts/.env` automatically. See `scripts/.env.example` for the template. Missing tokens produce a clear error; tokens can also be passed per-call via `--token`.
+The script loads these from `~/.wmyskills/.env` (shared across skills) automatically; a `scripts/.env` in the script directory takes priority if present. Use `scripts/.env.example` as the template — add the variables to `~/.wmyskills/.env`, never overwriting an existing file. Missing tokens produce a clear error; tokens can also be passed per-call via `--token`.
 
 ## Requirements
 

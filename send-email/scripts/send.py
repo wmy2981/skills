@@ -29,11 +29,16 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 # Optional dotenv support
+# .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+# load_dotenv never overrides, so script dir loads first, user global second.
 try:
     from dotenv import load_dotenv
-    env_path = pathlib.Path(__file__).resolve().parent / ".env"
-    if env_path.is_file():
-        load_dotenv(env_path)
+    for env_path in (
+        pathlib.Path(__file__).resolve().parent / ".env",
+        pathlib.Path.home() / ".wmyskills" / ".env",
+    ):
+        if env_path.is_file():
+            load_dotenv(env_path)
 except ImportError:
     pass
 

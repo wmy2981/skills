@@ -144,9 +144,11 @@ def fatal(exc: FunAsrError):
 # ---------------------------------------------------------------------------
 
 def load_env():
-    """Load .env from the script directory."""
+    """Load .env — priority: script dir > user global (~/.wmyskills/.env).
+    load_dotenv never overrides, so script dir loads first, user global second."""
     script_dir = Path(__file__).resolve().parent
     load_dotenv(script_dir / ".env")
+    load_dotenv(Path.home() / ".wmyskills" / ".env")
 
 
 # ---------------------------------------------------------------------------

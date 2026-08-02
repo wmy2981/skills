@@ -150,7 +150,10 @@ def format_wxfh(data: dict) -> str:
 
 
 def main():
+    # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
+    # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+    load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
     parser = argparse.ArgumentParser(description="Domain query — ICP + WHOIS + WeChat block check")
     parser.add_argument("domain", help="Domain to query (e.g. example.com)")
     parser.add_argument("--url", help="URL for WeChat check (default: https://domain)")
