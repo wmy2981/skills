@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "img-recog",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Image recognition via OpenAI-compatible vision models. Triggered when user asks to \"look at\", \"see\", \"describe\", or \"read text from\" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.",
   "author": {
     "name": "wmy2981"

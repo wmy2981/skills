@@ -1,6 +1,7 @@
 """Call OpenAI-compatible vision model API."""
 
 import sys
+from pathlib import Path
 
 from openai import (
     APIConnectionError,
@@ -10,6 +11,21 @@ from openai import (
     OpenAI,
     RateLimitError,
 )
+
+# Shared system prompt: tells the vision model its output is consumed by
+# another AI, not a human (loaded at runtime, missing file is not an error).
+SYSTEM_PROMPT_FILE = (
+    Path(__file__).resolve().parent.parent / "references" / "prompts" / "_system.md"
+)
+
+
+def load_system_prompt() -> str | None:
+    """Return the system prompt text, or None if the file is unavailable."""
+    try:
+        content = SYSTEM_PROMPT_FILE.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return content or None
 
 
 def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
@@ -27,18 +43,24 @@ def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
         timeout=timeout,
     )
 
+    messages = []
+    system_prompt = load_system_prompt()
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append(
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": image_uri}},
+            ],
+        }
+    )
+
     try:
         resp = client.chat.completions.create(
             model=model,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": image_uri}},
-                    ],
-                }
-            ],
+            messages=messages,
             max_tokens=max_tokens,
         )
     except AuthenticationError:

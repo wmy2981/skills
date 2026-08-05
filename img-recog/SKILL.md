@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.0.0"
+  skill_version: "1.1.0"
 ---
 
 # img-recog — Image Recognition Skill
@@ -84,6 +84,7 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 |----------|---------|
 | `references/templates/` | Config file templates (copy to `~/.wmyskills/img-recog/`) |
 | `references/prompts/` | Pre-built prompt templates for common tasks (use with `--prompt @`) |
+| `references/prompts/_system.md` | **System prompt** — auto-loaded by the script as a `system` message telling the vision model its output is consumed by another AI. Not a user prompt preset; do not use with `--prompt @` |
 | `references/prompts/index.yaml` | **Prompt preset index — read this first** when the skill loads to learn available presets and when to use each |
 
 ### Prompt Presets
