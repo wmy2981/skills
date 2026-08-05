@@ -11,6 +11,8 @@ description: >-
   is it", "is today auspicious", "Chinese zodiac for this year",
   "constellation", "今天农历几号", "今天宜做什么", "黄历", "万年历",
   "今天什么节气". Trigger even for casual one-line questions.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # Chinese Calendar Query

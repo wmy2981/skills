@@ -7,6 +7,8 @@ description: >-
   "registration info", "check this domain", "domain details", "微信防红",
   "域名查询", "查一下这个域名", "帮我查这个域名", or simply pastes a domain and
   asks "check it" or "查一下". Trigger even for one-line requests.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # Domain Query

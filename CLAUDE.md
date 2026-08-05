@@ -6,16 +6,21 @@ This is a collection of **agent skills**. Each skill is a self-contained directo
 
 ```
 skill-name/
-├── SKILL.md           # Skill definition — trigger keywords, usage, docs
-├── scripts/           # Helper scripts that power the skill
-│   ├── .env.example   # Environment variable template (mandatory if env vars needed)
-│   └── ...            # Script files
-└── references/        # Reference docs, config templates (optional)
+├── .claude-plugin/
+│   └── plugin.json   # Claude Code plugin manifest (each skill is its own plugin)
+├── SKILL.md          # Skill definition — trigger keywords, usage, docs
+├── scripts/          # Helper scripts that power the skill
+│   ├── .env.example  # Environment variable template (mandatory if env vars needed)
+│   └── ...           # Script files
+└── references/       # Reference docs, config templates (optional)
 ```
 
 Root-level files:
+- `.claude-plugin/marketplace.json` — marketplace manifest listing every skill as an installable plugin (`"source": "./<skill-name>"`). Keep it in sync when adding/removing skills.
 - `README.md` — bilingual skill index with descriptions
 - `CLAUDE.md` — this file, conventions for AI agent development
+
+Each skill doubles as a standalone Claude Code plugin: `claude plugin marketplace add <repo>` then `claude plugin install <skill>@wmy-skills`. Users may install any subset — plugin.json's `name` must equal the SKILL.md frontmatter `name`.
 
 ## Skill Conventions
 
@@ -25,6 +30,8 @@ Root-level files:
 - Include an **Execution Rule** near the top: run the user's command directly without pre-checking; fix on failure. (Default)
 - List dependencies under a **Requirements** section.
 - Keep content under 500 lines; use `references/` for large reference docs.
+- Frontmatter must include `skill_version` (semver) under `metadata:` — it drives plugin versioning.
+- **Version sync**: whenever a skill's behavior or docs change, bump BOTH the SKILL.md frontmatter `metadata.skill_version` AND the `version` field in the same skill's `.claude-plugin/plugin.json` to the same value. CI rejects a mismatch. (Note: `skill_version` must stay under `metadata:` — a bare indented `skill_version:` inside a `description: >-` block gets swallowed into the description string.)
 - **Environment variable setup**: when guiding the user to configure env vars, prefer the **shared global file** `~/.wmyskills/.env`. Read `scripts/.env.example` first, then add or update the env vars that skill needs in `~/.wmyskills/.env`.Do not run `cp .env.example path/to/.env` directly to avoid overwritting origin.
 
 ### Scripts
@@ -67,6 +74,10 @@ python -m py_compile <skill>/scripts/*.py
 
 # Validate SKILL.md frontmatter (language-agnostic)
 python -c "import yaml; yaml.safe_load(open('<skill>/SKILL.md').read().split('---')[1])"
+
+# Validate plugin manifests (Claude Code CLI)
+claude plugin validate <skill>                       # per-skill plugin.json
+claude plugin validate .claude-plugin/marketplace.json
 
 # Python — test script entry point
 python <skill>/scripts/<script>.py --help
@@ -116,6 +127,7 @@ When developing or modifying a skill:
 - [ ] **`.env.example`** — created if the script needs env vars
 - [ ] **Runtime data** — stored in `~/.wmyskills/<skill-name>/`, not in the repo
 - [ ] **Tests** — syntax/type check (`py_compile` or `tsc --noEmit`) + `--help` smoke test
+- [ ] **Plugin manifests** — `plugin.json` (name matches SKILL.md frontmatter, version matches `skill_version`) + `marketplace.json` entry; validate with `claude plugin validate`
 - [ ] **`README.md`** — update if adding/removing a skill
 - [ ] **Commit** — after all checks pass
 

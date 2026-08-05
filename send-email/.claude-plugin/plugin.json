@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "send-email",
+  "version": "1.0.0",
+  "description": "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates. Trigger on any email-related request — including 'email this to...', 'forward this to...', 'send the report to...', 'attach this file and send'. Do NOT use for non-email communication like Slack or SMS.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

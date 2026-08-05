@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "gotify",
+  "version": "1.0.0",
+  "description": "Send and manage Gotify push notifications, applications, clients, and messages via the Gotify REST API. Use this skill whenever the user mentions \"gotify\", \"push notification\", \"自托管通知\", \"消息推送\", sending alerts, managing Gotify apps/clients, checking message history, toggling Gotify plugins, or verifying Gotify server health. Also trigger for \"发通知到gotify\", \"gotify推送\", \"gotify消息\", \"通知服务\", or any command mentioning a Gotify server instance.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

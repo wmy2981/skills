@@ -9,6 +9,8 @@ description: >-
   draws), or poetry metadata — even casual queries like "帮我找一首李白的诗" or "来一首五言绝句".
   Covers every REST endpoint: health, stats, poems (filtered lists), search, random,
   authors, dynasties, types. All output is raw server JSON, passed through unchanged.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # Chinese Poetry API

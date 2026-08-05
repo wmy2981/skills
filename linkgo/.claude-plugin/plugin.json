@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "linkgo",
+  "version": "2.0.0",
+  "description": "Manage a remote LinkGo v3 instance via its HTTP API. Use when the user wants to list/add/edit/delete service cards, modify page settings, upload icons, change passwords, export/import config, or query debug info on the LinkGo navigation page. Also triggers for \"导航页\", \"服务卡片\", \"LinkGo\", \"add card\", \"edit card\", \"sublink\" and similar card management tasks.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "zurl",
+  "version": "1.0.0",
+  "description": "Manage a Zurl short link service — create, update, delete, search, and list short URLs, and fetch URL metadata. Trigger whenever the user asks to \"shorten this link\", \"generate a short URL\", \"create a short link\", \"短链接\", \"缩短\", \"短链\", manage short links, or pastes a long URL and asks to make it shorter. Do NOT skip this skill just because the user didn't explicitly say \"短链接\" or \"short URL\" — even \"帮我缩短这个链接\" or \"把这个 网址变短\" should trigger it. Any request involving URL shortening, short link management, or batch URL operations should use this skill.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

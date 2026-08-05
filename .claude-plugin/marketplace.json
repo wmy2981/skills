@@ -1,0 +1,139 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wmy-skills",
+  "description": "Agent skills collection | Agent 技能集合",
+  "owner": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "plugins": [
+    {
+      "name": "calendar-api",
+      "description": "Chinese calendar query tool — retrieves comprehensive traditional calendar information for any date, including lunar calendar, Heavenly Stems and Earthly Branches (干支), solar terms (节气), festivals, auspicious/inauspicious activities (宜忌), zodiac (生肖), constellation (星座), fetal god (胎神), Peng Zu's hundred taboos (彭祖百忌), 28 mansions (星宿), Buddhist/Taoist calendar, and more. Triggered whenever the user asks about the Chinese calendar: \"what's the lunar date today\", \"today's 宜忌\", \"what solar term is it\", \"is today auspicious\", \"Chinese zodiac for this year\", \"constellation\", \"今天农历几号\", \"今天宜做什么\", \"黄历\", \"万年历\", \"今天什么节气\". Trigger even for casual one-line questions.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./calendar-api"
+    },
+    {
+      "name": "chinese-poetry-api",
+      "description": "Query the Chinese classical poetry API service (chinese-poetry-api, repo: https://github.com/palemoky/chinese-poetry-api) — 370k+ poems from Tang/Song/Yuan dynasties, with authors, dynasties, poetry types, full-text search, and random poem drawing. Use whenever the user asks to look up, search, or list classical Chinese poetry (古诗/唐诗/宋词/元曲), a specific poet's works, random poems, 飞花令 (single-character draws), or poetry metadata — even casual queries like \"帮我找一首李白的诗\" or \"来一首五言绝句\". Covers every REST endpoint: health, stats, poems (filtered lists), search, random, authors, dynasties, types. All output is raw server JSON, passed through unchanged.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./chinese-poetry-api"
+    },
+    {
+      "name": "deepseek-balance",
+      "description": "Query DeepSeek Open Platform account balance. Triggered when user asks \"DeepSeek balance\", \"API balance\", \"how much credit left\", \"check my quota\". Requires DEEPSEEK_APIKEY env var.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./deepseek-balance"
+    },
+    {
+      "name": "domain-query",
+      "description": "Domain name multi-query tool — one-shot lookup of ICP filing (备案), WHOIS registration info, and WeChat block status (微信防红) for any domain. Triggered whenever the user mentions \"domain lookup\", \"ICP\", \"备案\", \"WHOIS\", \"registration info\", \"check this domain\", \"domain details\", \"微信防红\", \"域名查询\", \"查一下这个域名\", \"帮我查这个域名\", or simply pastes a domain and asks \"check it\" or \"查一下\". Trigger even for one-line requests.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./domain-query"
+    },
+    {
+      "name": "enterprise-info",
+      "description": "Chinese enterprise registration info lookup — queries the 接口盒子 API for company registration details (工商信息) by company name or Unified Social Credit Code (统一社会信用代码). Triggered whenever the user asks about a Chinese company: \"查公司\", \"查企业\", \"企业信息\", \"工商信息\", \"查一下XX公司\", \"查XX的统一信用代码\", \"这家公司信息\", \"营业执照查询\", \"企业工商查询\", \"查一下这家公司\", \"看看这家企业\", \"this company info\", or pastes a company name or credit code and asks to look it up. Supports both full company name and 18-digit Unified Social Credit Code.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./enterprise-info"
+    },
+    {
+      "name": "epub-book-pipeline",
+      "description": "EPUB book processing pipeline — extract, chunk, rebuild, and validate EPUB files. Use this whenever you need to programmatically manipulate the content of an EPUB book: extract structured text, split into manageable chunks, apply batch modifications, rebuild a valid EPUB from modified content, or validate structural integrity. Triggered by any request involving EPUB extraction (\"extract epub\", \"unpack epub\"), chunking (\"split epub\", \"chunk epub\"), rebuilding (\"rebuild epub\", \"repackage epub\", \"pack epub\"), or validation (\"validate epub\", \"check epub\"). Also triggered when the user needs to batch-edit EPUB content (replace text, reformat, inject styles, modify structure) and then rebuild a valid EPUB from the edited files. Does NOT handle content-level operations like AI translation or text rewriting — only the EPUB mechanical pipeline.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./epub-book-pipeline"
+    },
+    {
+      "name": "freshrss",
+      "description": "Access and interact with my FreshRSS instance via python scripts. Use for any RSS-related question, including reading articles, searching past content, finding feeds, getting recommendations, managing subscriptions, checking unread counts, marking read/star, or exploring what I follow. Triggers on keywords: RSS, FreshRSS, feed, unread, headlines, articles, subscriptions, starred.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./freshrss"
+    },
+    {
+      "name": "fun-asr",
+      "description": "Use when the user shares an audio file (mp3, wav, m4a, flac) and asks to transcribe it to text — includes queries containing \"speech recognition\", \"audio to text\", \"transcribe\", \"transcription\", \"ASR\", \"meeting notes\", \"convert audio\", \"subtitle\", \"SRT\", \"speaker diarization\", \"who said what\". Also triggers on audio meeting recordings, interviews, phone calls, lectures, voice memos, podcasts. Requires DASHSCOPE_API_KEY (Alibaba Cloud DashScope) and S3-compatible storage credentials.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./fun-asr"
+    },
+    {
+      "name": "gaozhong-english-answer-parser",
+      "description": "Extract answer keys from Chinese Gaozhong-style English exam papers (PDF or image) and format them into a standardized structured output. Trigger when the user sends an English exam paper, answer key, mock test answer sheet, or similar file and asks to extract, organize, or structure the answers. Trigger even for casual requests like \"look at the answers\", \"extract answers\", or \"organize this\".",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./gaozhong-english-answer-parser"
+    },
+    {
+      "name": "gotify",
+      "description": "Send and manage Gotify push notifications, applications, clients, and messages via the Gotify REST API. Use this skill whenever the user mentions \"gotify\", \"push notification\", \"自托管通知\", \"消息推送\", sending alerts, managing Gotify apps/clients, checking message history, toggling Gotify plugins, or verifying Gotify server health. Also trigger for \"发通知到gotify\", \"gotify推送\", \"gotify消息\", \"通知服务\", or any command mentioning a Gotify server instance.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./gotify"
+    },
+    {
+      "name": "img-recog",
+      "description": "Image recognition via OpenAI-compatible vision models. Triggered when user asks to \"look at\", \"see\", \"describe\", or \"read text from\" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./img-recog"
+    },
+    {
+      "name": "linkgo",
+      "description": "Manage a remote LinkGo v3 instance via its HTTP API. Use when the user wants to list/add/edit/delete service cards, modify page settings, upload icons, change passwords, export/import config, or query debug info on the LinkGo navigation page. Also triggers for \"导航页\", \"服务卡片\", \"LinkGo\", \"add card\", \"edit card\", \"sublink\" and similar card management tasks.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./linkgo"
+    },
+    {
+      "name": "mimo-tts",
+      "description": "Speech synthesis using MiMo-V2.5-TTS models. Supports preset voice synthesis, text-to-voice design, voice cloning, natural language style control, and streaming output. Trigger whenever the user wants to generate speech audio from text, especially with Chinese voices and style control. Requires MIMO_APIKEY environment variable.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./mimo-tts"
+    },
+    {
+      "name": "send-email",
+      "description": "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates. Trigger on any email-related request — including 'email this to...', 'forward this to...', 'send the report to...', 'attach this file and send'. Do NOT use for non-email communication like Slack or SMS.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./send-email"
+    },
+    {
+      "name": "wake-on-lan",
+      "description": "Remote wake-up computers on a local network via Wake-on-LAN (Magic Packet). Manage host configurations (add, edit, remove, list) and send wake-up signals by host name or MAC address. Triggered whenever the user mentions \"开机\", \"远程开机\", \"唤醒主机\", \"wake on lan\", \"WOL\", \"远程唤醒\", \"帮我把XX电脑打开\", \"服务器关了帮我开一下\", \"把电脑开着\", or asks to start a computer on the local network. Also use for managing wake-up host lists.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./wake-on-lan"
+    },
+    {
+      "name": "zurl",
+      "description": "Manage a Zurl short link service — create, update, delete, search, and list short URLs, and fetch URL metadata. Trigger whenever the user asks to \"shorten this link\", \"generate a short URL\", \"create a short link\", \"短链接\", \"缩短\", \"短链\", manage short links, or pastes a long URL and asks to make it shorter. Do NOT skip this skill just because the user didn't explicitly say \"短链接\" or \"short URL\" — even \"帮我缩短这个链接\" or \"把这个 网址变短\" should trigger it. Any request involving URL shortening, short link management, or batch URL operations should use this skill.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./zurl"
+    }
+  ]
+}

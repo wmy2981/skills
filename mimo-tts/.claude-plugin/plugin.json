@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "mimo-tts",
+  "version": "1.0.0",
+  "description": "Speech synthesis using MiMo-V2.5-TTS models. Supports preset voice synthesis, text-to-voice design, voice cloning, natural language style control, and streaming output. Trigger whenever the user wants to generate speech audio from text, especially with Chinese voices and style control. Requires MIMO_APIKEY environment variable.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

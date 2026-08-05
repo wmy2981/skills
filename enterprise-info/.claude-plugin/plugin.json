@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "enterprise-info",
+  "version": "1.0.0",
+  "description": "Chinese enterprise registration info lookup — queries the 接口盒子 API for company registration details (工商信息) by company name or Unified Social Credit Code (统一社会信用代码). Triggered whenever the user asks about a Chinese company: \"查公司\", \"查企业\", \"企业信息\", \"工商信息\", \"查一下XX公司\", \"查XX的统一信用代码\", \"这家公司信息\", \"营业执照查询\", \"企业工商查询\", \"查一下这家公司\", \"看看这家企业\", \"this company info\", or pastes a company name or credit code and asks to look it up. Supports both full company name and 18-digit Unified Social Credit Code.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

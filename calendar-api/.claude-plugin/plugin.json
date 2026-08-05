@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "calendar-api",
+  "version": "1.0.0",
+  "description": "Chinese calendar query tool — retrieves comprehensive traditional calendar information for any date, including lunar calendar, Heavenly Stems and Earthly Branches (干支), solar terms (节气), festivals, auspicious/inauspicious activities (宜忌), zodiac (生肖), constellation (星座), fetal god (胎神), Peng Zu's hundred taboos (彭祖百忌), 28 mansions (星宿), Buddhist/Taoist calendar, and more. Triggered whenever the user asks about the Chinese calendar: \"what's the lunar date today\", \"today's 宜忌\", \"what solar term is it\", \"is today auspicious\", \"Chinese zodiac for this year\", \"constellation\", \"今天农历几号\", \"今天宜做什么\", \"黄历\", \"万年历\", \"今天什么节气\". Trigger even for casual one-line questions.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

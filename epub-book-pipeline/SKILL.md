@@ -13,6 +13,8 @@ description: >-
   modify structure) and then rebuild a valid EPUB from the edited files.
   Does NOT handle content-level operations like AI translation or text
   rewriting — only the EPUB mechanical pipeline.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # EPUB Book Pipeline

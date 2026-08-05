@@ -1,12 +1,28 @@
 # wmy-skills
 
-Agent 技能集合 | Agent Skills Collection
+Agent Skills Collection
 
 [![Install with npx skills](https://img.shields.io/badge/Install%20with-npx%20skills-5B8DEF?logo=anthropic)](https://skills.sh/wmy2981/skills)
 
 ```bash
 npx skills add wmy2981/skills --all
 npx skills add wmy2981/skills -s <name> 
+```
+
+### Claude Code Plugin
+
+This repo is also a Claude Code plugin marketplace — each skill installs as its own plugin:
+
+```bash
+# register the marketplace once
+claude plugin marketplace add https://github.com/wmy2981/skills
+
+# install a single skill plugin (repeatable)
+claude plugin install deepseek-balance@wmy-skills
+
+# install all at once
+claude plugin install calendar-api@wmy-skills
+claude plugin install chinese-poetry-api@wmy-skills
 ```
 
 ## 技能列表 | Skills

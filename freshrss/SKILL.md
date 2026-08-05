@@ -1,6 +1,8 @@
 ---
 name: freshrss
 description: "Access and interact with my FreshRSS instance via python scripts. Use for any RSS-related question, including reading articles, searching past content, finding feeds, getting recommendations, managing subscriptions, checking unread counts, marking read/star, or exploring what I follow. Triggers on keywords: RSS, FreshRSS, feed, unread, headlines, articles, subscriptions, starred."
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # FreshRSS

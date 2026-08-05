@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "wake-on-lan",
+  "version": "1.0.0",
+  "description": "Remote wake-up computers on a local network via Wake-on-LAN (Magic Packet). Manage host configurations (add, edit, remove, list) and send wake-up signals by host name or MAC address. Triggered whenever the user mentions \"开机\", \"远程开机\", \"唤醒主机\", \"wake on lan\", \"WOL\", \"远程唤醒\", \"帮我把XX电脑打开\", \"服务器关了帮我开一下\", \"把电脑开着\", or asks to start a computer on the local network. Also use for managing wake-up host lists.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

@@ -1,6 +1,8 @@
 ---
 name: fun-asr
 description: Use when the user shares an audio file (mp3, wav, m4a, flac) and asks to transcribe it to text — includes queries containing "speech recognition", "audio to text", "transcribe", "transcription", "ASR", "meeting notes", "convert audio", "subtitle", "SRT", "speaker diarization", "who said what". Also triggers on audio meeting recordings, interviews, phone calls, lectures, voice memos, podcasts. Requires DASHSCOPE_API_KEY (Alibaba Cloud DashScope) and S3-compatible storage credentials.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # Fun-ASR: Audio Transcription

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "chinese-poetry-api",
+  "version": "1.0.0",
+  "description": "Query the Chinese classical poetry API service (chinese-poetry-api, repo: https://github.com/palemoky/chinese-poetry-api) — 370k+ poems from Tang/Song/Yuan dynasties, with authors, dynasties, poetry types, full-text search, and random poem drawing. Use whenever the user asks to look up, search, or list classical Chinese poetry (古诗/唐诗/宋词/元曲), a specific poet's works, random poems, 飞花令 (single-character draws), or poetry metadata — even casual queries like \"帮我找一首李白的诗\" or \"来一首五言绝句\". Covers every REST endpoint: health, stats, poems (filtered lists), search, random, authors, dynasties, types. All output is raw server JSON, passed through unchanged.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

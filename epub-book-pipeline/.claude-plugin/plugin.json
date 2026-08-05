@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "epub-book-pipeline",
+  "version": "1.0.0",
+  "description": "EPUB book processing pipeline — extract, chunk, rebuild, and validate EPUB files. Use this whenever you need to programmatically manipulate the content of an EPUB book: extract structured text, split into manageable chunks, apply batch modifications, rebuild a valid EPUB from modified content, or validate structural integrity. Triggered by any request involving EPUB extraction (\"extract epub\", \"unpack epub\"), chunking (\"split epub\", \"chunk epub\"), rebuilding (\"rebuild epub\", \"repackage epub\", \"pack epub\"), or validation (\"validate epub\", \"check epub\"). Also triggered when the user needs to batch-edit EPUB content (replace text, reformat, inject styles, modify structure) and then rebuild a valid EPUB from the edited files. Does NOT handle content-level operations like AI translation or text rewriting — only the EPUB mechanical pipeline.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

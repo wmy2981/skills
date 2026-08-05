@@ -1,6 +1,8 @@
 ---
 name: send-email
 description: "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates. Trigger on any email-related request — including 'email this to...', 'forward this to...', 'send the report to...', 'attach this file and send'. Do NOT use for non-email communication like Slack or SMS."
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # Send Email Skill

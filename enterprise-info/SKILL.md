@@ -9,6 +9,8 @@ description: >-
   "查一下这家公司", "看看这家企业", "this company info", or pastes a company
   name or credit code and asks to look it up. Supports both full company name
   and 18-digit Unified Social Credit Code.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # Enterprise Info Query

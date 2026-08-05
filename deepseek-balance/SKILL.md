@@ -1,6 +1,8 @@
 ---
 name: deepseek-balance
 description: Query DeepSeek Open Platform account balance. Triggered when user asks "DeepSeek balance", "API balance", "how much credit left", "check my quota". Requires DEEPSEEK_APIKEY env var.
+metadata:
+  skill_version: "1.0.0"
 ---
 
 # DeepSeek Open Platform Balance Query
