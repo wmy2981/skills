@@ -14,6 +14,7 @@ npx skills add wmy2981/skills -s <name>
 | skill | Description | 说明 |
 |------|-------------|------|
 | `calendar-api/` | Chinese calendar query | 万年历查询 |
+| `chinese-poetry-api/` | Chinese classical poetry REST API (Tang/Song/Yuan poems, search, authors) | 中国古诗词 REST API 查询（唐诗宋词、搜索、作者） |
 | `deepseek-balance/` | DeepSeek Open Platform balance query | DeepSeek 开放平台余额查询 |
 | `domain-query/` | Domain ICP filing, WHOIS & WeChat block check | 域名 ICP 备案 + WHOIS + 微信防红查询 |
 | `enterprise-info/` | Chinese enterprise registration info lookup | 企业工商信息查询 |
