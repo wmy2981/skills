@@ -136,3 +136,80 @@ jobs:
           done < <(find . -name 'SKILL.md' -not -path './.github/*' -not -path './.git/*' -print0)
 
           [ "$errors" -eq 0 ] || { echo "$errors skill structure violation(s)."; exit 1; }
+
+  ts-check:
+    name: TypeScript check (tsc + smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install deps and type-check all TS skills
+        run: |
+          errors=0
+          while IFS= read -r -d '' ts; do
+            dir="$(dirname "$ts")"
+            echo "── ${dir#./}"
+            if (cd "$dir" && bun install --no-save >/dev/null 2>&1 && bunx tsc --noEmit); then
+              echo "  ✅ ${dir#./}"
+            else
+              echo "  ❌ ${dir#./}"
+              errors=$((errors + 1))
+            fi
+          done < <(find . -name 'tsconfig.json' -not -path './.github/*' -not -path '*/node_modules/*' -print0)
+          [ "$errors" -eq 0 ] || { echo "$errors TS project(s) have type errors."; exit 1; }
+      - name: Smoke-test CLI entry points (--help)
+        run: |
+          errors=0
+          while IFS= read -r -d '' f; do
+            if head -1 "$f" | grep -q '^#!/usr/bin/env bun'; then
+              if bun run "$f" --help >/dev/null 2>&1; then
+                echo "  ✅ ${f#./}"
+              else
+                echo "  ❌ ${f#./} --help failed"
+                errors=$((errors + 1))
+              fi
+            fi
+          done < <(find . -name '*.ts' -not -path './.github/*' -not -path '*/node_modules/*' -print0)
+          [ "$errors" -eq 0 ] || { echo "$errors TS entry point(s) failed."; exit 1; }
+
+  ts-conventions:
+    name: TS conventions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check TypeScript script conventions
+        run: |
+          errors=0
+          while IFS= read -r -d '' f; do
+            name="${f#./}"
+            issues=""
+
+            # 1) Must have UTF-8 console support (chcp 65001) if the script prints non-ASCII
+            if grep -qP 'console\.(log|error)\([^)]*[^\x00-\x7F]' "$f" 2>/dev/null; then
+              if ! grep -q 'chcp 65001' "$f" 2>/dev/null; then
+                issues="$issues[missing chcp 65001]"
+              fi
+            fi
+
+            if [ -n "$issues" ]; then
+              echo "  ❌ $name$issues"
+              errors=$((errors + 1))
+            fi
+          done < <(find . -name '*.ts' -not -path './.github/*' -not -path '*/node_modules/*' -print0)
+
+          # 2) Every scripts/ dir should have .env.example if its TS scripts read env vars
+          while IFS= read -r -d '' sk; do
+            dir="$(dirname "$sk")"
+            if [ -d "$dir/scripts" ]; then
+              if grep -qr 'process\.env\|Bun\.env' "$dir/scripts" --include='*.ts' 2>/dev/null; then
+                if [ ! -f "$dir/scripts/.env.example" ]; then
+                  echo "  ❌ $dir/scripts/ reads env vars but missing .env.example"
+                  errors=$((errors + 1))
+                fi
+              fi
+            fi
+          done < <(find . -name 'SKILL.md' -not -path './.github/*' -print0)
+
+          [ "$errors" -eq 0 ] || { echo "$errors TS convention violation(s)."; exit 1; }
