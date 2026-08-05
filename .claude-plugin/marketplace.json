@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "wmy-skills",
-  "description": "Agent skills collection | Agent 技能集合",
+  "description": "A personal agent skills collection",
   "owner": {
     "name": "wmy2981"
   },
