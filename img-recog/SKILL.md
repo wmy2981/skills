@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.1.0"
+  skill_version: "1.1.1"
 ---
 
 # img-recog — Image Recognition Skill
@@ -104,7 +104,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 ## Notes
 
 - The script auto-detects Windows encoding and switches stdout to UTF-8
-- Timeout: connection 10s, read 30s
+- Timeout: connection 10s, read 120s
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
 - Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `~/.wmyskills/.env` or `scripts/.env`); defaults remain `~/.wmyskills/img-recog/`

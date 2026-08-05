@@ -88,7 +88,7 @@ def main():
 
     # 6. Call API
     provider_cfg = provider_config[provider_name]
-    result = call_vision_model(provider_cfg, model_name, image_uri, prompt, timeout=(10, 30))
+    result = call_vision_model(provider_cfg, model_name, image_uri, prompt)
 
     # 7. Output
     format_output(result, json_mode=args.json)

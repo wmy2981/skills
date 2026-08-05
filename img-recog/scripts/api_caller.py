@@ -30,7 +30,7 @@ def load_system_prompt() -> str | None:
 
 def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
                       prompt: str = "Please describe this image in detail",
-                      timeout: tuple = (10, 30),
+                      timeout: tuple = (10, 120),
                       max_tokens: int = 4096) -> dict:
     """Call the vision API and return structured response.
 

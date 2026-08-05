@@ -21,4 +21,4 @@ prompts:
   # 出处：https://larkcommunity.feishu.cn/docx/EX6wdfBTWo05J1x2M9kcGi7LnHb  侵权请联系删除
   - name: image-style-prompt-extractor.txt
     lang: zh
-    use_when: '提取参考图片的视觉风格并反推生成可复用的中文 AI 绘画提示词模板，用于 GPT-Image、Nano Banana（Gemini）、Midjourney、Flux、Stable Diffusion 等图像生成模型。当用户上传一张图片并希望「分析风格」「反推提示词」「提取美学」「保留风格替换主体」「生成通用 prompt」「做风格模板」「让 nano banana / GPT-Image / Gemini / MJ 复刻这种风格」时，必须使用此 skill。也适用于英文请求如 "extract style from this image"、"reverse-engineer prompt"、"make this style reusable"、"style transfer prompt"。只要用户提供了参考图并意图围绕"风格"而非"内容"复用，就触发本prompt，即使他们没有明说"提示词"三个字。'
+    use_when: '提取参考图片的视觉风格并反推生成可复用的中文 AI 绘画提示词模板，用于 GPT-Image、Nano Banana（Gemini）、Midjourney、Flux、Stable Diffusion 等图像生成模型。当用户上传一张图片并希望「分析风格」「反推提示词」「提取美学」「保留风格替换主体」「生成通用 prompt」「做风格模板」「让 nano banana / GPT-Image / Gemini / MJ 复刻这种风格」时，必须使用此 prompt。也适用于英文请求如 "extract style from this image"、"reverse-engineer prompt"、"make this style reusable"、"style transfer prompt"。只要用户提供了参考图并意图围绕"风格"而非"内容"复用，就触发本prompt，即使他们没有明说"提示词"三个字。'
