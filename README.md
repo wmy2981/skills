@@ -1,4 +1,4 @@
-# wmy-skills (python)
+# wmy-skills
 
 Agent 技能集合 | Agent Skills Collection
 
