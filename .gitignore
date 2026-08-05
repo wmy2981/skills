@@ -2,6 +2,11 @@
 __pycache__/
 *.pyc
 
+# Node.js / Bun
+node_modules/
+bun.lock
+bun.lockb
+
 # Environment
 .env
 
