@@ -6,16 +6,6 @@
 # =============================================================================
 
 providers:
-  # OpenAI
   openai:
     base_url: https://api.openai.com/v1
-    api_key: "sk-xxx...REPLACE_WITH_YOUR_API_KEY"  # TODO: 替换为你的 API key
-
-  # DeepSeek
-  deepseek:
-    base_url: https://api.deepseek.com/v1
-    api_key: "sk-xxx...REPLACE_WITH_YOUR_API_KEY"  # TODO: 替换为你的 API key
-
-  # siliconflow:
-  #   base_url: https://api.siliconflow.cn/v1
-  #   api_key: "sk-xxx...REPLACE_WITH_YOUR_API_KEY"  # TODO: 替换为你的 API key
+    api_key: "sk-xxx..."  # Replace with your api key or delete this provider

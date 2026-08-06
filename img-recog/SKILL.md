@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.3.2"
+  skill_version: "1.3.3"
 ---
 
 # img-recog — Image Recognition Skill
@@ -33,13 +33,13 @@ cp references/templates/model.yaml.template ~/.wmyskills/img-recog/model.yaml
 
 To customize paths, set `img-recog_PROVIDER_FILE` / `img-recog_MODEL_FILE` in `~/.wmyskills/.env` (or `scripts/.env`, which takes priority) to your desired locations.
 
-**After copying, replace placeholder values (marked with `TODO` / `REPLACE_WITH_YOUR_API_KEY`) with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
+**After copying, replace placeholder values with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
 
 ## Requirements
 
 - Python >= 3.10, packages in `scripts/requirements.txt`
-- **ffmpeg (system binary, with libwebp support)** — required only for `--compact` image compression
-- **Pillow** (`pip install pillow`, in requirements.txt) — required only for `--metadata` EXIF fields (device/app/time/location)
+- **ffmpeg** — required only for `--compact` image compression
+- **Pillow** — required only for `--metadata` EXIF fields
 
 ## Execution Rule
 
@@ -63,7 +63,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 | `--compact` | No | Compress image to target size as WebP before sending (e.g. `500KB`, `0.5MB`, `512000B`; bare numbers are KB). |
 | `--metadata` | No | Extract image metadata (size/width/height/color/device/app/time/location) in parallel with recognition. Metadata is NOT sent to the model — it goes to the agent (JSON: top-level `metadata` key; non-JSON: `[metadata]` block on stderr, printed as soon as available). Missing fields are `null`; acquisition failure warns and continues |
 | `--max-tokens` | No | Maximum output tokens (default: 4096). Must be a positive integer |
-| `--json` | No | Output JSON with usage stats (adds `metadata` and/or `compression` when those flags are used; on API failure emits `{"status": "error", "error", "metadata"}`) |
+| `--json` | No | Output JSON with comprehensive information |
 
 ### Quick Examples
 
@@ -77,8 +77,8 @@ python scripts/img_recog_cli.py --img photo.jpg --prompt "Extract all text from 
 # Fetch and describe an online image
 python scripts/img_recog_cli.py --img https://example.com/diagram.png
 
-# Use DeepSeek model
-python scripts/img_recog_cli.py --provider deepseek --model deepseek-chat --img chart.png
+# Use custom model
+python scripts/img_recog_cli.py --provider openai --model gpt-5.6-terra --img chart.png
 
 # Read prompt from file
 python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
@@ -89,11 +89,8 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 # Compress a large screenshot to ≤ 500KB before sending
 python scripts/img_recog_cli.py --img screenshot.png --compact 500KB
 
-# Recognize + extract metadata (device/app/time/location from EXIF; null when absent)
+# Recognize + extract metadata
 python scripts/img_recog_cli.py --img photo.jpg --metadata
-
-# Metadata + compression together, JSON output for the agent
-python scripts/img_recog_cli.py --img photo.jpg --metadata --compact 500KB --json
 ```
 
 ## Reference Files
@@ -139,8 +136,8 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 | "Cannot connect to API" | Check base_url in provider.yaml or your network |
 | "Bad request / model may not support image input" | The selected model does not support vision |
 | "Request timed out" | Image too large or slow network |
-| "ffmpeg not found" | Install ffmpeg (see Requirements); needed only for `--compact` |
-| "Pillow is required for --metadata" | Install Pillow (see Requirements); needed only for `--metadata` |
+| "ffmpeg not found" | Install ffmpeg (see Requirements) |
+| "Pillow is required for --metadata" | Install Pillow (see Requirements) |
 
 ## Adding a Prompt Preset
 

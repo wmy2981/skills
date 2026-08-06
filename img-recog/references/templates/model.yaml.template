@@ -8,16 +8,9 @@
 providers:
   openai:
     models:
-      - gpt-4o
-      - gpt-4o-mini
-
-  deepseek:
-    models:
-      - deepseek-chat
-
-  # siliconflow:
-  #   models: []    # <-- no vision model configured
-
+      - gpt-5.6-luna
+      - gpt-5.6-terra
+      - gpt-5.6-sol
 default:
-  provider: openai           # TODO: change to your preferred provider
-  model: gpt-4o-mini         # TODO: change to your preferred vision model
+  provider: openai
+  model: gpt-5.6-luna
