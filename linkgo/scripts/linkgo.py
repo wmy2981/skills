@@ -273,13 +273,15 @@ def cmd_upload_icon(args):
         with open(filepath, "rb") as f:
             files.append((filename, f.read()))
 
-    # Build multipart/form-data manually (one `icons` part per file)
+    # Build multipart/form-data manually (one `icons[]` part per file).
+    # Server expects PHP array-style field name; `icons` would make PHP treat
+    # it as single-file and count() on a string fatals on PHP 8.
     boundary = "----LinkGoBoundary" + str(os.getpid())
     parts = []
     for filename, data in files:
         parts.append(
             f"--{boundary}\r\n"
-            f'Content-Disposition: form-data; name="icons"; filename="{filename}"\r\n'
+            f'Content-Disposition: form-data; name="icons[]"; filename="{filename}"\r\n'
             f"Content-Type: application/octet-stream\r\n\r\n".encode()
             + data
             + b"\r\n"

@@ -7,7 +7,7 @@ description: >-
   LinkGo navigation page. Also triggers for "导航页", "服务卡片", "LinkGo",
   "add card", "edit card", "sublink" and similar card management tasks.
 metadata:
-  skill_version: "2.0.1"
+  skill_version: "2.0.2"
 ---
 
 # LinkGo v3 Remote Management
