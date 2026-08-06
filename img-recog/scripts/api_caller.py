@@ -34,12 +34,13 @@ def load_system_prompt() -> str | None:
 def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
                       prompt: str = "Please describe this image in detail",
                       timeout: tuple = (10, 120),
-                      max_tokens: int = 4096) -> dict:
+                      max_tokens: int | None = 4096) -> dict:
     """Call the vision API and return structured response.
 
     Returns:
         {"content": str, "model": str, "usage": dict, "status": "ok"}
     """
+    max_tokens = max_tokens or 4096
     client = OpenAI(
         base_url=provider_cfg["base_url"].rstrip("/") + "/",
         api_key=provider_cfg["api_key"],

@@ -132,9 +132,14 @@ def main():
     parser.add_argument("--metadata", action="store_true",
                         help="Also extract image metadata (size/width/height/color/device/app/"
                              "time/location) in parallel and output it to the agent; not sent to the model")
+    parser.add_argument("--max-tokens", type=int,
+                        help="Maximum output tokens (default: 4096)")
     parser.add_argument("--json", action="store_true", help="Output JSON format")
 
     args = parser.parse_args()
+
+    if args.max_tokens is not None and args.max_tokens <= 0:
+        parser.error("--max-tokens must be a positive integer")
 
     # 1. Load configs
     model_config = load_model_config()
@@ -176,7 +181,8 @@ def main():
     # 8. Call API
     provider_cfg = provider_config[provider_name]
     try:
-        result = call_vision_model(provider_cfg, model_name, image_uri, prompt)
+        result = call_vision_model(provider_cfg, model_name, image_uri, prompt,
+                                   max_tokens=args.max_tokens)
     except VisionAPIError as e:
         if metadata_thread is not None:
             metadata_thread.join()
