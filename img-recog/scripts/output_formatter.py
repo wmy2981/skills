@@ -13,6 +13,9 @@ def format_output(result: dict, json_mode: bool = False) -> None:
             "model": result.get("model", ""),
             "usage": result.get("usage", {}),
         }
+        compression = result.get("compression")
+        if compression is not None:
+            output["compression"] = compression
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
         content = result.get("content", "")

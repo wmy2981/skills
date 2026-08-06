@@ -15,8 +15,25 @@ import sys
 
 from api_caller import call_vision_model
 from config_loader import load_model_config, load_provider_config, resolve_model
+from image_compressor import compress_data_uri
 from image_handler import normalize_image
 from output_formatter import format_output
+
+
+def _fmt_bytes(n: int) -> str:
+    """Human-readable byte size."""
+    if n >= 1024 * 1024:
+        return f"{n / 1024 / 1024:.1f}MB"
+    return f"{n / 1024:.1f}KB"
+
+
+def compact_summary(stats: dict) -> str:
+    """One-line human summary of compression stats."""
+    if stats.get("skipped"):
+        reason = "animated image" if stats.get("reason") == "animated" else "already within target"
+        return f"[Compressed: skipped — {reason}]"
+    return (f"[Compressed: {_fmt_bytes(stats['original_bytes'])} -> "
+            f"{_fmt_bytes(stats['compressed_bytes'])} (WebP {stats['width']}x{stats['height']})]")
 
 
 def parse_prompt(prompt_arg: str | None) -> str:
@@ -63,6 +80,8 @@ def main():
     parser.add_argument("--model", help="Model name (default: from model.yaml)")
     parser.add_argument("--img", required=True, help="Image: local path, URL, or data URI")
     parser.add_argument("--prompt", help="Prompt text, or @filepath to read from file")
+    parser.add_argument("--compact", help="Compress image to target size as WebP before sending, "
+                                          "e.g. 500KB / 0.5MB / 512000B (bare numbers are KB)")
     parser.add_argument("--json", action="store_true", help="Output JSON format")
 
     args = parser.parse_args()
@@ -83,14 +102,23 @@ def main():
     # 4. Normalize image
     image_uri = normalize_image(args.img)
 
-    # 5. Parse prompt
+    # 5. Optional compression (skipped entirely unless --compact is passed)
+    compact_stats = None
+    if args.compact:
+        image_uri, compact_stats = compress_data_uri(image_uri, args.compact)
+        if not args.json:
+            print(compact_summary(compact_stats), file=sys.stderr)
+
+    # 6. Parse prompt
     prompt = parse_prompt(args.prompt)
 
-    # 6. Call API
+    # 7. Call API
     provider_cfg = provider_config[provider_name]
     result = call_vision_model(provider_cfg, model_name, image_uri, prompt)
 
-    # 7. Output
+    # 8. Output
+    if compact_stats is not None:
+        result["compression"] = compact_stats
     format_output(result, json_mode=args.json)
 
 

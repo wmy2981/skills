@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.1.1"
+  skill_version: "1.2.0"
 ---
 
 # img-recog — Image Recognition Skill
@@ -35,6 +35,11 @@ To customize paths, set `img-recog_PROVIDER_FILE` / `img-recog_MODEL_FILE` in `~
 
 **After copying, replace placeholder values (marked with `TODO` / `REPLACE_WITH_YOUR_API_KEY`) with your actual keys and remove those markers. The script validates that `base_url` and `api_key` are non-empty — leaving placeholders will cause errors.**
 
+## Requirements
+
+- Python >= 3.10, packages in `scripts/requirements.txt`
+- **ffmpeg (system binary, with libwebp support)** — required only for `--compact` image compression
+
 ## Execution Rule
 
 Run the image recognition command directly without pre-checking provider configurations, API keys, or model availability. If something is wrong, the script will fail with a clear error — check and fix only then.
@@ -43,7 +48,7 @@ Run the image recognition command directly without pre-checking provider configu
 
 ```bash
 cd <skill-dir>
-python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--json]
+python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--compact <size>] [--json]
 ```
 
 ### Arguments
@@ -54,6 +59,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 | `--prompt` | No | Text or `@filepath` (default: "Please describe this image in detail") |
 | `--provider` | No | Override provider (default from model.yaml) |
 | `--model` | No | Override model (default from model.yaml) |
+| `--compact` | No | Compress image to target size as WebP before sending (e.g. `500KB`, `0.5MB`, `512000B`; bare numbers are KB). |
 | `--json` | No | Output JSON with usage stats |
 
 ### Quick Examples
@@ -76,6 +82,9 @@ python scripts/img_recog_cli.py --img graph.png --prompt @prompt.txt
 
 # Structured JSON output
 python scripts/img_recog_cli.py --img screenshot.png --json
+
+# Compress a large screenshot to ≤ 500KB before sending
+python scripts/img_recog_cli.py --img screenshot.png --compact 500KB
 ```
 
 ## Reference Files
@@ -107,6 +116,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - Timeout: connection 10s, read 120s
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
+- `--compact` compresses to WebP via ffmpeg.Animated images (GIF etc.) and originals already within target are skipped without re-encoding
 - Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `~/.wmyskills/.env` or `scripts/.env`); defaults remain `~/.wmyskills/img-recog/`
 
 ## Troubleshooting
@@ -118,6 +128,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 | "Cannot connect to API" | Check base_url in provider.yaml or your network |
 | "Bad request / model may not support image input" | The selected model does not support vision |
 | "Request timed out" | Image too large or slow network |
+| "ffmpeg not found" | Install ffmpeg (see Requirements); needed only for `--compact` |
 
 ## Adding a Prompt Preset
 
