@@ -16,6 +16,9 @@ def format_output(result: dict, json_mode: bool = False) -> None:
         compression = result.get("compression")
         if compression is not None:
             output["compression"] = compression
+        metadata = result.get("metadata")
+        if metadata is not None:
+            output["metadata"] = metadata
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
         content = result.get("content", "")

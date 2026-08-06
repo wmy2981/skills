@@ -10,13 +10,17 @@ Usage:
 """
 
 import argparse
+import base64
+import json
 import os
 import sys
+import threading
 
-from api_caller import call_vision_model
+from api_caller import VisionAPIError, call_vision_model
 from config_loader import load_model_config, load_provider_config, resolve_model
 from image_compressor import compress_data_uri
-from image_handler import normalize_image
+from image_handler import DATA_URI_PATTERN, normalize_image
+from image_metadata import FIELDS, empty_metadata, get_metadata
 from output_formatter import format_output
 
 
@@ -34,6 +38,49 @@ def compact_summary(stats: dict) -> str:
         return f"[Compressed: skipped — {reason}]"
     return (f"[Compressed: {_fmt_bytes(stats['original_bytes'])} -> "
             f"{_fmt_bytes(stats['compressed_bytes'])} (WebP {stats['width']}x{stats['height']})]")
+
+
+def _print_metadata_block(md: dict) -> None:
+    """Print the [metadata] block to stderr (non-JSON mode)."""
+    print("[metadata]", file=sys.stderr)
+    for key in FIELDS:
+        value = md[key]
+        if key == "location" and isinstance(value, dict):
+            value = f"{value['lat']}, {value['lon']}"
+        print(f"{key}: {value if value is not None else 'null'}", file=sys.stderr)
+
+
+def _metadata_worker(image_uri: str, json_mode: bool, holder: dict) -> None:
+    """Background thread: extract metadata, print block (non-JSON), store result.
+
+    Never raises and never aborts the flow — a failed acquisition yields an
+    all-null metadata dict plus a warning line; recognition proceeds regardless.
+    """
+    md = None
+    reason = ""
+    try:
+        m = DATA_URI_PATTERN.match(image_uri)
+        if not m:
+            raise ValueError("image is not a data URI")
+        md = get_metadata(base64.b64decode(m.group(1)))
+        if md is None:
+            reason = "cannot probe image (unrecognized or corrupt data)"
+    except Exception as e:
+        reason = str(e)
+    if md is None:
+        print(f"Error: metadata acquisition failed: {reason or 'unknown error'}", file=sys.stderr)
+        md = empty_metadata()
+    holder["metadata"] = md
+    if not json_mode:
+        _print_metadata_block(md)
+
+
+def _emit_error_json(error: str, holder: dict) -> None:
+    """JSON-mode error output: status=error, with metadata when requested."""
+    output = {"status": "error", "error": str(error)}
+    if "metadata" in holder:
+        output["metadata"] = holder["metadata"]
+    print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
 def parse_prompt(prompt_arg: str | None) -> str:
@@ -82,6 +129,9 @@ def main():
     parser.add_argument("--prompt", help="Prompt text, or @filepath to read from file")
     parser.add_argument("--compact", help="Compress image to target size as WebP before sending, "
                                           "e.g. 500KB / 0.5MB / 512000B (bare numbers are KB)")
+    parser.add_argument("--metadata", action="store_true",
+                        help="Also extract image metadata (size/width/height/color/device/app/"
+                             "time/location) in parallel and output it to the agent; not sent to the model")
     parser.add_argument("--json", action="store_true", help="Output JSON format")
 
     args = parser.parse_args()
@@ -102,21 +152,44 @@ def main():
     # 4. Normalize image
     image_uri = normalize_image(args.img)
 
-    # 5. Optional compression (skipped entirely unless --compact is passed)
+    # 5. Metadata in parallel — runs while recognition proceeds below;
+    #    never blocks or aborts the flow, and is never sent to the model.
+    metadata_holder: dict = {}
+    metadata_thread = None
+    if args.metadata:
+        metadata_thread = threading.Thread(
+            target=_metadata_worker, args=(image_uri, args.json, metadata_holder), daemon=True
+        )
+        metadata_thread.start()
+
+    # 6. Optional compression (skipped entirely unless --compact is passed;
+    #    metadata always reflects the original image)
     compact_stats = None
     if args.compact:
         image_uri, compact_stats = compress_data_uri(image_uri, args.compact)
         if not args.json:
             print(compact_summary(compact_stats), file=sys.stderr)
 
-    # 6. Parse prompt
+    # 7. Parse prompt
     prompt = parse_prompt(args.prompt)
 
-    # 7. Call API
+    # 8. Call API
     provider_cfg = provider_config[provider_name]
-    result = call_vision_model(provider_cfg, model_name, image_uri, prompt)
+    try:
+        result = call_vision_model(provider_cfg, model_name, image_uri, prompt)
+    except VisionAPIError as e:
+        if metadata_thread is not None:
+            metadata_thread.join()
+        if args.json:
+            _emit_error_json(e, metadata_holder)
+        else:
+            print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
-    # 8. Output
+    # 9. Output (metadata merged only when --metadata was used)
+    if metadata_thread is not None:
+        metadata_thread.join()
+        result["metadata"] = metadata_holder["metadata"]
     if compact_stats is not None:
         result["compression"] = compact_stats
     format_output(result, json_mode=args.json)

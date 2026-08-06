@@ -156,4 +156,6 @@ def compress_data_uri(uri: str, size_arg: str) -> tuple[str, dict]:
     if result.get("skipped"):
         return uri, result
     new_uri = "data:image/webp;base64," + base64.b64encode(result["data"]).decode("ascii")
-    return new_uri, result
+    # stats are for the agent output — the internal bytes payload stays internal
+    stats = {k: v for k, v in result.items() if k != "data"}
+    return new_uri, stats

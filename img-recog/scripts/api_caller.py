@@ -1,6 +1,5 @@
 """Call OpenAI-compatible vision model API."""
 
-import sys
 from pathlib import Path
 
 from openai import (
@@ -17,6 +16,10 @@ from openai import (
 SYSTEM_PROMPT_FILE = (
     Path(__file__).resolve().parent.parent / "references" / "prompts" / "_system.md"
 )
+
+
+class VisionAPIError(Exception):
+    """Raised on any API failure; message is safe to print to the user."""
 
 
 def load_system_prompt() -> str | None:
@@ -64,30 +67,23 @@ def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
             max_tokens=max_tokens,
         )
     except AuthenticationError:
-        print("Error: Authentication failed. Check api_key in provider.yaml", file=sys.stderr)
-        sys.exit(1)
+        raise VisionAPIError("Authentication failed. Check api_key in provider.yaml")
     except RateLimitError:
-        print("Error: Rate limited (429). Check your API quota and retry later.", file=sys.stderr)
-        sys.exit(1)
+        raise VisionAPIError("Rate limited (429). Check your API quota and retry later.")
     except APITimeoutError:
-        print("Error: Request timed out. Image may be too large or network slow.", file=sys.stderr)
-        sys.exit(1)
+        raise VisionAPIError("Request timed out. Image may be too large or network slow.")
     except APIConnectionError:
-        print("Error: Cannot connect to API. Check base_url in provider.yaml and network.", file=sys.stderr)
-        sys.exit(1)
+        raise VisionAPIError("Cannot connect to API. Check base_url in provider.yaml and network.")
     except APIError as e:
         status = getattr(e, "status_code", 0)
         if status == 400:
-            print("Error: Bad request. Model may not support image input.", file=sys.stderr)
-        elif status == 404:
-            print(f"Error: Model '{model}' not found at provider endpoint.", file=sys.stderr)
-        else:
-            print(f"Error: API returned status {status}: {e}", file=sys.stderr)
-        sys.exit(1)
+            raise VisionAPIError("Bad request. Model may not support image input.")
+        if status == 404:
+            raise VisionAPIError(f"Model '{model}' not found at provider endpoint.")
+        raise VisionAPIError(f"API returned status {status}: {e}")
 
     if not resp.choices:
-        print("Error: API returned empty response (no choices)", file=sys.stderr)
-        sys.exit(1)
+        raise VisionAPIError("API returned empty response (no choices)")
     choice = resp.choices[0]
     content = choice.message.content or ""
     usage = {

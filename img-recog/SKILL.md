@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.2.0"
+  skill_version: "1.3.0"
 ---
 
 # img-recog — Image Recognition Skill
@@ -39,6 +39,7 @@ To customize paths, set `img-recog_PROVIDER_FILE` / `img-recog_MODEL_FILE` in `~
 
 - Python >= 3.10, packages in `scripts/requirements.txt`
 - **ffmpeg (system binary, with libwebp support)** — required only for `--compact` image compression
+- **Pillow** (`pip install pillow`, in requirements.txt) — required only for `--metadata` EXIF fields (device/app/time/location)
 
 ## Execution Rule
 
@@ -48,7 +49,7 @@ Run the image recognition command directly without pre-checking provider configu
 
 ```bash
 cd <skill-dir>
-python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--compact <size>] [--json]
+python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provider <name>] [--model <name>] [--compact <size>] [--metadata] [--json]
 ```
 
 ### Arguments
@@ -60,7 +61,8 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 | `--provider` | No | Override provider (default from model.yaml) |
 | `--model` | No | Override model (default from model.yaml) |
 | `--compact` | No | Compress image to target size as WebP before sending (e.g. `500KB`, `0.5MB`, `512000B`; bare numbers are KB). |
-| `--json` | No | Output JSON with usage stats |
+| `--metadata` | No | Extract image metadata (size/width/height/color/device/app/time/location) in parallel with recognition. Metadata is NOT sent to the model — it goes to the agent (JSON: top-level `metadata` key; non-JSON: `[metadata]` block on stderr, printed as soon as available). Missing fields are `null`; acquisition failure warns and continues |
+| `--json` | No | Output JSON with usage stats (adds `metadata` and/or `compression` when those flags are used; on API failure emits `{"status": "error", "error", "metadata"}`) |
 
 ### Quick Examples
 
@@ -85,6 +87,12 @@ python scripts/img_recog_cli.py --img screenshot.png --json
 
 # Compress a large screenshot to ≤ 500KB before sending
 python scripts/img_recog_cli.py --img screenshot.png --compact 500KB
+
+# Recognize + extract metadata (device/app/time/location from EXIF; null when absent)
+python scripts/img_recog_cli.py --img photo.jpg --metadata
+
+# Metadata + compression together, JSON output for the agent
+python scripts/img_recog_cli.py --img photo.jpg --metadata --compact 500KB --json
 ```
 
 ## Reference Files
@@ -116,7 +124,8 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - Timeout: connection 10s, read 120s
 - For local images, the file is read and converted to base64 in memory — no temp files
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
-- `--compact` compresses to WebP via ffmpeg.Animated images (GIF etc.) and originals already within target are skipped without re-encoding
+- `--compact` compresses to WebP via ffmpeg. Animated images (GIF etc.) and originals already within target are skipped without re-encoding
+- `--metadata` runs on a background thread while recognition proceeds, then reports: `size` (original bytes), `width`/`height`/`color` (pix_fmt) via ffprobe, `device`/`app`/`time`/`location` (GPS → decimal degrees) via Pillow EXIF. All fields reflect the ORIGINAL image, even when `--compact` is also used
 - Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `~/.wmyskills/.env` or `scripts/.env`); defaults remain `~/.wmyskills/img-recog/`
 
 ## Troubleshooting
@@ -129,6 +138,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 | "Bad request / model may not support image input" | The selected model does not support vision |
 | "Request timed out" | Image too large or slow network |
 | "ffmpeg not found" | Install ffmpeg (see Requirements); needed only for `--compact` |
+| "Pillow is required for --metadata" | Install Pillow (see Requirements); needed only for `--metadata` |
 
 ## Adding a Prompt Preset
 
