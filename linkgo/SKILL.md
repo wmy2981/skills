@@ -151,4 +151,4 @@ python scripts/linkgo.py debug
 
 ## Reference
 
-For the full LinkGo v3 API reference, variable substitution system, frontend modules, and deployment config, read `references/api.md`.
+For the full LinkGo v3 API reference, variable substitution system, frontend modules, and deployment config, read `references/api_doc.md`.
