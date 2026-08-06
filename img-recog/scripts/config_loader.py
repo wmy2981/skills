@@ -90,23 +90,24 @@ def resolve_model(provider_name: str | None, model_name: str | None,
         print(f"Available providers: {', '.join(available)}", file=sys.stderr)
         sys.exit(1)
 
-    models = providers_cfg[provider_name].get("models", [])
-    if not models:
-        print(f"Error: Provider '{provider_name}' has no vision models configured", file=sys.stderr)
-        sys.exit(1)
-
-    # Resolve model
+    # Resolve model. An explicit --model bypasses the model.yaml model list
+    # (the provider is validated above) so any model the provider supports can
+    # be used without editing the config; the default model still requires the
+    # provider to have a configured model list.
     if model_name is None:
+        models = providers_cfg[provider_name].get("models", [])
+        if not models:
+            print(f"Error: Provider '{provider_name}' has no vision models configured", file=sys.stderr)
+            sys.exit(1)
         if provider_name == default.get("provider") and default.get("model"):
             model_name = default["model"]
         else:
             print(f"Error: --model required for provider '{provider_name}'", file=sys.stderr)
             print(f"Available models: {', '.join(models)}", file=sys.stderr)
             sys.exit(1)
-
-    if model_name not in models:
-        print(f"Error: Model '{model_name}' not found for provider '{provider_name}'", file=sys.stderr)
-        print(f"Available models: {', '.join(models)}", file=sys.stderr)
-        sys.exit(1)
+        if model_name not in models:
+            print(f"Error: Model '{model_name}' not found for provider '{provider_name}'", file=sys.stderr)
+            print(f"Available models: {', '.join(models)}", file=sys.stderr)
+            sys.exit(1)
 
     return provider_name, model_name

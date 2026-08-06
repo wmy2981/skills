@@ -98,4 +98,7 @@ def call_vision_model(provider_cfg: dict, model: str, image_uri: str,
         "model": resp.model,
         "usage": usage,
         "status": "ok",
+        "id": resp.id,
+        "created": resp.created,
+        "finish_reason": choice.finish_reason,
     }

@@ -18,3 +18,5 @@ bun.lockb
 .DS_Store
 Thumbs.db
 
+# Test
+.test/

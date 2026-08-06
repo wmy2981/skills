@@ -8,6 +8,9 @@ def format_output(result: dict, json_mode: bool = False) -> None:
     if json_mode:
         output = {
             "status": result.get("status", "ok"),
+            "id": result.get("id"),
+            "created": result.get("created"),
+            "finish_reason": result.get("finish_reason"),
             "response": result.get("content", ""),
             "model": result.get("model", ""),
             "usage": result.get("usage", {}),

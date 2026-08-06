@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.3.3"
+  skill_version: "1.3.4"
 ---
 
 # img-recog — Image Recognition Skill
@@ -59,7 +59,7 @@ python scripts/img_recog_cli.py --img <image-source> [--prompt <text>] [--provid
 | `--img` | Yes | Local path, HTTP(S) URL, or base64 data URI (`data:image/...;base64,...`) |
 | `--prompt` | No | Text or `@filepath` (default: "Please describe this image in detail") |
 | `--provider` | No | Override provider (default from model.yaml) |
-| `--model` | No | Override model (default from model.yaml) |
+| `--model` | No | Override model (default from model.yaml). Any model name the provider supports is accepted — it does not need to be listed in model.yaml |
 | `--compact` | No | Compress image to target size as WebP before sending (e.g. `500KB`, `0.5MB`, `512000B`; bare numbers are KB). |
 | `--metadata` | No | Extract image metadata (size/width/height/color/device/app/time/location) in parallel with recognition. Metadata is NOT sent to the model — it goes to the agent (JSON: top-level `metadata` key; non-JSON: `[metadata]` block on stderr, printed as soon as available). Missing fields are `null`; acquisition failure warns and continues |
 | `--max-tokens` | No | Maximum output tokens (default: 4096). Must be a positive integer |

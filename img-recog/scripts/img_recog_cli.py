@@ -106,11 +106,15 @@ def parse_prompt(prompt_arg: str | None) -> str:
 
 
 def main():
-    # Handle Windows encoding
+    # Handle Windows encoding. line_buffering keeps stderr writes (metadata,
+    # compression summary) flushed immediately — without it the wrapper falls
+    # back to 8KB block buffering and early output only appears at exit.
     if sys.platform == "win32":
         import io
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace",
+                                      line_buffering=True)
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace",
+                                      line_buffering=True)
 
     parser = argparse.ArgumentParser(
         description="img-recog — Recognize image content via vision model",
