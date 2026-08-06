@@ -139,6 +139,9 @@ def cmd_add(args):
         print("Error: card JSON is missing 'id' field", file=sys.stderr)
         sys.exit(1)
     card_id = str(card["id"])
+    if not card_id:
+        print("Error: card 'id' must not be empty", file=sys.stderr)
+        sys.exit(1)
 
     data = load_full_data()
     existing = [str(s.get("id", "")) for s in data.get("services", [])]
@@ -250,34 +253,38 @@ def cmd_page(args):
 
 
 def cmd_upload_icon(args):
-    """Upload an icon file."""
-    filepath = args.filepath
-    if not os.path.isfile(filepath):
-        print(f"Error: file not found — {filepath}", file=sys.stderr)
-        sys.exit(1)
-
-    filename = os.path.basename(filepath)
-    ext = os.path.splitext(filename)[1].lower()
+    """Upload one or more icon files (the API accepts multiple files)."""
     allowed = {".svg", ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico"}
-    if ext not in allowed:
-        print(f"Error: unsupported format {ext}; allowed: {', '.join(sorted(allowed))}", file=sys.stderr)
-        sys.exit(1)
 
-    size = os.path.getsize(filepath)
-    if size > 1 * 1024 * 1024:
-        print(f"Error: file too large ({size} bytes), max 1MB", file=sys.stderr)
-        sys.exit(1)
+    files = []  # (filename, bytes)
+    for filepath in args.filepaths:
+        if not os.path.isfile(filepath):
+            print(f"Error: file not found — {filepath}", file=sys.stderr)
+            sys.exit(1)
+        filename = os.path.basename(filepath)
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in allowed:
+            print(f"Error: unsupported format {ext} for {filepath}; allowed: {', '.join(sorted(allowed))}", file=sys.stderr)
+            sys.exit(1)
+        size = os.path.getsize(filepath)
+        if size > 1 * 1024 * 1024:
+            print(f"Error: file too large ({size} bytes) — {filepath}, max 1MB", file=sys.stderr)
+            sys.exit(1)
+        with open(filepath, "rb") as f:
+            files.append((filename, f.read()))
 
-    # Build multipart/form-data manually
+    # Build multipart/form-data manually (one `icons` part per file)
     boundary = "----LinkGoBoundary" + str(os.getpid())
-    with open(filepath, "rb") as f:
-        file_data = f.read()
-
-    body = (
-        f"--{boundary}\r\n"
-        f'Content-Disposition: form-data; name="icons"; filename="{filename}"\r\n'
-        f"Content-Type: application/octet-stream\r\n\r\n"
-    ).encode() + file_data + f"\r\n--{boundary}--\r\n".encode()
+    parts = []
+    for filename, data in files:
+        parts.append(
+            f"--{boundary}\r\n"
+            f'Content-Disposition: form-data; name="icons"; filename="{filename}"\r\n'
+            f"Content-Type: application/octet-stream\r\n\r\n".encode()
+            + data
+            + b"\r\n"
+        )
+    body = b"".join(parts) + f"--{boundary}--\r\n".encode()
 
     url = f"{API_URL}/upload_icon.php"
     req = Request(url, data=body, method="POST")
@@ -291,9 +298,30 @@ def cmd_upload_icon(args):
             if result.get("success"):
                 uploaded = result.get("uploaded", [])
                 print(f"✓ Uploaded {len(uploaded)} file(s)")
+                if result.get("duplicates"):
+                    print(f"⚠ Skipped duplicates: {', '.join(result['duplicates'])}", file=sys.stderr)
+                if result.get("errors"):
+                    print(f"⚠ Failed uploads: {', '.join(result['errors'])}", file=sys.stderr)
     except (HTTPError, URLError, json.JSONDecodeError) as e:
         print(f"Upload failed: {e}", file=sys.stderr)
         sys.exit(1)
+
+
+def cmd_reset_password(args):
+    """Reset admin password to a random one (server-local only, 127.0.0.1)."""
+    url = f"{API_URL}/reset_password.php"
+    try:
+        with urlopen(Request(url, method="GET")) as resp:
+            text = resp.read().decode("utf-8", errors="replace").strip()
+    except HTTPError as e:
+        body = e.read().decode("utf-8", errors="replace")
+        print(f"HTTP {e.code}: {body}", file=sys.stderr)
+        sys.exit(1)
+    except URLError as e:
+        print(f"Request failed: {e}", file=sys.stderr)
+        sys.exit(1)
+    print(text)
+    print("New password issued. Update LINKGO_PASSWORD in ~/.wmyskills/.env (or scripts/.env if present — it takes priority) before running further commands")
 
 
 def cmd_icons(args):
@@ -342,6 +370,7 @@ def cmd_change_password(args):
     output(result)
     if result.get("success"):
         print("✓ Password changed")
+        print("Next: update LINKGO_PASSWORD in ~/.wmyskills/.env (or scripts/.env if present — it takes priority) — it still holds the old password")
     else:
         print(f"✗ Password change failed: {result.get('msg', result.get('error', 'unknown error'))}", file=sys.stderr)
         sys.exit(1)
@@ -411,8 +440,8 @@ def main():
     p.set_defaults(func=cmd_page)
 
     # upload-icon
-    p = sub.add_parser("upload-icon", help="Upload an icon file")
-    p.add_argument("filepath", help="Path to icon file")
+    p = sub.add_parser("upload-icon", help="Upload one or more icon files")
+    p.add_argument("filepaths", nargs="+", help="Path(s) to icon file(s)")
     p.set_defaults(func=cmd_upload_icon)
 
     # icons
@@ -438,6 +467,10 @@ def main():
     p.add_argument("old_password", help="Current password")
     p.add_argument("new_password", help="New password")
     p.set_defaults(func=cmd_change_password)
+
+    # reset-password
+    p = sub.add_parser("reset-password", help="Reset admin password (server-local only, 127.0.0.1)")
+    p.set_defaults(func=cmd_reset_password)
 
     # debug
     p = sub.add_parser("debug", help="Get debug info")

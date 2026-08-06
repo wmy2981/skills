@@ -3,11 +3,11 @@ name: linkgo
 description: >-
   Manage a remote LinkGo v3 instance via its HTTP API. Use when the user wants
   to list/add/edit/delete service cards, modify page settings, upload icons,
-  change passwords, export/import config, or query debug info on the LinkGo
-  navigation page. Also triggers for "导航页", "服务卡片", "LinkGo",
+  change or reset passwords, export/import config, or query debug info on the
+  LinkGo navigation page. Also triggers for "导航页", "服务卡片", "LinkGo",
   "add card", "edit card", "sublink" and similar card management tasks.
 metadata:
-  skill_version: "2.0.0"
+  skill_version: "2.0.1"
 ---
 
 # LinkGo v3 Remote Management
@@ -80,8 +80,8 @@ python scripts/linkgo.py page '{"title":"New Title","searchEnabled":0}'
 ### Icons
 
 ```bash
-# Upload an icon
-python scripts/linkgo.py upload-icon /path/to/icon.svg
+# Upload one or more icons (multi-file supported)
+python scripts/linkgo.py upload-icon /path/to/icon.svg /path/to/another.png
 
 # List available icons
 python scripts/linkgo.py icons
@@ -109,6 +109,9 @@ python scripts/linkgo.py reset
 # Change admin password
 python scripts/linkgo.py change-password <old_password> <new_password>
 
+# Reset password to a random 8-char one (server-local only, 127.0.0.1)
+python scripts/linkgo.py reset-password
+
 # Debug info
 python scripts/linkgo.py debug
 ```
@@ -125,7 +128,7 @@ python scripts/linkgo.py debug
 | `description` | ❌ | string | Description text, supports variable substitution and HTML |
 | `status` | ❌ | int | `1`=enabled (default), `0`=disabled |
 
-### Description Variable Syntax
+### Parameterized Syntax (description only)
 
 | Syntax | Description | Example |
 |--------|-------------|---------|
@@ -133,21 +136,42 @@ python scripts/linkgo.py debug
 | `{sublink:URL,text}` | Blue bold link | `{sublink:https://example.com,Details}` |
 | `{modallink:URL,title,text}` | Iframe modal link | `{modallink:http://x:8080,Service,View}` |
 | `{tip:content}` | Search keyword hint (invisible) | `{tip:keyword1 keyword2}` |
-| `{space}` | Spacing space | `Line 1{space}Line 2` |
+| `{page_info}` | Page info placeholder (selectable text) | `{page_info}` |
+
+### Static Variables
+
+| Variable | Replaced with | Example |
+|----------|---------------|---------|
+| `{project_name}` | Project name | `LinkGo` |
+| `{project_version}` | Project version | `v3_20250823` |
+| `{addr_prefit}` | `地址：` label | `{addr_prefit}` → `地址：` |
+| `{space}` | Three spaces | `Line 1{space}Line 2` |
 | `{icon_path}` | Icon directory | `{icon_path}myicon.svg` → `/static/icon/myicon.svg` |
-| `{hostname}` | Dynamic hostname | `http://{hostname}:8088` |
+| `{api_path}` | API directory | `{api_path}` → `/api/` |
+| `{static_path}` | Static directory | `{static_path}` → `/static/` |
+| `{pages_path}` | Pages directory | `{pages_path}` → `/pages/` |
 
-### Dynamic Variables (auto-replaced by frontend)
+### Dynamic Variables (auto-replaced by frontend per page)
 
-`{host}` / `{hostname}` / `{port}` / `{protocol}` / `{pathname}` / `{href}` / `%s`
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `{host}` | Hostname + port | `localhost:8080` |
+| `{hostname}` | Hostname only | `localhost` |
+| `{port}` | Port | `8080` |
+| `{protocol}` | Protocol (`http`/`https`) | `http` |
+| `{pathname}` | Current URL path | `/index.html` |
+| `{href}` | Full URL | `http://localhost:8080/index.html` |
+| `%s` | Alias of `{host}` | `localhost:8080` |
 
 ## Important Notes
 
 - **Edit is incremental** — only pass the fields you want to change; others stay as-is
 - **Backup before import/reset** — both operations **overwrite all data** and are irreversible
-- Icon upload limit: 1MB; supported formats: SVG/PNG/JPG/JPEG/GIF/WEBP/ICO
+- Icon upload limit: 1MB per file; supported formats: SVG/PNG/JPG/JPEG/GIF/WEBP/ICO
 - `reset` clears all custom cards
+- `reset-password` only works on the server host itself (the API accepts `127.0.0.1` only); `LINKGO_HOST` must point at `http://127.0.0.1` for it
 - Password change auto-updates the server's `config.php`
+- After `change-password` / `reset-password`, guide the user to update `LINKGO_PASSWORD` in `~/.wmyskills/.env` (and `scripts/.env` if present — it takes priority); the stored password becomes invalid and further commands will fail with 401
 
 ## Reference
 
