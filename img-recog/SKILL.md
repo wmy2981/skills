@@ -2,7 +2,7 @@
 name: img-recog
 description: Image recognition via OpenAI-compatible vision models. Triggered when user asks to "look at", "see", "describe", or "read text from" an image. Replaces the built-in `read` tool for images when multimodal is unavailable.
 metadata:
-  skill_version: "1.3.0"
+  skill_version: "1.3.1"
 ---
 
 # img-recog — Image Recognition Skill
@@ -126,6 +126,7 @@ python scripts/img_recog_cli.py --img scan.png --prompt @references/prompts/extr
 - For URL images, the image is downloaded and converted to data URI for maximum API compatibility
 - `--compact` compresses to WebP via ffmpeg. Animated images (GIF etc.) and originals already within target are skipped without re-encoding
 - `--metadata` runs on a background thread while recognition proceeds, then reports: `size` (original bytes), `width`/`height`/`color` (pix_fmt) via ffprobe, `device`/`app`/`time`/`location` (GPS → decimal degrees) via Pillow EXIF. All fields reflect the ORIGINAL image, even when `--compact` is also used
+- Default (non-JSON) output is two blocks: `[metadata]` (on stderr, when `--metadata` is used) and `[result]` (the vision model's output, on stdout). Model name and token usage are not shown
 - Config file paths can be overridden via `img-recog_PROVIDER_FILE` and `img-recog_MODEL_FILE` environment variables (set in `~/.wmyskills/.env` or `scripts/.env`); defaults remain `~/.wmyskills/img-recog/`
 
 ## Troubleshooting
