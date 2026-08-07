@@ -1,0 +1,23 @@
+{
+  "skill_name": "scanned-pdf-to-epub",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我的书《测试书名》是扫描版 PDF（E:/books/test_book.pdf），内页全是图片、没有文字层。请把它转成带完整目录、目录可点击跳转的 EPUB，中间产物保留 Markdown。",
+      "expected_output": "生成 book.epub（含可点击导航目录）与校对后的 book.md；EPUB 章节按原书标题切分；无版权页、页眉页脚、插图残留。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "把这本书转成 epub，要有目录。",
+      "expected_output": "从简短指令自动识别为扫描 PDF 转 EPUB 任务，产出带导航目录的 EPUB；不因指令简短而省略分章或校对。",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "这本书是扫描件，开头有版权页、每页有页眉页码、章节间有插图。转换时去掉版权页和插图、清除页眉页码，但要保留全部章节标题并在 EPUB 目录里可跳转。",
+      "expected_output": "识别并去除版权页、页眉、页码、插图；章节标题保留并生成对应目录条目；verify 校验无残留、目录条目与标题一一对应。",
+      "files": []
+    }
+  ]
+}
