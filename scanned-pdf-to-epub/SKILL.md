@@ -7,7 +7,7 @@ description: >-
   扫描书转 epub / 把这本书做成 epub / 扫描件转可读格式 / 图片 PDF 生成目录"时，务必使用本 skill，
   即使对方没有明确说出"skill"或"epub"字样。
 metadata:
-  skill_version: "1.0.0"
+  skill_version: "1.0.1"
 ---
 
 # PDF → EPUB（扫描书转换工作流）

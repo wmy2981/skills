@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "scanned-pdf-to-epub",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "将扫描版 PDF 书籍（内页全为图片、无文字层）转换为带完整导航目录、可点击跳转的可读 EPUB。识别由 Claude 视觉子代理（Sonnet 模型）逐页读图完成，CLI 脚本负责拆页渲染、标记检查、批次合并、按章节切分打包、EPUB 校验。当用户提到\"扫描 PDF 转电子书 / PDF 转 EPUB / 扫描书转 epub / 把这本书做成 epub / 扫描件转可读格式 / 图片 PDF 生成目录\"时，务必使用本 skill，即使对方没有明确说出\"skill\"或\"epub\"字样。",
   "author": {
     "name": "wmy2981"
