@@ -67,7 +67,7 @@ book/
 ├── raws/             # 2. 子代理识图输出 batch_001.md...
 ├── draft.md          # 3-5. 批次合并 + 标记检查后的草稿（仍含 PAGE/CH/__ 标记）
 ├── book.md           # 6. 校对优化后的全文（干净层级化 Markdown）
-└── book.epub         # 7. 最终产物（校验报告直接打印到终端，不落盘）
+└── book.epub         # 7. 最终产物
 ```
 
 ## 1. extract：拆页渲染（CLI）
@@ -204,7 +204,7 @@ python scripts/md_to_epub.py book/book.md -o book/book.epub \
 python scripts/verify.py book/book.epub
 ```
 
-脚本检查并**完整打印校验报告到终端**（不生成报告文件）：
+脚本检查并**完整打印校验报告到终端**：
 
 - EPUB 结构合法：`content.opf` / `manifest` / `spine` 完整一致。
 - 导航目录存在，且**每条目录条目在正文中都有对应标题**（条目数 ≈ 正文 h1/h2 标题数；封面等非正文页除外）。
