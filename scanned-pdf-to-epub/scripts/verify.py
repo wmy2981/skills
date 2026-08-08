@@ -2,7 +2,9 @@
 """校验 EPUB：结构合法、导航目录完整、目录条目与正文标题一一对应、无残留特征。
 
 用法:
-    python scripts/verify.py book/book.epub [-o book/verify_report.txt]
+    python scripts/verify.py book/book.epub
+
+校验报告完整打印到终端，不生成报告文件。
 
 检查项:
     1. 容器结构（META-INF/container.xml → content.opf）
@@ -52,9 +54,6 @@ class VerifyReport:
     def err(self, msg: str) -> None:
         self.errors += 1
         self.lines.append("[FAIL] " + msg)
-
-    def save(self, path: Path) -> None:
-        path.write_text("\n".join(self.lines) + "\n", encoding="utf-8")
 
 
 def get_opf_path(z: zipfile.ZipFile) -> str | None:
@@ -150,7 +149,6 @@ def main() -> None:
     force_utf8()
     ap = argparse.ArgumentParser(description="校验 EPUB 结构与导航目录")
     ap.add_argument("input", help="输入 EPUB 路径")
-    ap.add_argument("-o", "--output", default="verify_report.txt", help="报告输出路径")
     args = ap.parse_args()
 
     rep = VerifyReport()
@@ -167,8 +165,8 @@ def main() -> None:
         else:
             rep.ok(f"容器结构完整，content.opf = {opf_path}")
         if not opf_path:
-            rep.save(Path(args.output))
-            print("校验未通过（结构损坏）")
+            print("\n".join(rep.lines))
+            print("校验未通过（EPUB 结构损坏）")
             sys.exit(1)
 
         # 2. manifest / spine 一致性
@@ -233,8 +231,7 @@ def main() -> None:
 
     rep.info(f"检查完成，正文 xhtml 文件 {len(xhtml_files) if 'xhtml_files' in dir() else 0} 个")
     rep.info("通过" if rep.errors == 0 else f"失败：{rep.errors} 项错误")
-    rep.save(Path(args.output))
-    print(f"校验报告 → {args.output}（{'通过' if rep.errors == 0 else f'{rep.errors} 项错误'}）")
+    print("\n".join(rep.lines))
     sys.exit(0 if rep.errors == 0 else 1)
 
 

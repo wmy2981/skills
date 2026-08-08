@@ -7,7 +7,7 @@ description: >-
   扫描书转 epub / 把这本书做成 epub / 扫描件转可读格式 / 图片 PDF 生成目录"时，务必使用本 skill，
   即使对方没有明确说出"skill"或"epub"字样。
 metadata:
-  skill_version: "1.0.2"
+  skill_version: "1.0.3"
 ---
 
 # PDF → EPUB（扫描书转换工作流）
@@ -67,8 +67,7 @@ book/
 ├── raws/             # 2. 子代理识图输出 batch_001.md...
 ├── draft.md          # 3-5. 批次合并 + 标记检查后的草稿（仍含 PAGE/CH/__ 标记）
 ├── book.md           # 6. 校对优化后的全文（干净层级化 Markdown）
-├── book.epub         # 7. 最终产物
-└── verify_report.txt # 8. 校验报告
+└── book.epub         # 7. 最终产物（校验报告直接打印到终端，不落盘）
 ```
 
 ## 1. extract：拆页渲染（CLI）
@@ -94,6 +93,7 @@ python scripts/extract.py <input.pdf> -o book/pages [--dpi 300]
 ### 子代理提示词模板（引用 references/subagent_prompt.md）
 
 调度每个子代理时，直接使用 **`references/subagent_prompt.md`** 中的提示词模板：把 `{N}`、`{起始页}`、`{结束页}`、`{批次序号}`、`{pages_dir}`、`{raws_dir}` 替换为实际值后作为子代理任务传入（识别必须用 Sonnet 模型）。该文件是提示词的唯一正式来源，本小节不再内嵌模板正文。
+**调度子代理时，仅可替换模板中 `{占位符}` 标记的内容，模板其余部分必须原样保留，禁止增删或修改。**
 
 ### 子代理严格输出约束（要点）
 
@@ -160,7 +160,7 @@ python scripts/check_markers.py book/raws/*.md
 python scripts/merge_batches.py book/raws -o book/draft.md
 ```
 
-按批次序号顺序合并所有 `batch_XXX.md` 为 `draft.md`：**保留各批内的 PAGE/CH/__ 标记**（供校对定位、跨批次 `__` 切口衔接）；合并时校验批次序号连续（1..K 无缺）。
+按批次序号顺序合并所有 `batch_XXX.md` 为 `draft.md`：**保留各批内的 PAGE/CH/__ 标记**（供校对定位、跨批次 `__` 切口衔接）；合并时校验批次序号连续（1..K 无缺）。合并后**规范化行距**：任意两个相邻非空行之间恰好 1 个空行（跨页 `__` 切口连接的行除外，保持切口两部分紧密相连），无连续空行堆积、无缺失空行。
 
 ## 5. 草稿标记复查：check-markers（CLI）
 
@@ -204,7 +204,7 @@ python scripts/md_to_epub.py book/book.md -o book/book.epub \
 python scripts/verify.py book/book.epub
 ```
 
-脚本检查并输出 `verify_report.txt`：
+脚本检查并**完整打印校验报告到终端**（不生成报告文件）：
 
 - EPUB 结构合法：`content.opf` / `manifest` / `spine` 完整一致。
 - 导航目录存在，且**每条目录条目在正文中都有对应标题**（条目数 ≈ 正文 h1/h2 标题数；封面等非正文页除外）。
