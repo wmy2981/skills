@@ -170,7 +170,6 @@ def build_with_pypandoc(md_path: Path, out_path: Path, title: str, author: str, 
 # --------------------------------------------------------------------------- #
 
 def build_with_ebooklib(md_path: Path, out_path: Path, title: str, author: str, lang: str, cover: str = "") -> None:
-    import ebooklib
     from ebooklib import epub
 
     md_text = md_path.read_text(encoding="utf-8")
@@ -212,7 +211,7 @@ def build_with_ebooklib(md_path: Path, out_path: Path, title: str, author: str, 
     # 书前内容（h1 之前的文字）
     front = [s for s in sections if s["level"] == 0]
     if front:
-        body = "".join(f"<p>{inline_md(l)}</p>" for l in front[0]["lines"] if l.strip())
+        body = "".join(f"<p>{inline_md(line)}</p>" for line in front[0]["lines"] if line.strip())
         if body.strip():
             make_chapter("前言", f"<h2>前言</h2>{body}", "front.xhtml")
 
