@@ -2,7 +2,7 @@
 name: send-email
 description: "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates. Trigger on any email-related request — including 'email this to...', 'forward this to...', 'send the report to...', 'attach this file and send'. Do NOT use for non-email communication like Slack or SMS."
 metadata:
-  skill_version: "1.0.0"
+  skill_version: "1.0.1"
 ---
 
 # Send Email Skill
@@ -48,6 +48,14 @@ python scripts/send.py user@example.com "Newsletter" --file ~/.wmyskills/send-em
 ```bash
 python scripts/send.py user@example.com "Files" --text "See attached" report.pdf
 ```
+
+## Email Content Rules
+
+**Never add reply prompts in the email body.** This skill is send-only and has
+no ability to receive or read emails. Do not include phrases like "reply to
+this email", "if you have any questions, feel free to reply", or any other
+wording that invites the recipient to respond by email — the response would go
+to an inbox nobody reads.
 
 ## File Storage Rules
 
