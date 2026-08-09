@@ -20,7 +20,3 @@
 
 **Add your tags here**
 
-```markdown
-**tagName**: work
-- Apply to work records and meeting minutes
-```
