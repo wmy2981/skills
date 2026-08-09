@@ -40,6 +40,7 @@ claude plugin install skill-name@wmy-skills
 | `img-recog/` | Image recognition via vision models | 图片识别（视觉模型） |
 | `linkgo/` | LinkGo v3 navigation page management | LinkGo v3 导航页管理 |
 | `mimo-tts/` | MiMo-V2.5-TTS speech synthesis | MiMo-V2.5-TTS 语音合成 |
+| `personal-siyuan-standards/` | Personal SiYuan note standards — placement routing & tagging conventions | 个人思源笔记规范（位置映射与标签约定） |
 | `scanned-pdf-to-epub/` | Scanned PDF to readable EPUB conversion (OCR by Claude vision) | 扫描版 PDF 转可读 EPUB（Claude 视觉识别） |
 | `send-email/` | SMTP email sending | SMTP 邮件发送 |
 | `wake-on-lan/` | Wake-on-LAN remote wake-up | 远程唤醒局域网计算机 |

@@ -112,6 +112,14 @@
       "source": "./mimo-tts"
     },
     {
+      "name": "personal-siyuan-standards",
+      "description": "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever operating on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells the agent where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on \"新建笔记/记一下/存到笔记\", \"找一下我的笔记\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes.",
+      "author": {
+        "name": "wmy2981"
+      },
+      "source": "./personal-siyuan-standards"
+    },
+    {
       "name": "send-email",
       "description": "Use when the user wants to send an email, email a file or document, send a message via email, forward information by email, or use HTML email templates. Trigger on any email-related request — including 'email this to...', 'forward this to...', 'send the report to...', 'attach this file and send'. Do NOT use for non-email communication like Slack or SMS.",
       "author": {
