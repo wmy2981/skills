@@ -1,23 +1,26 @@
-# 思源笔记标签规范（tag.md）
+# SiYuan Note Tag Rules (tag.md)
 
-本文件由**用户维护**。agent 只在**新建**笔记后读取并按此打标签；
-修改笔记不动标签。需要新增或修改标签时，agent 会先向用户提议，
-用户确认后才写入。
+> This file is maintained by the **user**. The agent reads it only after
+> **creating** a note and applies tags accordingly; modifying a note never
+> touches its tags. To add or change a tag, the agent proposes it first and
+> writes only after the user confirms.
+>
+> Format:
+>
+> ```markdown
+> **tagName**: <actual tag name>
+> Explanation lines: when to apply / not apply this tag
+> ```
+>
+> Rules:
+> - If an explanation does not mention timing, the default applies: tag every
+>   new note with it
+> - If several entries match a new note, apply **all** of them; if none match,
+>   apply none and tell the user
 
-格式：
+**Add your tags here**
 
 ```markdown
-**标签名**: 实际标签名
-说明行：什么时候打这个标签、什么时候不打
-```
-
-规则：
-- 说明没有提及时机时，默认为：新建笔记后都给打这个标签
-- 新建笔记匹配到多个标签 → 全部打上；没有匹配 → 不打，并告知用户
-
-（在此添加你的标签，例如：）
-
-```markdown
-**工作**: 工作
-- 工作日的工作记录、会议纪要打此标签
+**tagName**: work
+- Apply to work records and meeting minutes
 ```

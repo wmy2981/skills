@@ -1,19 +1,24 @@
-# 思源笔记位置映射（map.md）
+# SiYuan Note Location Map (map.md)
 
-本文件由**用户维护**。agent 在新建/查找/修改笔记前都会读取本文件，
-按语义匹配最合适的一行；需要新增或修改行时，agent 会先向用户提议，
-用户确认后才写入。
+> This file is maintained by the **user**. The agent reads it before creating,
+> finding, or modifying notes and picks the row that best fits. To add or
+> change a row, the agent proposes it first and writes only after the user
+> confirms.
+>
+> | Column | Meaning |
+> | --- | --- |
+> | Notebook | The SiYuan notebook the note lives in |
+> | Path | Human-readable path inside the notebook, e.g. `Notebook/Parent Doc/Child Doc` |
+> | Description | What this path is for and when to prefer it |
+>
+> Agent matching rules:
+> - Pick the most fitting row by meaning (notebook, path, description combined)
+> - If nothing matches: use a row whose Description declares itself the
+>   fallback (e.g. "use this path when nothing else matches") as the default;
+>   otherwise the agent decides a placement itself — **for this request only**,
+>   without writing it to this file
 
-| 列 | 含义 |
-| --- | --- |
-| Notebook | 笔记所在的笔记本名称 |
-| Path | 笔记在思源中的人类可读路径，如 `笔记本/父文档/子文档` |
-| Description | 该路径的用途、什么时候优先使用它 |
-
-agent 的匹配规则：
-- 按笔记本、路径、描述综合语义判断，选最贴切的一行
-- 没有匹配时：若某行 Description 写明「未匹配时使用此路径」之类的话，
-  则用该行作为默认位置；否则 agent 自行决定位置，**仅限本次**，不写入本文件
+**Add your location mappings here**
 
 | Notebook | Path | Description |
 | -------- | ---- | ----------- |
