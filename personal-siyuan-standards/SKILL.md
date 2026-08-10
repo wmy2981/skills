@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.1.0"
+  skill_version: "1.2.0"
 ---
 
 # Personal SiYuan Standards
@@ -63,7 +63,9 @@ markdown table with three columns:
 user's request by meaning — not by keyword equality. If several rows could
 fit, prefer the one whose description matches the intent of the current
 request (e.g. a research path for a reading note, a work path for a work
-note).
+note). The chosen row is only the **starting point**: the Create workflow
+then descends recursively into child documents to find the best-fitting path
+(see Create below).
 
 **No match?** Two cases, in order:
 
@@ -144,14 +146,42 @@ remaining steps because of it.
 
 **Create**
 
-1. Read `map.md`; pick the target location (see Map rules above).
-2. Create the document with the MCP `document` tool at the mapped
+```mermaid
+graph TD
+    A[Start: create a note] --> B[Read map.md for the preferred path]
+    B --> C[Enter that path]
+    C --> D[List child notes under the path]
+    D --> E{Any child fits better?}
+    E -- Yes --> F[Read that note's content]
+    F --> G[Make it the current path]
+    G --> D
+    E -- No --> H[Current path is the best match]
+    H --> I[Create the note here]
+    I --> J{Path already in map.md?}
+    J -- No --> K[Propose adding it to map.md<br/>never write without confirmation]
+    J -- Yes --> L[Done]
+    K --> L
+```
+
+1. Read `map.md`; pick the target location (see Map rules above). If no row
+   matches and none declares itself the fallback, decide a placement yourself
+   as a one-off — place the note directly without descending.
+2. **Descend to the best-fitting path.** From the mapped path, list its
+   child documents. Judge by title first, then read the most promising
+   candidate's content, and ask: does any child fit the request better than
+   the current path? If one does, make it the current path and repeat. Stop
+   when no child fits better — the current path is the final destination.
+   There is no depth limit: the descent only moves downward through children,
+   so it always terminates.
+3. Create the document with the MCP `document` tool at the current
    notebook/path, creating missing parent documents first.
-3. Read `tag.md`; apply every matching tag to the new document (Tag rules
+4. Read `tag.md`; apply every matching tag to the new document (Tag rules
    above).
-4. Report: where the note was created; whether the placement was a one-off
+5. Report: where the note was created; whether the placement was a one-off
    guess (no map row) — and optionally propose a `map.md` row or `tag.md`
-   entry for user confirmation.
+   entry for user confirmation. If the final path is deeper than the mapped
+   row (or no row matched), **propose** adding the final path to `map.md` —
+   never write it without the user's confirmation.
 
 **Find (read-only)**
 
