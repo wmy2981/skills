@@ -1,13 +1,13 @@
 # SiYuan Note Location Map (map.md)
 
-> This file is maintained by the **user**. The agent reads it before creating,
-> finding, or modifying notes and picks the row that best fits. To add or
-> change a row, the agent proposes it first and writes only after the user
-> confirms.
+> This file is maintained by the **user**. The agent reads it when creating a
+> new note and picks the row that best fits — existing notes are located by
+> search instead. To add or change a row, the agent proposes it first and
+> writes only after the user confirms.
 >
 > | Column | Meaning |
 > | --- | --- |
-> | Notebook | The SiYuan notebook the note lives in |
+> | Notebook | The SiYuan notebook the new note lives in |
 > | Path | Human-readable path inside the notebook, e.g. `Notebook/Parent Doc/Child Doc` |
 > | Description | What this path is for and when to prefer it |
 >
