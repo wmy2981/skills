@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.2.1"
+  skill_version: "1.2.2"
 ---
 
 # Personal SiYuan Standards
@@ -124,9 +124,10 @@ graph TD
     G --> H[Report to user]
 ```
 
-1. **Read standards files.** Read `map.md` and `tag.md` only when the round
-   creates a note (see Map and Tag rules). Locate existing notes with the
-   MCP `search` tool instead of `map.md`.
+1. **Read standards files.** When the round creates a note, read `tag.md`
+   (see Tag rules) and read `map.md` unless the user specified a location
+   (see Map rules). Locate existing notes with the MCP `search` tool instead
+   of `map.md`.
 2. **Pre-round sync.** If the round will perform any write operation (create,
    delete, modify, move, rename, …), trigger a sync with the MCP `sync` tool.
    Pure find/read-only rounds skip this step.
@@ -151,6 +152,7 @@ remaining steps because of it.
 graph TD
     A[Start: create a note] --> A1{Location specified by user?}
     A1 -- Yes --> A2[Create at the specified location<br/>skip map.md and descent]
+    A2 --> L[Done]
     A1 -- No --> B[Read map.md for the preferred path]
     B --> C[Enter that path]
     C --> D[List child notes under the path]
