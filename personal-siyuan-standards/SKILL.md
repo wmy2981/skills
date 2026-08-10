@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.0.1"
+  skill_version: "1.1.0"
 ---
 
 # Personal SiYuan Standards
@@ -101,28 +101,66 @@ user explicitly asks).
 
 **Modify never touches tags** — tags are only applied when a note is created.
 
-## Workflows
+## One Round Workflow
 
-### Create a note
+Every user request is **one round**: from request to report, a round performs
+**exactly two syncs** — one before the operations (pre-round sync) and one
+after (post-round sync). Never sync after each individual note operation;
+bundle the whole round into a single pre/post sync pair. This is the full
+round, covering every request:
+
+```mermaid
+graph TD
+    A[User request] --> B[Load this skill and the siyuan-note MCP tools]
+    B --> C[Read map.md and tag.md]
+    C --> D[Pre-round sync]
+    D --> E[Operate on SiYuan notes<br/>1 or more operations]
+    E --> F[Review: operations succeeded]
+    F --> G[Post-round sync]
+    G --> H[Report to user]
+```
+
+1. **Read standards files.** Read `map.md` every round (see Map rules). Read
+   `tag.md` only when the round creates a note (see Tag rules).
+2. **Pre-round sync.** If the round will perform any write operation (create,
+   delete, modify, move, rename, …), trigger a sync with the MCP `sync` tool.
+   Pure find/read-only rounds skip this step.
+3. **Operate.** Perform the request — one or more note operations — following
+   the operation notes below.
+4. **Review.** Check that each operation actually succeeded; if a step
+   failed, fix or retry it before moving on.
+5. **Post-round sync.** If any write operation ran this round, trigger sync
+   again with the MCP `sync` tool.
+6. **Report.** Follow Report Style; always include the sync status.
+
+**Sync failure handling.** A failed sync never blocks the round — the
+operations still run — but the final report must explicitly warn that the
+vault may be out of sync. Do not retry a failed sync, and do not skip the
+remaining steps because of it.
+
+### Operation notes
+
+**Create**
 
 1. Read `map.md`; pick the target location (see Map rules above).
 2. Create the document with the MCP `document` tool at the mapped
-   notebook/path.
+   notebook/path, creating missing parent documents first.
 3. Read `tag.md`; apply every matching tag to the new document (Tag rules
    above).
 4. Report: where the note was created; whether the placement was a one-off
    guess (no map row) — and optionally propose a `map.md` row or `tag.md`
    entry for user confirmation.
 
-### Find a note
+**Find (read-only)**
 
 1. Read `map.md`; use the most plausible rows as your starting point.
 2. If the map doesn't point anywhere useful, search with the MCP `search`
    tool (fulltext) to locate candidates.
 3. Open and read a candidate's content to confirm it really is the note the
    user means before reporting it.
+4. No sync for read-only rounds.
 
-### Modify a note
+**Modify**
 
 1. Read `map.md`; locate the note (find rules apply).
 2. **Read the document's content first and confirm it matches the user's
@@ -132,9 +170,21 @@ user explicitly asks).
    ask the user.
 4. Make the change. Do not touch the note's tags.
 
+**Delete / move / rename**
+
+1. Read `map.md`; locate the note (find rules apply).
+2. Read the document's content and confirm it is the intended note before
+   deleting, moving, or renaming it — the same caution applies as for
+   Modify.
+3. Perform the operation.
+4. Report the note's new location if it moved or was renamed.
+
 ## Report Style
 
 Always tell the user where a note lives after creating/finding/modifying it —
 with a `Notebook / Path` so they can verify. If you made a one-off placement,
 skipped tags, or couldn't locate something, say so explicitly. Propose
 `map.md`/`tag.md` updates when you found a stable new pattern.
+
+Always report the sync status of the round. If the pre-round or post-round
+sync failed, warn explicitly that the vault may be out of sync.
