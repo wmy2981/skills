@@ -10,7 +10,7 @@ metadata:
 Personal note-taking conventions for the user's SiYuan (思源笔记) vault. This
 skill is a routing-and-convention layer, not an operation layer — all actual
 operations (create doc, search, tag, …) are performed with the siyuan-note MCP
-tools. It answers two questions for every note request:
+tools. It answers two questions for every new-note request:
 
 - **Where does a new note belong?** → `map.md` (creation only; locate existing notes by search)
 - **What should a new note be tagged with?** → `tag.md`
@@ -55,7 +55,7 @@ markdown table with three columns:
 
 | Column | Meaning |
 |--------|---------|
-| `Notebook` | The SiYuan notebook the note lives in |
+| `Notebook` | The SiYuan notebook the new note lives in |
 | `Path` | Human-readable path inside the notebook (e.g. `笔记本/父文档/子文档`) |
 | `Description` | What this path is for, and when to prefer it |
 
@@ -178,14 +178,16 @@ remaining steps because of it.
    deleting, moving, or renaming it — the same caution applies as for
    Modify.
 3. Perform the operation.
-4. Report the note's new location if it moved or was renamed.
+4. Report the note's new location after a move or rename; after a delete,
+   report what was deleted and where it lived.
 
 ## Report Style
 
-Always tell the user where a note lives after creating/finding/modifying it —
-with a `Notebook / Path` so they can verify. If you made a one-off placement,
-skipped tags, or couldn't locate something, say so explicitly. Propose
-`map.md`/`tag.md` updates when you found a stable new pattern.
+Always tell the user where a note lives after creating/finding/modifying it,
+and its new location after a move or rename — with a `Notebook / Path` so they
+can verify. If you made a one-off placement, skipped tags, or couldn't locate
+something, say so explicitly. Propose `map.md`/`tag.md` updates when you found
+a stable new pattern.
 
 Always report the sync status of the round. If the pre-round or post-round
 sync failed, warn explicitly that the vault may be out of sync.
