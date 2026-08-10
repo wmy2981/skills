@@ -137,63 +137,6 @@ jobs:
 
           [ "$errors" -eq 0 ] || { echo "$errors skill structure violation(s)."; exit 1; }
 
-  plugin-manifests:
-    name: Plugin manifests validation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.11"
-      - name: Validate plugin.json and marketplace.json
-        run: |
-          python - <<'PYEOF'
-          import json, pathlib, re
-
-          root = pathlib.Path('.')
-          errors = []
-          skills = sorted(d.name for d in root.iterdir()
-                          if d.is_dir() and not d.name.startswith('.') and (d / 'SKILL.md').exists())
-
-          # Per-skill plugin.json: name must match dir, version must be semver
-          for s in skills:
-              p = root / s / '.claude-plugin' / 'plugin.json'
-              if not p.exists():
-                  errors.append(f"{s}: missing .claude-plugin/plugin.json")
-                  continue
-              m = json.loads(p.read_text(encoding='utf-8'))
-              if m.get('name') != s:
-                  errors.append(f"{s}: plugin.json name '{m.get('name')}' != dir name")
-              if not re.fullmatch(r'\d+\.\d+\.\d+', str(m.get('version', ''))):
-                  errors.append(f"{s}: version '{m.get('version')}' is not semver")
-              # SKILL.md frontmatter metadata.skill_version must match plugin.json version
-              fm = (root / s / 'SKILL.md').read_text(encoding='utf-8').split('---', 2)[1]
-              ms = re.search(r'(?m)^metadata:\s*\n\s+skill_version:\s*"?([^"\s]+)"?', fm)
-              sv = ms.group(1) if ms else None
-              if sv != m.get('version'):
-                  errors.append(
-                      f"{s}: SKILL.md skill_version '{sv}' != plugin.json version '{m.get('version')}'")
-
-          # marketplace.json: plugins[] must match skill dirs 1:1 with valid sources
-          mp = root / '.claude-plugin' / 'marketplace.json'
-          if not mp.exists():
-              errors.append("missing .claude-plugin/marketplace.json")
-          else:
-              m = json.loads(mp.read_text(encoding='utf-8'))
-              listed = sorted(e['name'] for e in m.get('plugins', []))
-              if listed != skills:
-                  errors.append(f"marketplace plugins {listed} != skill dirs {skills}")
-              for e in m.get('plugins', []):
-                  if e.get('source') != f"./{e['name']}":
-                      errors.append(f"marketplace entry '{e.get('name')}': bad source '{e.get('source')}'")
-
-          if errors:
-              for e in errors:
-                  print(f"  ❌ {e}")
-              raise SystemExit(1)
-          print(f"  ✅ {len(skills)} plugin manifests + marketplace OK")
-          PYEOF
-
   ts-check:
     name: TypeScript check (tsc + smoke)
     runs-on: ubuntu-latest
@@ -272,13 +215,64 @@ jobs:
           [ "$errors" -eq 0 ] || { echo "$errors TS convention violation(s)."; exit 1; }
 
   market-validate:
-    name: Claude Code plugin & marketplace validation
+    name: Plugin & marketplace validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+      - name: Check plugin/skill conventions (names, versions, marketplace sync)
+        run: |
+          python - <<'PYEOF'
+          import json, pathlib, re
+
+          root = pathlib.Path('.')
+          errors = []
+          skills = sorted(d.name for d in root.iterdir()
+                          if d.is_dir() and not d.name.startswith('.') and (d / 'SKILL.md').exists())
+
+          # Per-skill plugin.json: name must match dir, version must be semver
+          for s in skills:
+              p = root / s / '.claude-plugin' / 'plugin.json'
+              if not p.exists():
+                  errors.append(f"{s}: missing .claude-plugin/plugin.json")
+                  continue
+              m = json.loads(p.read_text(encoding='utf-8'))
+              if m.get('name') != s:
+                  errors.append(f"{s}: plugin.json name '{m.get('name')}' != dir name")
+              if not re.fullmatch(r'\d+\.\d+\.\d+', str(m.get('version', ''))):
+                  errors.append(f"{s}: version '{m.get('version')}' is not semver")
+              # SKILL.md frontmatter metadata.skill_version must match plugin.json version
+              fm = (root / s / 'SKILL.md').read_text(encoding='utf-8').split('---', 2)[1]
+              ms = re.search(r'(?m)^metadata:\s*\n\s+skill_version:\s*"?([^"\s]+)"?', fm)
+              sv = ms.group(1) if ms else None
+              if sv != m.get('version'):
+                  errors.append(
+                      f"{s}: SKILL.md skill_version '{sv}' != plugin.json version '{m.get('version')}'")
+
+          # marketplace.json: plugins[] must match skill dirs 1:1 with valid sources
+          mp = root / '.claude-plugin' / 'marketplace.json'
+          if not mp.exists():
+              errors.append("missing .claude-plugin/marketplace.json")
+          else:
+              m = json.loads(mp.read_text(encoding='utf-8'))
+              listed = sorted(e['name'] for e in m.get('plugins', []))
+              if listed != skills:
+                  errors.append(f"marketplace plugins {listed} != skill dirs {skills}")
+              for e in m.get('plugins', []):
+                  if e.get('source') != f"./{e['name']}":
+                      errors.append(f"marketplace entry '{e.get('name')}': bad source '{e.get('source')}'")
+
+          if errors:
+              for e in errors:
+                  print(f"  ❌ {e}")
+              raise SystemExit(1)
+          print(f"  ✅ {len(skills)} plugin manifests + marketplace OK")
+          PYEOF
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
       - name: Validate plugin manifests (--strict)
