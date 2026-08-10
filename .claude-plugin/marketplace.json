@@ -5,7 +5,6 @@
   "owner": {
     "name": "wmy2981"
   },
-  "repository": "https://github.com/wmy2981/skills",
   "plugins": [
     {
       "name": "calendar-api",

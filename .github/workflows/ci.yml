@@ -270,3 +270,48 @@ jobs:
           done < <(find . -name 'SKILL.md' -not -path './.github/*' -print0)
 
           [ "$errors" -eq 0 ] || { echo "$errors TS convention violation(s)."; exit 1; }
+
+  market-validate:
+    name: Claude Code plugin & marketplace validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate plugin manifests (--strict)
+        run: |
+          errors=0
+          while IFS= read -r -d '' sk; do
+            name="${sk#./}"; name="${name%/SKILL.md}"
+            if claude plugin validate "$name" --strict; then
+              echo "  ✅ $name"
+            else
+              echo "  ❌ $name"
+              errors=$((errors + 1))
+            fi
+          done < <(find . -name SKILL.md -not -path './.git/*' -print0)
+          [ "$errors" -eq 0 ] || { echo "$errors plugin(s) failed validation."; exit 1; }
+      - name: Validate marketplace manifest (--strict)
+        run: claude plugin validate .claude-plugin/marketplace.json --strict
+
+  skills-install:
+    name: npx skills install-all test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Install all skills via npx skills (isolated HOME)
+        run: |
+          export HOME="$(mktemp -d)"
+          npx -y skills add "$GITHUB_WORKSPACE" -g -a claude-code -s '*' -y
+          echo "--- installed skills ---"
+          npx -y skills ls -g
+          installed=$(find "$HOME" -path '*/skills/*/SKILL.md' -type f | wc -l)
+          expected=$(find . -name SKILL.md -not -path './.git/*' | wc -l)
+          echo "installed=$installed expected=$expected"
+          [ "$installed" -eq "$expected" ] || { echo "installed skill count mismatch ($installed != $expected)"; exit 1; }
