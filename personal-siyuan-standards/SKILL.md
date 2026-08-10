@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.2.0"
+  skill_version: "1.2.1"
 ---
 
 # Personal SiYuan Standards
@@ -49,9 +49,10 @@ decisions are never written automatically.
 
 ## Map: Where New Notes Go (`map.md`)
 
-Read `map.md` when **creating** a note — it routes new notes to their home
-path and is not used to locate existing ones (search instead). It is a
-markdown table with three columns:
+Read `map.md` when **creating** a note and the user did not explicitly
+specify a location — it routes new notes to their home path and is not used
+to locate existing ones (search instead). It is a markdown table with three
+columns:
 
 | Column | Meaning |
 |--------|---------|
@@ -148,7 +149,9 @@ remaining steps because of it.
 
 ```mermaid
 graph TD
-    A[Start: create a note] --> B[Read map.md for the preferred path]
+    A[Start: create a note] --> A1{Location specified by user?}
+    A1 -- Yes --> A2[Create at the specified location<br/>skip map.md and descent]
+    A1 -- No --> B[Read map.md for the preferred path]
     B --> C[Enter that path]
     C --> D[List child notes under the path]
     D --> E{Any child fits better?}
@@ -163,21 +166,25 @@ graph TD
     K --> L
 ```
 
-1. Read `map.md`; pick the target location (see Map rules above). If no row
+1. **User-specified location wins.** If the user explicitly said where the
+   note goes (a notebook or path), create it there directly — skip `map.md`
+   and the recursive descent. `map.md` and the descent apply only when the
+   user did not specify a location.
+2. Read `map.md`; pick the target location (see Map rules above). If no row
    matches and none declares itself the fallback, decide a placement yourself
    as a one-off — place the note directly without descending.
-2. **Descend to the best-fitting path.** From the mapped path, list its
+3. **Descend to the best-fitting path.** From the mapped path, list its
    child documents. Judge by title first, then read the most promising
    candidate's content, and ask: does any child fit the request better than
    the current path? If one does, make it the current path and repeat. Stop
    when no child fits better — the current path is the final destination.
    There is no depth limit: the descent only moves downward through children,
    so it always terminates.
-3. Create the document with the MCP `document` tool at the current
+4. Create the document with the MCP `document` tool at the current
    notebook/path, creating missing parent documents first.
-4. Read `tag.md`; apply every matching tag to the new document (Tag rules
+5. Read `tag.md`; apply every matching tag to the new document (Tag rules
    above).
-5. Report: where the note was created; whether the placement was a one-off
+6. Report: where the note was created; whether the placement was a one-off
    guess (no map row) — and optionally propose a `map.md` row or `tag.md`
    entry for user confirmation. If the final path is deeper than the mapped
    row (or no row matched), **propose** adding the final path to `map.md` —
