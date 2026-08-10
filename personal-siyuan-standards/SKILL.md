@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.2.2"
+  skill_version: "1.2.3"
 ---
 
 # Personal SiYuan Standards
@@ -183,7 +183,11 @@ graph TD
    There is no depth limit: the descent only moves downward through children,
    so it always terminates.
 4. Create the document with the MCP `document` tool at the current
-   notebook/path, creating missing parent documents first.
+   notebook/path — `path` is the **full target hPath including the document
+   name** (e.g. `/DailyNotes/2026/08/2026-08-10`), not the parent folder;
+   the parent folder must already exist. Create missing parent documents
+   first. The tool's response echoes the `path` you passed, so verify the
+   real location with `get`/`list` when in doubt.
 5. Read `tag.md`; apply every matching tag to the new document (Tag rules
    above).
 6. Report: where the note was created; whether the placement was a one-off
@@ -216,7 +220,9 @@ graph TD
 2. Read the document's content and confirm it is the intended note before
    deleting, moving, or renaming it — the same caution applies as for
    Modify.
-3. Perform the operation.
+3. Perform the operation. For a move, `path` is an **existing** target
+   location — the note becomes a child of it, so create the target first if
+   needed (the same full-hPath rule as Create applies).
 4. Report the note's new location after a move or rename; after a delete,
    report what was deleted and where it lived.
 
