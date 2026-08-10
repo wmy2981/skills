@@ -12,7 +12,7 @@ skill is a routing-and-convention layer, not an operation layer — all actual
 operations (create doc, search, tag, …) are performed with the siyuan-note MCP
 tools. It answers two questions for every note request:
 
-- **Where does this note belong?** → `map.md`
+- **Where does a new note belong?** → `map.md` (creation only; locate existing notes by search)
 - **What should a new note be tagged with?** → `tag.md`
 
 ## Execution Rule
@@ -33,7 +33,7 @@ All runtime data lives in `~/.wmyskills/personal-siyuan-standards/`:
 
 | File | Purpose | Maintained by |
 |------|---------|---------------|
-| `map.md` | Notebook → path mapping: where notes live, where new notes go | user (agent proposes) |
+| `map.md` | Notebook → path mapping for new notes (creation only) | user (agent proposes) |
 | `tag.md` | Tagging rules: which tags to apply to new notes, when | user (agent proposes) |
 
 **First run:** if `map.md` or `tag.md` is missing, create it by copying the
@@ -47,9 +47,10 @@ decisions are never written automatically.
 
 **Explicit user instructions always override these standards.**
 
-## Map: Where Notes Live (`map.md`)
+## Map: Where New Notes Go (`map.md`)
 
-Read `map.md` before **every** create, find, or modify operation. It is a
+Read `map.md` when **creating** a note — it routes new notes to their home
+path and is not used to locate existing ones (search instead). It is a
 markdown table with three columns:
 
 | Column | Meaning |
@@ -112,7 +113,7 @@ round, covering every request:
 ```mermaid
 graph TD
     A[User request] --> B[Load this skill and the siyuan-note MCP tools]
-    B --> C[Read map.md and tag.md]
+    B --> C["Read map.md and tag.md (creation only)"]
     C --> D[Pre-round sync]
     D --> E[Operate on SiYuan notes<br/>1 or more operations]
     E --> F[Review: operations succeeded]
@@ -120,8 +121,9 @@ graph TD
     G --> H[Report to user]
 ```
 
-1. **Read standards files.** Read `map.md` every round (see Map rules). Read
-   `tag.md` only when the round creates a note (see Tag rules).
+1. **Read standards files.** Read `map.md` and `tag.md` only when the round
+   creates a note (see Map and Tag rules). Locate existing notes with the
+   MCP `search` tool instead of `map.md`.
 2. **Pre-round sync.** If the round will perform any write operation (create,
    delete, modify, move, rename, …), trigger a sync with the MCP `sync` tool.
    Pure find/read-only rounds skip this step.
@@ -153,16 +155,15 @@ remaining steps because of it.
 
 **Find (read-only)**
 
-1. Read `map.md`; use the most plausible rows as your starting point.
-2. If the map doesn't point anywhere useful, search with the MCP `search`
-   tool (fulltext) to locate candidates.
-3. Open and read a candidate's content to confirm it really is the note the
+1. Search with the MCP `search` tool (fulltext) to locate the note —
+   `map.md` is only a reference for creating new notes.
+2. Open and read a candidate's content to confirm it really is the note the
    user means before reporting it.
-4. No sync for read-only rounds.
+3. No sync for read-only rounds.
 
 **Modify**
 
-1. Read `map.md`; locate the note (find rules apply).
+1. Locate the note with the MCP `search` tool (find rules apply).
 2. **Read the document's content first and confirm it matches the user's
    intent before changing anything.** Modifying the wrong note is worse than
    asking.
@@ -172,7 +173,7 @@ remaining steps because of it.
 
 **Delete / move / rename**
 
-1. Read `map.md`; locate the note (find rules apply).
+1. Locate the note with the MCP `search` tool (find rules apply).
 2. Read the document's content and confirm it is the intended note before
    deleting, moving, or renaming it — the same caution applies as for
    Modify.
