@@ -163,6 +163,25 @@ jobs:
             fi
           done < <(find . -name 'SKILL.md' -not -path './.github/*' -not -path './.git/*' -print0)
 
+          # Check 3: README skill table must list every skill dir with the correct dir name
+          if [ -f README.md ]; then
+            # (a) every README table entry must be a real skill dir
+            while IFS= read -r entry; do
+              if ! [ -d "$entry" ] || ! [ -f "$entry/SKILL.md" ]; then
+                echo "  ❌ README lists '$entry' but it is not a valid skill dir"
+                errors=$((errors + 1))
+              fi
+            done < <(grep -oP '^\|\s*`\K[^`/]+(?=/`)' README.md)
+            # (b) every skill dir must be listed in the README table
+            while IFS= read -r -d '' sk; do
+              entry="$(basename "$(dirname "$sk")")"
+              if ! grep -qP '^\|\s*`'"$entry"'/' README.md; then
+                echo "  ❌ skill '$entry' missing from README skill table"
+                errors=$((errors + 1))
+              fi
+            done < <(find . -name SKILL.md -not -path './.github/*' -not -path './.git/*' -print0)
+          fi
+
           [ "$errors" -eq 0 ] || { echo "$errors skill structure violation(s)."; exit 1; }
 
   ts-check:
