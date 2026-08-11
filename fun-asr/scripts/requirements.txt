@@ -1,0 +1,4 @@
+# DashScope Fun-ASR API + S3-compatible storage for fun_asr_cli.py
+boto3>=1.34
+requests>=2.31.0
+python-dotenv>=1.0.0
