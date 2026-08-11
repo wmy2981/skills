@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.2.3"
+  skill_version: "1.2.4"
 ---
 
 # Personal SiYuan Standards
@@ -107,11 +107,11 @@ user explicitly asks).
 
 ## One Round Workflow
 
-Every user request is **one round**: from request to report, a round performs
-**exactly two syncs** — one before the operations (pre-round sync) and one
-after (post-round sync). Never sync after each individual note operation;
-bundle the whole round into a single pre/post sync pair. This is the full
-round, covering every request:
+Every user request is **one round**: from request to report, a round
+performs **one pre-round sync** before any operation (even read-only rounds)
+and — if any write ran — **one post-round sync**. Never sync after each
+individual note operation; bundle the whole round into a single pre/post
+sync pair. This is the full round, covering every request:
 
 ```mermaid
 graph TD
@@ -128,9 +128,9 @@ graph TD
    (see Tag rules) and read `map.md` unless the user specified a location
    (see Map rules). Locate existing notes with the MCP `search` tool instead
    of `map.md`.
-2. **Pre-round sync.** If the round will perform any write operation (create,
-   delete, modify, move, rename, …), trigger a sync with the MCP `sync` tool.
-   Pure find/read-only rounds skip this step.
+2. **Pre-round sync.** Trigger a sync with the MCP `sync` tool before any
+   operation — create, modify, move, … **and** pure find/read-only rounds.
+   It runs exactly once per round, before the first operation.
 3. **Operate.** Perform the request — one or more note operations — following
    the operation notes below.
 4. **Review.** Check that each operation actually succeeded; if a step
@@ -202,7 +202,8 @@ graph TD
    `map.md` is only a reference for creating new notes.
 2. Open and read a candidate's content to confirm it really is the note the
    user means before reporting it.
-3. No sync for read-only rounds.
+3. The pre-round sync still runs for read-only rounds (see One Round
+   Workflow); only the post-round sync is skipped because no write ran.
 
 **Modify**
 
