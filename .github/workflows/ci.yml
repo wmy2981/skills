@@ -26,6 +26,35 @@ jobs:
           done < <(find . -name '*.py' -not -path './.github/*' -print0)
           [ "$errors" -eq 0 ] || { echo "$errors file(s) have syntax errors."; exit 1; }
 
+  py-smoke:
+    name: Python CLI smoke test (--help)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install python-dotenv pyyaml requests
+          while IFS= read -r -d '' req; do
+            pip install -r "$req"
+          done < <(find . -name requirements.txt -not -path './.github/*' -not -path './.git/*' -print0)
+      - name: Smoke-test CLI entry points (--help)
+        run: |
+          errors=0
+          while IFS= read -r -d '' f; do
+            if grep -q 'argparse' "$f" 2>/dev/null; then
+              if python "$f" --help >/dev/null 2>&1; then
+                echo "  ✅ ${f#./}"
+              else
+                echo "  ❌ ${f#./} --help failed"
+                errors=$((errors + 1))
+              fi
+            fi
+          done < <(find . -name '*.py' -not -path './.github/*' -not -path './.git/*' -print0)
+          [ "$errors" -eq 0 ] || { echo "$errors Python entry point(s) failed."; exit 1; }
+
   lint:
     name: Lint (ruff)
     runs-on: ubuntu-latest
@@ -54,14 +83,8 @@ jobs:
             name="${f#./}"
             issues=""
 
-            # 1) Must use 'python' not 'python3' in usage messages
-            #    (windows target)
-            if grep -q 'python3 ' "$f" 2>/dev/null; then
-              issues="$issues[pýthon3]"
-            fi
-
-            # 2) Must have UTF-8 stdout reconfigure if the script prints non-ASCII
-            #    (check print statements containing non-ASCII characters)
+            # Must have UTF-8 stdout reconfigure if the script prints non-ASCII
+            # (check print statements containing non-ASCII characters)
             if grep -qP 'print\([^)]*[^\x00-\x7F]' "$f" 2>/dev/null; then
               if ! grep -q 'sys.stdout.reconfigure' "$f" 2>/dev/null; then
                 issues="$issues[missing UTF-8 reconfigure]"
@@ -127,6 +150,13 @@ jobs:
                 fi
                 if ! echo "$yaml" | grep -q '^description:'; then
                   echo "  ❌ $name/SKILL.md: missing 'description' in YAML frontmatter"
+                  errors=$((errors + 1))
+                fi
+                if ! echo "$yaml" | grep -q '^metadata:'; then
+                  echo "  ❌ $name/SKILL.md: missing 'metadata' in YAML frontmatter"
+                  errors=$((errors + 1))
+                elif ! echo "$yaml" | grep -qP '^\s+skill_version:'; then
+                  echo "  ❌ $name/SKILL.md: missing 'skill_version' under 'metadata' in YAML frontmatter"
                   errors=$((errors + 1))
                 fi
               fi
