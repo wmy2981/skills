@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "doubao-video",
+  "version": "1.0.0",
+  "description": "Generate AI videos with Doubao (豆包) on doubao.com via Chrome automation. Trigger when the user asks 用豆包生成视频 or similar wording.",
+  "author": {
+    "name": "wmy2981"
+  },
+  "repository": "https://github.com/wmy2981/skills",
+  "license": "MIT"
+}

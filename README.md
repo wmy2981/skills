@@ -30,6 +30,7 @@ claude plugin install skill-name@wmy-skills
 | `calendar-api/` | Chinese calendar query | 万年历查询 |
 | `chinese-poetry-api/` | Chinese classical poetry REST API (Tang/Song/Yuan poems, search, authors) | 中国古诗词 REST API 查询（唐诗宋词、搜索、作者） |
 | `deepseek-balance/` | DeepSeek Open Platform balance query | DeepSeek 开放平台余额查询 |
+| `doubao-video/` | AI video generation on Doubao web via Chrome automation | 豆包网页版 AI 视频生成（Chrome 自动化） |
 | `domain-query/` | Domain ICP filing, WHOIS & WeChat block check | 域名 ICP 备案 + WHOIS + 微信防红查询 |
 | `enterprise-info/` | Chinese enterprise registration info lookup | 企业工商信息查询 |
 | `epub-book-pipeline/` | EPUB book processing pipeline | EPUB 整本书处理流水线 |
