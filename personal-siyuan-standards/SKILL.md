@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.2.4"
+  skill_version: "1.2.5"
 ---
 
 # Personal SiYuan Standards
@@ -104,6 +104,18 @@ attribute on the new document's root block (comma-separated) via the MCP
 user explicitly asks).
 
 **Modify never touches tags** — tags are only applied when a note is created.
+
+## Link Conventions
+
+Applies whenever note content is written or modified:
+
+- **External links** — links jumping to a web page or a static-resource page:
+  use Markdown link syntax `[anchor text](URL)`, which renders as a directly
+  clickable link.
+- **SiYuan references** — block references and document references: use
+  SiYuan's reference syntax `((blockID/docID "anchor text"))` — `blockID` for
+  a block reference, `docID` for a document reference, with the display text
+  quoted as the anchor.
 
 ## One Round Workflow
 
