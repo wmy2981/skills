@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "domain-query",
-  "version": "1.0.0",
-  "description": "Domain name multi-query tool — one-shot lookup of ICP filing (备案), WHOIS registration info, and WeChat block status (微信防红) for any domain. Triggered whenever the user mentions \"domain lookup\", \"ICP\", \"备案\", \"WHOIS\", \"registration info\", \"check this domain\", \"domain details\", \"微信防红\", \"域名查询\", \"查一下这个域名\", \"帮我查这个域名\", or simply pastes a domain and asks \"check it\" or \"查一下\". Trigger even for one-line requests.",
+  "version": "1.0.1",
+  "description": "Domain name multi-query tool — one-shot lookup of ICP filing (备案) and WHOIS registration info for any domain. Triggered whenever the user mentions \"domain lookup\", \"ICP\", \"备案\", \"WHOIS\", \"registration info\", \"check this domain\", \"domain details\", \"域名查询\", \"查一下这个域名\", \"帮我查这个域名\", or simply pastes a domain and asks \"check it\" or \"查一下\". Trigger even for one-line requests.",
   "author": {
     "name": "wmy2981"
   },

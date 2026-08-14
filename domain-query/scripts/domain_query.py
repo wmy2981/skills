@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Domain query — ICP filing + WHOIS + WeChat block check via 接口盒子 API"""
+"""Domain query — ICP filing + WHOIS via 接口盒子 API"""
 
 import argparse
 import json
@@ -22,7 +22,6 @@ BASE = "https://cn.apihz.cn/api/wangzhan"
 
 API_ICP = f"{BASE}/icp.php"
 API_WHOIS = f"{BASE}/whoisall.php"
-API_WXFH = f"{BASE}/wxfh.php"
 
 
 def api_request(url: str, params: dict) -> dict:
@@ -89,10 +88,6 @@ def query_whois(domain: str, live: bool = False) -> dict:
     return api_request(API_WHOIS, {"domain": domain, "type": 2 if live else 1})
 
 
-def query_wxfh(url: str) -> dict:
-    return api_request(API_WXFH, {"url": url})
-
-
 def _is_ok(data: dict) -> bool:
     return str(data.get("code", "")).strip() == "200"
 
@@ -136,50 +131,32 @@ def format_whois(data: dict) -> str:
         return f"📝 WHOIS 查询: {data.get('msg', data.get('error', '未知'))}"
 
 
-def format_wxfh(data: dict) -> str:
-    if _is_ok(data):
-        lines = [
-            "🔗 微信防红检测",
-            "=" * 30,
-            f"  URL: {data.get('url', '-')}",
-            f"  状态: {data.get('msg', '-')}",
-        ]
-        return "\n".join(lines)
-    else:
-        return f"🔗 微信防红检测: {data.get('msg', data.get('error', '未知'))}"
-
-
 def main():
     # .env priority: scripts/.env (per-skill) > ~/.wmyskills/.env (shared).
     # load_dotenv never overrides, so script dir loads first, user global second.
     load_dotenv(dotenv_path=Path(__file__).parent / ".env")
     load_dotenv(dotenv_path=Path.home() / ".wmyskills" / ".env")
-    parser = argparse.ArgumentParser(description="Domain query — ICP + WHOIS + WeChat block check")
+    parser = argparse.ArgumentParser(description="Domain query — ICP + WHOIS")
     parser.add_argument("domain", help="Domain to query (e.g. example.com)")
-    parser.add_argument("--url", help="URL for WeChat check (default: https://domain)")
     parser.add_argument("--live", action="store_true", help="WHOIS live query (bypass cache)")
     parser.add_argument("--json", action="store_true", help="Output raw JSON")
-    parser.add_argument("--only", choices=["icp", "whois", "wxfh"], help="Query only one item")
+    parser.add_argument("--only", choices=["icp", "whois"], help="Query only one item")
     args = parser.parse_args()
 
     domain = args.domain.strip().lower()
-    check_url = args.url or f"https://{domain}"
 
     result = {}
 
     if args.only:
         targets = [args.only]
     else:
-        targets = ["icp", "whois", "wxfh"]
+        targets = ["icp", "whois"]
 
     if "icp" in targets:
         result["icp"] = query_icp(domain)
 
     if "whois" in targets:
         result["whois"] = query_whois(domain, live=args.live)
-
-    if "wxfh" in targets:
-        result["wxfh"] = query_wxfh(check_url)
 
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -194,10 +171,6 @@ def main():
 
         if "whois" in result:
             print(format_whois(result["whois"]))
-            print()
-
-        if "wxfh" in result:
-            print(format_wxfh(result["wxfh"]))
             print()
 
 
