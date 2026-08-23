@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.2.5"
+  skill_version: "1.2.6"
 ---
 
 # Personal SiYuan Standards
@@ -200,9 +200,12 @@ graph TD
    the parent folder must already exist. Create missing parent documents
    first. The tool's response echoes the `path` you passed, so verify the
    real location with `get`/`list` when in doubt.
-5. Read `tag.md`; apply every matching tag to the new document (Tag rules
+5. **No `h1` in the note body.** The document title is already rendered as
+   an `h1`, so never write level-1 headings (`# …`) in the content — start
+   section headings at `h2`.
+6. Read `tag.md`; apply every matching tag to the new document (Tag rules
    above).
-6. Report: where the note was created; whether the placement was a one-off
+7. Report: where the note was created; whether the placement was a one-off
    guess (no map row) — and optionally propose a `map.md` row or `tag.md`
    entry for user confirmation. If the final path is deeper than the mapped
    row (or no row matched), **propose** adding the final path to `map.md` —
