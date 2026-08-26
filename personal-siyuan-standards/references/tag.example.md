@@ -1,6 +1,6 @@
 # SiYuan Note Tag Rules (tag.md)
 
-> This file is maintained by the **user**. The agent reads it only after
+> This file is maintained by the **user**. The agent reads it only when
 > **creating** a note and applies tags accordingly; modifying a note never
 > touches its tags. To add or change a tag, the agent proposes it first and
 > writes only after the user confirms.

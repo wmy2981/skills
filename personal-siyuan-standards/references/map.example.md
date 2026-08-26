@@ -7,19 +7,19 @@
 >
 > | Column | Meaning |
 > | --- | --- |
-> | Notebook | The SiYuan notebook the new note lives in |
-> | Path | Human-readable path inside the notebook, e.g. `Notebook/Parent Doc/Child Doc` |
-> | Description | What this path is for and when to prefer it |
+> | Notebook | The SiYuan notebook name the new note lives in |
+> | hPath | Human-readable path inside the notebook, e.g. `/Parent/Child` — never includes the notebook name |
+> | Description | What this hPath is for and when to prefer it |
 >
 > Agent matching rules:
-> - Pick the most fitting row by meaning (notebook, path, description combined)
+> - Pick the most fitting row by meaning (notebook, hPath, description combined)
 > - If nothing matches: use a row whose Description declares itself the
->   fallback (e.g. "use this path when nothing else matches") as the default;
+>   fallback (e.g. "use this location when nothing else matches") as the default;
 >   otherwise the agent decides a placement itself — **for this request only**,
 >   without writing it to this file
 
 **Add your location mappings here**
 
-| Notebook | Path | Description |
+| Notebook | hPath | Description |
 | -------- | ---- | ----------- |
 |  |  |  |
