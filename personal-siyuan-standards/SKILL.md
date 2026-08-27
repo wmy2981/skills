@@ -2,7 +2,7 @@
 name: personal-siyuan-standards
 description: "Personal note-taking standards for the user's SiYuan (思源笔记) vault — placement routing and tagging conventions, not an operation layer. Use whenever the user asks to create, find, or modify notes in SiYuan, or whenever you are about to operate on the user's personal notes through the siyuan-note MCP tools — even if they don't explicitly say \"standards\". Tells you where a new note belongs (map.md), which tags to apply (tag.md), and how to locate an existing note before touching it. Trigger on requests like \"新建笔记/记一下/存到笔记\", \"找一下我的笔记/那篇笔记在哪\", \"改一下这篇笔记\", \"siyuan\", \"思源\", \"notebook\", or any note operation on personal SiYuan notes."
 metadata:
-  skill_version: "1.3.0"
+  skill_version: "1.3.1"
 ---
 
 # Personal SiYuan Standards
@@ -105,6 +105,26 @@ user explicitly asks).
 
 **Modify never touches tags** — tags are only applied when a note is created.
 
+## Syntax Rules
+
+When writing note content (outside code blocks and inline code):
+
+- **Dollar sign `$`** — SiYuan treats `$...$` as inline math. When the
+  intention is not to write a formula, escape every `$` as `\$`, even a
+  standalone one. Example: `The fee is \$100.` renders as "The fee is $100."
+- **Hash sign `#`** — Outside headings and code blocks, `#` can be
+  interpreted as a tag marker. When the intention is not to write a tag,
+  escape every `#` as `\#`, even a standalone one. Example: `Issues
+  \#101 and \#102.` — without escaping, SiYuan would create a tag
+  between two `#`. Example: `#tagName#` → a tag; `\#tag\#` → the text "#tag#".
+
+Headings (`#` at line start) use their own syntax and do not need escaping.
+Escaping still applies to `$` and `#` inside heading text when not used for
+their special purpose.
+
+In code blocks (both inline `` `code` `` and fenced blocks), write `$` and
+`#` literally — no escaping needed.
+
 ## Link Conventions
 
 Applies whenever note content is written or modified:
@@ -163,7 +183,7 @@ operations still run — but the final report must explicitly warn that the
 vault may be out of sync. Do not retry a failed sync, and do not skip the
 remaining steps because of it.
 
-### Operation notes
+## Operation notes
 
 **Create**
 
